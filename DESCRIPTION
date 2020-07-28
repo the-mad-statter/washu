@@ -1,0 +1,26 @@
+Package: washu
+Type: Package
+Title: Helpful Functions for WashU Statistical Consultations
+Version: 0.1.0
+Authors@R: 
+    person(given = "Matthew",
+           family = "Schuelke",
+           role = c("aut", "cre"),
+           email = "schuelke@wustl.edu",
+           comment = c(ORCID = "0000-0001-5755-1725"))
+Description: This package provides helpful functions for WashU statistical consulations.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/the-mad-statter/washu
+BugReports: https://github.com/the-mad-statter/washu/issues
+RoxygenNote: 7.1.1
+Imports: 
+    dplyr,
+    ggplot2,
+    httr,
+    rvest,
+    tibble,
+    xml2,
+    magrittr,
+    rlang
