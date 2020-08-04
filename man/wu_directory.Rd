@@ -2,7 +2,7 @@
 % Please edit documentation in R/directory.R
 \name{wu_directory}
 \alias{wu_directory}
-\title{WU Directory Search}
+\title{WU directory search}
 \usage{
 wu_directory(search_name = "", email = "", phone = "")
 }
@@ -17,7 +17,7 @@ wu_directory(search_name = "", email = "", phone = "")
 data frame of results
 }
 \description{
-WU Directory Search
+Search the WashU directory
 }
 \note{
 Will return an empty data frame if there are none or too many results

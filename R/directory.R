@@ -1,4 +1,6 @@
-#' Extract Directory Field
+#' Extract directory field
+#'
+#' Extract a field from a WashU directory search
 #'
 #' @param v character vector intermixing keys and values for a single result from a directory search
 #' @param k key to search for
@@ -10,6 +12,8 @@ extract_directory_field <- function(v, k) {
 }
 
 #' Parse Directory Entry
+#'
+#' Parse an entry from a WashU directory search
 #'
 #' @param e html node list representing a single result from a directory search
 #'
@@ -29,15 +33,20 @@ parse_directory_entry <- function(e) {
     email      = extract_directory_field(v, "Email:"))
 }
 
-#' WU Directory Search
+#' WU directory search
+#'
+#' Search the WashU directory
 #'
 #' @param search_name name query
 #' @param email email query
 #' @param phone phone query
 #'
 #' @return data frame of results
+#'
 #' @note Will return an empty data frame if there are none or too many results
+#'
 #' @seealso \url{https://wustl.edu/directory/}
+#'
 #' @export
 #'
 #' @examples

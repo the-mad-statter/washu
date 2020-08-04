@@ -13,5 +13,5 @@ parse_directory_entry(e)
 data frame representing a single result from a directory search
 }
 \description{
-Parse Directory Entry
+Parse an entry from a WashU directory search
 }

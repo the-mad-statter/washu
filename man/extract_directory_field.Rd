@@ -2,7 +2,7 @@
 % Please edit documentation in R/directory.R
 \name{extract_directory_field}
 \alias{extract_directory_field}
-\title{Extract Directory Field}
+\title{Extract directory field}
 \usage{
 extract_directory_field(v, k)
 }
@@ -15,5 +15,5 @@ extract_directory_field(v, k)
 desired value or NA
 }
 \description{
-Extract Directory Field
+Extract a field from a WashU directory search
 }

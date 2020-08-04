@@ -3,7 +3,7 @@
 \docType{data}
 \name{wu_colors}
 \alias{wu_colors}
-\title{WU Colors}
+\title{WU colors}
 \format{
 An object of class \code{list} of length 16.
 }

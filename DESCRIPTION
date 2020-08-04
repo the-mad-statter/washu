@@ -23,4 +23,7 @@ Imports:
     tibble,
     xml2,
     magrittr,
-    rlang
+    rlang,
+    curl,
+    stringr,
+    tidyr

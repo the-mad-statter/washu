@@ -2,7 +2,7 @@
 % Please edit documentation in R/color.R
 \name{print_rgb}
 \alias{print_rgb}
-\title{Print RGB Color}
+\title{Print RGB color}
 \usage{
 print_rgb(col)
 }
@@ -13,7 +13,7 @@ print_rgb(col)
 character string representation of the rgb color
 }
 \description{
-Print RGB Color
+Print a color as an RGB string
 }
 \examples{
 washu:::print_rgb(wu_colors$red)

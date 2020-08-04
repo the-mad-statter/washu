@@ -2,12 +2,12 @@
 % Please edit documentation in R/color.R
 \name{wu_colors_plot}
 \alias{wu_colors_plot}
-\title{WU Colors Plot}
+\title{WU colors plot}
 \usage{
 wu_colors_plot()
 }
 \description{
-WashU Color Palettes Plot
+Draw a WashU color palettes plot
 }
 \examples{
 wu_colors_plot()

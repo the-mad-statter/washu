@@ -2,7 +2,7 @@
 % Please edit documentation in R/color.R
 \name{rgb_value_pad}
 \alias{rgb_value_pad}
-\title{RGB Value Pad}
+\title{RGB value pad}
 \usage{
 rgb_value_pad(x)
 }
@@ -13,7 +13,7 @@ rgb_value_pad(x)
 character vector with three characters per element
 }
 \description{
-RGB Value Pad
+Pad RGB values with leading 0's
 }
 \examples{
 washu:::rgb_value_pad(c(0, 10, 100))
