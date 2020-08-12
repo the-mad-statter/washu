@@ -1,0 +1,37 @@
+---
+title: "Statistical Analyses"
+subtitle: Specially Prepared for Dr. Winnie Pooh
+author: "from the Division of Biostatistics"
+date: "`r Sys.Date()`"
+bibliography: articles/bibliography.bibtex
+csl: articles/apa.csl
+output: washu::consult_report
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Overview
+
+
+
+# Approach
+
+
+
+# Data Preparation
+
+
+
+# Analyses
+
+
+
+# Summary
+
+
+
+```{r}
+knitr::asis_output(ifelse(file.size("articles/bibliography.bibtex") > 0, "# Bibliography\\n", ""))
+```

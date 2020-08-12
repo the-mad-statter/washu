@@ -26,4 +26,5 @@ Imports:
     rlang,
     curl,
     stringr,
-    tidyr
+    tidyr,
+    rmarkdown

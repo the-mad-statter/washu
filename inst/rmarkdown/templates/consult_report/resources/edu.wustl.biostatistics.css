@@ -1,0 +1,136 @@
+/* latin-ext */
+@font-face {
+  font-family: 'Libre Baskerville';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Libre Baskerville'), local('LibreBaskerville-Regular'), url(https://fonts.gstatic.com/s/librebaskerville/v7/kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNXaxMICA.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Libre Baskerville';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Libre Baskerville'), local('LibreBaskerville-Regular'), url(https://fonts.gstatic.com/s/librebaskerville/v7/kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNZaxM.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Rockwell";
+  src: local('Rockwell'), local('Rockwell-Regular'), url(https://www.themadstatter.com/wustl/css/fonts/Rockwell-Regular.ttf) format("truetype");
+}
+
+h1 {
+  font-family: "Rockwell";
+  font-weight: 300;
+  font-size: 32px;
+  color:  #a51417;
+  padding: 5px 5px 5px 5px;
+  background: #c8c8c8;
+  border-radius: 5px;
+  border-color: #c8c8c8;
+  border-style: solid;
+  border-width: 1px;
+}
+
+h2 {
+  font-family: "Rockwell";
+  font-weight: 500;
+  font-size: 20px;
+  color: #a51417;
+}
+
+h3 {
+  font-family: "Rockwell";
+  font-weight: 300;
+  font-size: 18px;
+  color: #6CCA19;
+  font-style: italic;
+}
+
+strong {
+  color: #003B5C;
+}
+
+body {
+  font-family: 'Libre Baskerville', serif;
+  counter-reset:table figure;
+}
+
+caption::before{
+  counter-increment: table;
+  content: "Table " counter(table) ": ";
+}
+
+.caption::before{
+  counter-increment: figure;
+  content: "Figure " counter(figure) ": ";
+}
+
+caption, .caption{
+  font-style:italic;
+  margin-top:1em;
+  text-align: left;
+  color: #003B5C;
+}
+
+#TOC {border-color: #a51417;}
+
+#titlespace { height: 50px; }
+
+.tocify .list-group-item:hover, .tocify .list-group-item:focus {
+    background-color: #c8c8c8;
+}
+
+.tocify .list-group-item.active:hover, .tocify .list-group-item.active:focus {
+    background-color: #003B5C;
+}
+
+.tocify .list-group-item.active, .tocify .list-group-item.active:focus {
+    background-color: #a51417;
+}
+
+#topbar {
+  height: 105px;
+  margin-top: 26px;
+  background: #a51417;
+  border-radius: 5px;
+  border-style: solid;
+  border-width: 1px;
+}
+
+#toplogo {
+  box-shadow: none;
+  height: 100px;
+  float: left;
+}
+
+.banner {
+  background: #ffffff;
+  border-color: #ffffff;
+  width: 100%;
+}
+
+.title {
+  margin-top: 10px;
+  font-size: 36px !important;
+  color:  #FFFFFF;
+  background: #a51417;
+}
+
+.subtitle {
+  margin-top: 0px;
+  color: #a51417;
+  font-weight: 300;
+  font-size: 24px;
+}
+.author {color: #000000;}
+
+.date {color: #000000;}
+
+.before_body {
+	margin-top: 50px;
+	margin-bottom: 50px;
+}

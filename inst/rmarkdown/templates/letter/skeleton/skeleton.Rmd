@@ -1,0 +1,26 @@
+---
+from:
+  name: Piglet
+  title: Very Small Animal
+  department: 
+    type: Wood
+    name: Hundred Acre
+    url: https://hundred.acre.wustl.edu
+  campus_box: 1968
+  phone: (314) 362-5000
+  email: piglet@wustl.edu
+to: 
+  name: Winnie the Pooh
+  address: |
+    | 1 Pooh Corner
+date: 14 October 1926
+salutation: Hi Pooh,
+closing: Your closest friend,
+signature: piglet.png
+output: washu::letter
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+

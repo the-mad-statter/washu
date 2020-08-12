@@ -2,9 +2,13 @@
 
 export("%>%")
 export(.data)
+export(consult_report)
+export(letter)
+export(letter_of_support_body)
 export(wu_colors)
 export(wu_colors_plot)
 export(wu_directory)
 export(wu_ldap_query)
+export(wu_render_letter_of_support)
 importFrom(magrittr,"%>%")
 importFrom(rlang,.data)
