@@ -3,13 +3,16 @@ title: "Statistical Analyses"
 subtitle: Specially Prepared for Dr. Winnie Pooh
 author: "from the Division of Biostatistics"
 date: "`r Sys.Date()`"
-bibliography: articles/bibliography.bibtex
-csl: articles/apa.csl
+bibliography: bib/bib.bib
+csl: bib/apa.csl
+nocite: '@*'
 output: washu::consult_report
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+
+library(washu)
 ```
 
 # Overview
@@ -33,5 +36,5 @@ knitr::opts_chunk$set(echo = FALSE)
 
 
 ```{r}
-knitr::asis_output(ifelse(file.size("articles/bibliography.bibtex") > 0, "# Bibliography\\n", ""))
+knitr::asis_output(ifelse(file.size("bib/bib.bib") > 0, "# Bibliography\\n", ""))
 ```
