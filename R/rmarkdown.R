@@ -94,6 +94,17 @@ letter <- function(template = find_template_resource("letter"),
                           ...)
 }
 
+#' Tidy Sub
+#' Utility function to make sub() work better with pipes
+#' @param x a character vector where matches are sought
+#' @param pattern character string containing a regular expression (or character string for fixed = TRUE) to be matched in the given character vector.
+#' @param replacement a replacement for matched pattern in sub and gsub.
+#' @param fixed logical. If TRUE, pattern is a string to be matched as is.
+#' @param ... additional parameters passed to sub
+tidy_sub <- function(x, pattern, replacement, fixed = TRUE, ...) {
+  sub(pattern, replacement, x, fixed = fixed, ...)
+}
+
 #' Letter of support body
 #' @param title title of the project to be supported
 #' @param template path to letter of support body template provided by user
@@ -108,7 +119,7 @@ letter_of_support_body <-
     infile %>%
       readLines() %>%
       paste(collapse = "\n") %>%
-      sub(pattern, title, .data) -> body
+      tidy_sub(pattern, title, fixed = FALSE) -> body
 
     close(infile)
 
@@ -193,21 +204,21 @@ wu_render_letter_of_support <-
     infile %>%
       readLines() %>%
       paste(collapse = "\n") %>%
-      sub("Piglet", from_name, .data) %>%
-      sub("Very Small Animal", from_title, .data) %>%
-      sub("Wood", from_department_type, .data) %>%
-      sub("Hundred Acre", from_department_name, .data) %>%
-      sub("https://hundred.acre.wustl.edu", from_department_url, .data) %>%
-      sub("1968", from_campus_box, .data) %>%
-      sub("\\(314\\) 362-5000", from_phone, .data) %>%
-      sub("piglet@wustl.edu", from_email, .data) %>%
-      sub("Winnie the Pooh", to_name, .data) %>%
-      sub("1 Pooh Corner", to_address, .data) %>%
-      sub("14 October 1926", date, .data) %>%
-      sub("Hi Pooh,", salutation, .data) %>%
-      sub("Your closest friend,", closing, .data) %>%
-      sub("piglet.png", signature, .data) %>%
-      sub("Thank.+$", "", .data) %>% # remove existing
+      tidy_sub("Piglet", from_name) %>%
+      tidy_sub("Very Small Animal", from_title) %>%
+      tidy_sub("Wood", from_department_type) %>%
+      tidy_sub("Hundred Acre", from_department_name) %>%
+      tidy_sub("https://hundred.acre.wustl.edu", from_department_url) %>%
+      tidy_sub("1968", from_campus_box) %>%
+      tidy_sub("(314) 362-5000", from_phone) %>%
+      tidy_sub("piglet@wustl.edu", from_email) %>%
+      tidy_sub("Winnie the Pooh", to_name) %>%
+      tidy_sub("1 Pooh Corner", to_address) %>%
+      tidy_sub("14 October 1926", date) %>%
+      tidy_sub("Hi Pooh,", salutation) %>%
+      tidy_sub("Your closest friend,", closing) %>%
+      tidy_sub("piglet.png", signature) %>%
+      tidy_sub("Thank.+$", "", fixed = FALSE) %>% # remove existing
       paste0(body) %>% # and append to avoid stripping latex backslashes
       writeLines(outfile)
 
