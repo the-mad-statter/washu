@@ -11,6 +11,23 @@ webplotdigitizer <- function() {
 #' @param email mail of the user
 consult_db_copy_user <- function(email) {
   q <- wu_ldap_query("mail", email)
-  v <- c("cn", "sn", "title", "physicalDeliveryOfficeName", "telephoneNumber", "givenName", "displayName", "department", "streetAddress", "personalTitle", "name", "sAMAccountName", "userPrincipalName", "mail", "eduPersonNickname", "eduPersonPrimaryAffiliation")
-  clipr::write_clip(q[v])
+  v <- c("cn",
+         "sn",
+         "title",
+         "physicalDeliveryOfficeName",
+         "telephoneNumber",
+         "givenName",
+         "displayName",
+         "department",
+         "streetAddress",
+         "personalTitle",
+         "name",
+         "sAMAccountName",
+         "userPrincipalName",
+         "mail",
+         "eduPersonNickname",
+         "eduPersonPrimaryAffiliation")
+  q <- q[v]
+  q$app_role <- "user"
+  clipr::write_clip(q)
 }
