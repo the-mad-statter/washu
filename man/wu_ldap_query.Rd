@@ -7,8 +7,8 @@
 wu_ldap_query(
   type = c("sAMAccountname", "userPrincipalName", "mail", "custom"),
   value,
-  user,
-  pass,
+  user = sprintf("\%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
+  pass = Sys.getenv("WUSTL_KEY_PASS"),
   ...
 )
 }

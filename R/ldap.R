@@ -154,8 +154,8 @@ ldap_query <- function(hostname,
 #'     \item{sub}{retrieves information about entries at all levels below the distinguished name (base_dn) specified in the URL. The base entry is included in this scope.}
 #'   }
 #' @param filter Search filter to apply to entries within the specified scope of the search.
-#' @param user username
-#' @param pass password
+#' @param user WUSTL Key username
+#' @param pass WUSTL Key pass
 #'
 #' @return curl response object
 #'
@@ -165,8 +165,8 @@ wu_ldap_query_default <- function(hostname = "accounts.ad.wustl.edu",
                                   attributes = "",
                                   scope = "sub",
                                   filter = "(objectClass=*)",
-                                  user,
-                                  pass) {
+                                  user = sprintf("%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
+                                  pass = Sys.getenv("WUSTL_KEY_PASS")) {
   ldap_query(hostname,
              base_dn,
              attributes,
@@ -269,8 +269,8 @@ wu_ldap_query <- function(type = c("sAMAccountname",
                                    "mail",
                                    "custom"),
                           value,
-                          user,
-                          pass,
+                          user = sprintf("%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
+                          pass = Sys.getenv("WUSTL_KEY_PASS"),
                           ...) {
   type <- match.arg(type)
   switch(type,

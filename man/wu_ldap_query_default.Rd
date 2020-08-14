@@ -10,8 +10,8 @@ wu_ldap_query_default(
   attributes = "",
   scope = "sub",
   filter = "(objectClass=*)",
-  user,
-  pass
+  user = sprintf("\%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
+  pass = Sys.getenv("WUSTL_KEY_PASS")
 )
 }
 \arguments{
@@ -30,9 +30,9 @@ wu_ldap_query_default(
 
 \item{filter}{Search filter to apply to entries within the specified scope of the search.}
 
-\item{user}{username}
+\item{user}{WUSTL Key username}
 
-\item{pass}{password}
+\item{pass}{WUSTL Key pass}
 }
 \value{
 curl response object
