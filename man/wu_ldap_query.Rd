@@ -5,7 +5,7 @@
 \title{WU LDAP query}
 \usage{
 wu_ldap_query(
-  type = c("sAMAccountname", "userPrincipalName", "mail", "custom"),
+  type = c("sAMAccountName", "userPrincipalName", "mail", "custom"),
   value,
   user = sprintf("\%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
   pass = Sys.getenv("WUSTL_KEY_PASS"),

@@ -17,7 +17,7 @@ date: 14 October 1926
 salutation: Hi Pooh,
 closing: Your closest friend,
 signature: piglet.png
-output: washu::letter
+output: washu::letter_document
 ---
 
 ```{r setup, include=FALSE}

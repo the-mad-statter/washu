@@ -1,108 +1,105 @@
-#' Find template resource
-#' @param template template to look under
-#' @param file file to search for in the given template resources directory
-#' @return absolute path to the desired file
-find_template_resource <- function(template, file = 'template.tex') {
-  relative_path <- file.path("rmarkdown", "templates", template, "resources", file)
+#' Find resource
+#' @param type type of resource to find
+#' @param fork specify which subdirectory to search in the overall type path
+#' @param file file to locate
+#' @return absolute path to the resource
+find_resource <- function(type = c("template_resource",
+                                   "template_skeleton",
+                                   "global_resource",
+                                   "global_font_path"),
+                          fork,
+                          file) {
+  type <- match.arg(type)
+
+  relative_path <- switch(type,
+    "template_resource" =
+      file.path("rmarkdown", "templates", fork, "resources", file),
+    "template_skeleton" =
+      file.path("rmarkdown", "templates", fork, "skeleton", "skeleton.Rmd"),
+    "global_resource" =
+      file.path("resources", fork, file),
+    "global_font_path" =
+      file.path("resources", "fonts"))
+
   absolute_path <- system.file(relative_path, package = "washu")
+
   if (absolute_path == "")
-    stop("Couldn't find template file ", relative_path, call. = FALSE)
+    stop("Couldn't find resource ", relative_path, call. = FALSE)
+
   absolute_path
 }
 
-#' Find template skeleton
-#' @param template template to look under
-#' @return absolute path to the template skeleton
-find_template_skeleton <- function(template) {
-  relative_path <- file.path("rmarkdown", "templates", template, "skeleton", "skeleton.Rmd")
-  absolute_path <- system.file(relative_path, package = "washu")
-  if (absolute_path == "")
-    stop("Couldn't find skeleton file ", relative_path, call. = FALSE)
-  absolute_path
+#' TeX Setmainfont
+#' @param font desired font
+#' @param ext font extention
+#' @return character vector of TeX code
+tex_setmainfont <- function(font = "LibreBaskerville", ext = "ttf") {
+  c("\\usepackage{fontspec}",
+    sprintf("\\setmainfont{%s}[",
+            font),
+    sprintf("  Path = %s%s ,",
+            find_resource("global_font_path"),
+            .Platform$file.sep),
+    sprintf("  Extension = .%s,",
+            ext),
+    "  UprightFont = *-Regular,",
+    "  ItalicFont = *-Italic,",
+    "  BoldFont = *-Bold]")
 }
 
-#' Find package font path
-#' @return Absolute path to the package font directory
-find_package_font_path <- function() {
-  path <- system.file("resources", "fonts", package = "washu")
-  if (path == "")
-    stop("Couldn't find package font path", call. = FALSE)
-  paste0(path, .Platform$file.sep)
+#' TeX new washulogo command
+#' @return character vector of TeX code
+tex_washusomlogo <- function() {
+  sprintf("\\newcommand{\\washusomlogo}{%s}",
+          find_resource("global_resource", "img", "washu_som_logo.eps"))
 }
 
-#' Push slashes
-#' @param x text to modify
-#' @return x with backslashes replaced with forward slashes
-push_slashes <- function(x) {
-  gsub("\\\\", "/", x)
+#' TeX new pigletsignature command
+#' @return character vector of TeX code
+tex_pigletsignature <- function() {
+  sprintf("\\newcommand{\\pigletsignature}{%s}",
+          find_resource("template_resource", "letter", "piglet.png"))
 }
 
-#' Letter runtime header additions
-#' @return path to a temporary header file
-#' @details Package installation paths differ from system to system making
-#' the location of some package resources unknown. Examples include the
-#' location of package font files and the WashU SOM logo. This function
-#' generates and writes the required tex to a temporary file and returns
-#' the path to that file to be used as a header inclusion.
-letter_runtime_header_additions <- function() {
+#' TeX runtime header additions
+#' @param x character vector of TeX code
+#' @return path to temporary file containing the TeX code
+tex_runtime_in_header <- function(x) {
   in_header_path <- file.path(tempdir(), "in_header.tex")
   in_header_con <- file(in_header_path)
-  in_header_contents <-
-    c("\\usepackage{fontspec}",
-      "\\setmainfont{LibreBaskerville}[",
-      sprintf("  Path = %s ,", find_package_font_path()),
-      "  Extension = .ttf,",
-      "  UprightFont = *-Regular,",
-      "  ItalicFont = *-Italic,",
-      "  BoldFont = *-Bold]",
-      sprintf("\\newcommand{\\washulogo}{%s}",
-              find_template_resource("letter",
-                                     "washu_som_logo.eps")),
-      sprintf("\\newcommand{\\pigletsignature}{%s}",
-              find_template_resource("letter",
-                                     "piglet.png")))
-  writeLines(in_header_contents, in_header_con)
+  writeLines(x, in_header_con)
   close(in_header_con)
   in_header_path
 }
 
-#' Letter
+#' Letter document
 #' Format for creating a WashU letter on School of Medicine letterhead
 #' @param template Pandoc template to use for rendering. Passed value ignored in favor of default.
 #' @param latex_engine LaTeX engine for producing PDF output. Passed value ignored in favor of default.
 #' @inheritParams rmarkdown::pdf_document
 #' @param ... Arguments to \code{\link[rmarkdown]{pdf_document}}
 #' @export
-letter <- function(template = find_template_resource("letter"),
-                   latex_engine = "xelatex",
-                   includes, ...) {
-  runtime_header_additions <- letter_runtime_header_additions()
+letter_document <- function(template = find_resource("template_resource",
+                                                     "letter",
+                                                     "template.tex"),
+                            latex_engine = "xelatex",
+                            includes,
+                            ...) {
+  runtime_in_header <- tex_runtime_in_header(c(tex_setmainfont(),
+                                               tex_washusomlogo(),
+                                               tex_pigletsignature()))
 
-  if(missing(includes)) {
-    includes <- rmarkdown::includes(runtime_header_additions)
-  }
-  else {
-    if(!is.null(includes$in_header))
-      includes$in_header <- append(includes$in_header, runtime_header_additions)
-    else
-      includes$in_header <- runtime_header_additions
-  }
+  if(missing(includes))
+    includes <- rmarkdown::includes(runtime_in_header)
+  else
+    includes$in_header <- append(includes$in_header, runtime_in_header)
 
-  rmarkdown::pdf_document(template = find_template_resource("letter"),
+  rmarkdown::pdf_document(template = find_resource("template_resource",
+                                                   "letter",
+                                                   "template.tex"),
                           latex_engine = "xelatex",
                           includes = includes,
                           ...)
-}
-
-#' Tidy Sub
-#' Utility function to make sub() work better with pipes
-#' @param x a character vector where matches are sought
-#' @param pattern character string containing a regular expression (or character string for fixed = TRUE) to be matched in the given character vector.
-#' @param replacement a replacement for matched pattern in sub and gsub.
-#' @param fixed logical. If TRUE, pattern is a string to be matched as is.
-#' @param ... additional parameters passed to sub
-tidy_sub <- function(x, pattern, replacement, fixed = TRUE, ...) {
-  sub(pattern, replacement, x, fixed = fixed, ...)
 }
 
 #' Letter of support body
@@ -195,7 +192,7 @@ wu_render_letter_of_support <-
 
     signature <- push_slashes(signature)
 
-    find_template_skeleton("letter_of_support") %>%
+    find_resource("template_skeleton", "letter_of_support") %>%
       file() -> infile
 
     input %>%
@@ -232,7 +229,7 @@ wu_render_letter_of_support <-
         stop("Error deleting skeleton")
   }
 
-#' Consult report
+#' Consult report document
 #' Format for converting from R Markdown to a consult report document.
 #' @inheritParams rmarkdown::html_document
 #' @param ... additional arguments passed to \code{\link[rmarkdown]{html_document}}
@@ -240,47 +237,33 @@ wu_render_letter_of_support <-
 #' @seealso  \url{https://pandoc.org/installing.html}
 #' @return R Markdown output format to pass to \code{\link[rmarkdown]{render}}
 #' @export
-consult_report <- function(toc = TRUE,
-                           toc_float = TRUE,
-                           toc_depth = 3,
-                           css,
-                           includes,
-                           pandoc_args,
-                           ...) {
+consult_report_document <- function(toc = TRUE,
+                                    toc_float = TRUE,
+                                    toc_depth = 3,
+                                    css,
+                                    includes,
+                                    pandoc_args,
+                                    ...) {
   # css
-  css <-
-    ifelse(
-      missing(css),
-      find_template_resource("consult_report", "edu.wustl.biostatistics.css"),
-      append(
-        css,
-        find_template_resource("consult_report", "edu.wustl.biostatistics.css")
-      )
-    )
+  new_css <- find_resource("template_resource",
+                           "consult_report",
+                           "edu.wustl.biostatistics.css")
+  css <- ifelse(missing(css), new_css, append(css, new_css))
 
   # includes
-  before_body_additions <-
-    find_template_resource("consult_report", "before_body.htm")
-  if (missing(includes)) {
-    includes <- rmarkdown::includes(before_body = before_body_additions)
-  }
-  else {
-    if (!is.null(includes$before_body)) {
-      includes$before_body <-
-        append(includes$before_body, before_body_additions)
-    } else {
-      includes$before_body <- before_body_additions
-    }
-  }
+  before_body_addition <- find_resource("template_resource",
+                                        "consult_report",
+                                        "before_body.htm")
+  if (missing(includes))
+    includes <- rmarkdown::includes(before_body = before_body_addition)
+  else
+    includes$before_body <- append(includes$before_body, before_body_addition)
 
   # pandoc_args
   # allows get rockwell font on themadstatter.com due to pandoc distrust in sectigo as root ca
   rmarkdown::pandoc_available("2.10", TRUE)
-  pandoc_args <- ifelse(
-    missing(pandoc_args),
-    "--no-check-certificate",
-    append(pandoc_args, "--no-check-certificate")
-  )
+  ncc <- "--no-check-certificate"
+  pandoc_args <- ifelse(missing(pandoc_args), ncc, append(pandoc_args, ncc))
 
   rmarkdown::html_document(
     toc = toc,
@@ -290,5 +273,89 @@ consult_report <- function(toc = TRUE,
     includes = includes,
     pandoc_args = pandoc_args,
     ...
+  )
+}
+
+#' Estimate document
+#' Format for creating a WashU estimate on School of Medicine letterhead
+#' @param template Pandoc template to use for rendering. Passed value ignored in favor of default.
+#' @param latex_engine LaTeX engine for producing PDF output. Passed value ignored in favor of default.
+#' @inheritParams rmarkdown::pdf_document
+#' @param ... Arguments to \code{\link[rmarkdown]{pdf_document}}
+#' @export
+estimate_document <- function(template = find_resource("template_resource",
+                                                       "estimate",
+                                                       "template.tex"),
+                              latex_engine = "xelatex",
+                              includes,
+                              ...) {
+  runtime_in_header <- tex_runtime_in_header(c(tex_setmainfont(),
+                                               tex_washusomlogo()))
+
+  if(missing(includes))
+    includes <- rmarkdown::includes(runtime_in_header)
+  else
+    includes$in_header <- append(includes$in_header, runtime_in_header)
+
+  rmarkdown::pdf_document(template = find_resource("template_resource",
+                                                   "estimate",
+                                                   "template.tex"),
+                          latex_engine = "xelatex",
+                          includes = includes,
+                          ...)
+}
+
+#' Estimate items
+#' @param data A data frame, data frame extention (e.g. a tibble), or a lazy data frame (e.g., from dbplyr or dtplyr).
+#'
+#' @param service description of line item
+#' @param hours total hours for the line item
+#' @param rate rate per hour for the line item
+#' @param .protect flag whether to escape for TeX output
+#'
+#' @export
+estimate_items <- function(data, service, hours, rate, .protect = TRUE) {
+  est_exprs <- list(
+    service = rlang::enquo(service) %missing% NA_character_,
+    hours = rlang::enquo(hours) %missing% NA_character_,
+    rate = rlang::enquo(rate) %missing% NA_character_)
+
+  out <- dplyr::as_tibble(map(est_exprs, rlang::eval_tidy, data = data))
+
+  structure(out,
+            preserve = names(est_exprs),
+            protect = .protect,
+            class = c("washu_estimate_items", class(data))
+  )
+}
+
+#' Custom S3 Print for washu_estimate_items
+#' @param x A washu_estimate_items object to print
+#' @param ... additional arguments
+#' @importFrom knitr knit_print
+#' @export
+knit_print.washu_estimate_items <- function(x, ...) {
+  x[is.na(x)] <- ""
+
+  if(!(rlang::`%@%`(x, "protect"))) {
+    protect_tex_input <- identity
+  }
+
+  out <- paste0("    ",
+                "\\estimateitem{<<protect_tex_input(service)>>}",
+                "{<<protect_tex_input(hours)>>}",
+                "{<<protect_tex_input(rate)>>}")
+  out <- glue::glue_data(x, out, .open = "<<", .close = ">>")
+
+  knitr::asis_output(
+    glue::glue_collapse(
+      c("\\begin{estimate}",
+        "  \\begin{estimatetable}",
+             out,
+        "  \\end{estimatetable}",
+        "\\end{estimate}",
+        sep = "\n"
+      )
+    )
   )
 }

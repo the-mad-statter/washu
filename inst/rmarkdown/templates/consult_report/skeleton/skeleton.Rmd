@@ -6,7 +6,7 @@ date: "`r Sys.Date()`"
 bibliography: bib/bib.bib
 csl: bib/apa.csl
 nocite: '@*'
-output: washu::consult_report
+output: washu::consult_report_document
 ---
 
 ```{r setup, include=FALSE}

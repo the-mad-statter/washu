@@ -1,0 +1,31 @@
+---
+estimate:
+  ref: 1926-10-14-1
+  date: 1926-10-14
+  description: "Nothing Every Day: An Inquiry into the Habits of Pooh Bears"
+to:
+  name: Winnie the Pooh
+  title: 1966
+  campus_box: 
+  email: pooh@wustl.edu
+from:
+  name: Piglet
+  title: Very Small Animal
+  campus_box: 1968
+  email: piglet@wustl.edu
+output: washu::estimate_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(washu)
+```
+
+```{r}
+tribble(~service, ~hours, ~rate,
+        "Data Management", 4, 70,
+        "Analysis", 3, 70,
+        "Communicate", 2, 70) %>% 
+  estimate_items(service, hours, rate)
+```

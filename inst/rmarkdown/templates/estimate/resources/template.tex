@@ -1,0 +1,310 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Wile E. Invoice
+% LaTeX Template
+% Version 1.0 (17/8/18)
+%
+% This template was downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Authors:
+% Peter Morrison-Whittle
+% Vel (vel@LaTeXTemplates.com)
+%
+% Adpated to be an Rmarkdown template for work estimates by
+% Matthew Schuelke (2020-08-17)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[10pt]{article}
+
+%----------------------------------------------------------------------------------------
+%	REQUIRED PACKAGES AND MISC CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\usepackage{graphicx} % Required for including images
+\usepackage[space]{grffile} % for spaces in paths
+\usepackage[hidelinks]{hyperref}
+\urlstyle{same}
+
+\usepackage[
+a4paper, % Change to letterpaper for US Letter
+top=2.5cm,
+bottom=2.5cm,
+left=2.5cm,
+right=2.5cm
+]{geometry} % Document margins
+
+\usepackage{fp} % Required for estimate calculations
+
+\usepackage[group-separator={,},group-minimum-digits=4]{siunitx} % Required for automatically adding commas to large numbers and delimitting for 4 digits (e.g. 1,000)
+
+\usepackage{advdate} % Required for date calculation
+
+\setlength\parindent{0pt} % Stop paragraph indentation
+
+%----------------------------------------------------------------------------------------
+%	COLOURS
+%----------------------------------------------------------------------------------------
+
+\usepackage{xcolor} % Required for defining and using custom colours
+
+\definecolor{highlightcolour}{HTML}{A51417} % Colour used for making text stand out
+\definecolor{rulecolour}{HTML}{6C7373} % Colour used for rules
+
+%----------------------------------------------------------------------------------------
+%	TABLES
+%----------------------------------------------------------------------------------------
+
+\usepackage{colortbl} % Required for colouring table cells (used for rules)
+
+\usepackage{booktabs} % Required for nicer table rules
+
+\usepackage{multirow} % Required for allowing cells to take up multiple rows in tables
+
+\usepackage{array} % Required for customizing table spacing and features
+\def\arraystretch{1.2} % Table row spacing, 1 is the default
+
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}} % Define a fixed-width right-aligned column type
+
+%----------------------------------------------------------------------------------------
+%	HEADER INCLUDES
+%----------------------------------------------------------------------------------------
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+%----------------------------------------------------------------------------------------
+%	CUSTOM COMMANDS
+%----------------------------------------------------------------------------------------
+
+\newcommand{\payeename}[1]{\renewcommand{\payeename}{#1}}
+\newcommand{\payeejob}[1]{\renewcommand{\payeejob}{#1}}
+\newcommand{\payeeaddresslineone}[1]{\renewcommand{\payeeaddresslineone}{#1}}
+\newcommand{\payeeaddresslinetwo}[1]{\renewcommand{\payeeaddresslinetwo}{#1}}
+\newcommand{\payeecontactlineone}[1]{\renewcommand{\payeecontactlineone}{#1}}
+\newcommand{\payeecontactlinetwo}[1]{\renewcommand{\payeecontactlinetwo}{#1}}
+
+\newcommand{\estimateref}[1]{\renewcommand{\estimateref}{#1}}
+\newcommand{\estimateissued}[1]{\renewcommand{\estimateissued}{#1}}
+\newcommand{\estimatedue}[1]{\renewcommand{\estimatedue}{#1}}
+\newcommand{\projectname}[1]{\renewcommand{\projectname}{#1}}
+
+\newcommand{\companyname}[1]{\renewcommand{\companyname}{#1}}
+\newcommand{\sendername}[1]{\renewcommand{\sendername}{#1}}
+\newcommand{\senderjob}[1]{\renewcommand{\senderjob}{#1}}
+\newcommand{\senderaddresslineone}[1]{\renewcommand{\senderaddresslineone}{#1}}
+\newcommand{\senderaddresslinetwo}[1]{\renewcommand{\senderaddresslinetwo}{#1}}
+\newcommand{\sendercontactlineone}[1]{\renewcommand{\sendercontactlineone}{#1}}
+\newcommand{\sendercontactlinetwo}[1]{\renewcommand{\sendercontactlinetwo}{#1}}
+
+\newcommand{\termsandconditions}[1]{\renewcommand{\termsandconditions}{#1}}
+
+%------------------------------------------------
+
+% Running variables
+\gdef\variableA{0}
+\gdef\variableB{0}
+\gdef\variableC{0}
+\gdef\variableD{0}
+
+% Cumulative variables
+\gdef\TotalA{0} % Total before tax
+\gdef\TotalB{0} % Tax
+\gdef\TotalC{0} % Net after tax
+
+\newcommand{\taxrate}[1]{\renewcommand{\taxrate}{#1}} % Tax rate used to automatically calculate tax
+
+%----------------------------------------------------------------------------------------
+%	ESTIMATE TABLES
+%----------------------------------------------------------------------------------------
+
+% Payee information (top table)
+\newcommand{\estimatedtotable}{
+	{
+		\footnotesize
+		\begin{tabular}{p{0.25\textwidth} p{0.21\textwidth} p{0.21\textwidth} p{0.22\textwidth}}
+			\arrayrulecolor{rulecolour}\toprule[0.5pt] % Horizontal line at the top of the table
+			\multirow{3}{*}{{\color{highlightcolour} \LARGE ESTIMATE}} & \textbf{Recipient} & \\
+			& \payeename & \payeeaddresslineone & \payeecontactlineone \\
+			& \payeejob & \payeeaddresslinetwo & \payeecontactlinetwo \\
+			\arrayrulecolor{rulecolour}\bottomrule[0.5pt] % Horizontal line at the bottom of the table
+		\end{tabular}
+	}
+}
+
+%------------------------------------------------
+
+\newcommand{\estimateinformation}{
+	{
+		\footnotesize
+		\begin{tabular}{p{\dimexpr.2\textwidth-2\tabcolsep} p{\dimexpr.2\textwidth-2\tabcolsep} p{\dimexpr.6\textwidth-2\tabcolsep}}
+			\textbf{Date} & \textbf{Consult} & \textbf{Description} \\
+			\arrayrulecolor{rulecolour}\toprule[0.5pt] % Horizontal line
+			\estimateissued & \estimateref & \projectname \\
+		\end{tabular}
+	}
+}
+
+%------------------------------------------------
+
+% Estimate items table
+\newenvironment{estimatetable}
+{
+	\begin{tabular}{p{0.45\textwidth} R{0.15\textwidth} R{0.15\textwidth} R{0.15\textwidth}}
+		\textbf{SERVICE} & \textbf{HOURS} & \textbf{RATE} & \textbf{SUBTOTAL} \\
+		\arrayrulecolor{rulecolour}\toprule[0.5pt]
+	}{
+		\arrayrulecolor{rulecolour}\bottomrule[0.5pt]
+		\\ [-1em] % Reduce whitespace before the totals
+		&& Gross & \$$\num{\TotalA} \\
+		&& Tax & \$$\num{\TotalB} \\ % To display the tax rate in brackets, add the following after "Tax" on this line: (\FPeval{\taxpercent}{round(\taxrate * 100, 2)}\taxpercent\%)
+		&& Net & \$$\num{\TotalC} \\
+	\end{tabular}
+}
+
+%------------------------------------------------
+
+% Terms and conditions and total amount due table
+\newcommand{\amountdue}{
+	{
+		\footnotesize
+		\begin{tabular}{>{\arraybackslash}m{0.625\textwidth} p{0.05\textwidth} R{0.25\textwidth}}
+			\textbf{Terms and Conditions} & & \textbf{Total} \\
+			\arrayrulecolor{rulecolour}\toprule[0.5pt]\\[-1.25em] % Horizontal line at the top of the table
+			\termsandconditions & & {\color{highlightcolour} \huge \$$\num{\TotalC}}\\
+		\end{tabular}
+	}
+}
+
+%------------------------------------------------
+
+% Sender contact details table
+\newcommand{\contactdetails}{
+	{
+		\footnotesize
+		\begin{tabular}{p{0.22\textwidth} p{0.22\textwidth} p{0.23\textwidth} p{0.22\textwidth}}
+			\arrayrulecolor{rulecolour}\toprule[0.5pt] % Horizontal line at the top of the table
+			\textbf{Sender} & & & \multirow{3}{0.22\textwidth}{\hfill{\color{highlightcolour}\LARGE THANKS}}\\
+			\sendername & \senderaddresslineone & \sendercontactlineone & \\
+			\senderjob & \senderaddresslinetwo & \sendercontactlinetwo & \\
+			\arrayrulecolor{rulecolour}\bottomrule[0.5pt] % Horizontal line at the bottom of the table
+		\end{tabular}
+	}
+}
+
+%----------------------------------------------------------------------------------------
+%	ESTIMATE ITEM LINES
+%----------------------------------------------------------------------------------------
+
+\newcommand{\estimateitem}[3]{
+
+	% Calculation of running variables (current line)
+	\FPmul\gross{#2}{#3}\FPround\gross{\gross}{2} % Calculate the current gross (quantity * rate)
+	\global\let\variableA\gross % Set variable for use in table and other calculations
+
+	%------------------------------------------------
+
+	% Calculation of cumulative variables (total for estimate)
+	\FPeval{\beforetax}{round(\TotalA + \variableA, 2)} % Add the current before tax value to the previous total
+	\global\let\TotalA\beforetax % Set variable for display at the end and in other calculations
+
+	\FPeval{\tax}{round(\TotalA * \taxrate, 2)} % Calculate the updated total tax to pay
+	\global\let\TotalB\tax % Set variable for display at the end and in other calculations
+
+	\FPeval{\aftertax}{round(\TotalA + \TotalB, 2)} % Calculate the updated total amount due
+	\global\let\TotalC\aftertax % Set variable for display at the end
+
+	%------------------------------------------------
+
+	% Output the table row
+	#1 & % Item name
+	\num{#2} & % Quantity
+	\$$\num{#3} & % Rate
+	\$$\num{\variableA} \\  % Subtotal
+}
+
+%----------------------------------------------------------------------------------------
+%	ESTIMATE ENVIRONMENT
+%----------------------------------------------------------------------------------------
+
+\newenvironment{estimate}
+{
+	\thispagestyle{empty} % Suppress headers and footers
+
+	\begin{center}
+		{\color{highlightcolour}\Huge\companyname}
+	\end{center}
+
+	\vspace{1cm} % Whitespace before the payee information
+
+	\estimatedtotable % Payee table (whom the estimate is addressed to)
+	\vfill
+	\estimateinformation % Estimate information table
+	\vfill
+}{
+	\vfill
+	\amountdue % Terms and conditions and total amount due table
+	\vfill
+	\contactdetails % Contact details table
+}
+
+%----------------------------------------------------------------------------------------
+%	ESTIMATE INFORMATION
+%----------------------------------------------------------------------------------------
+
+\taxrate{0} % The tax rate used to automatically calculate tax, must be set to a decimal between 0 and 1 (for no tax set to 0)
+
+%------------------------------------------------
+% Estimate information
+
+\estimateref{$estimate.ref$} % Estimate number
+\estimateissued{$estimate.date$} % Date issued
+\estimatedue{\space} %\DayAfter[7]} % Due date, a number of days into the future, use 0 for due on receipt
+\projectname{$estimate.description$}
+
+%------------------------------------------------
+% Recipient/payee information
+
+\payeename{$to.name$}
+\payeejob{$to.title$}
+\payeeaddresslineone{660 South Euclid Ave}
+\payeeaddresslinetwo{Saint Louis, MO 63110}
+\payeecontactlineone{Campus Box $to.campus_box$}
+\payeecontactlinetwo{$to.email$}
+
+%------------------------------------------------
+% Sender information
+
+\companyname{\includegraphics[width=4.5in]{\washusomlogo}} % Displayed in large letters at the top, can be replaced with an image or left blank for no company
+
+\sendername{$from.name$}
+\senderjob{$from.title$}
+\senderaddresslineone{660 South Euclid Ave}
+\senderaddresslinetwo{Saint Louis, MO 63110}
+\sendercontactlineone{Campus Box $from.campus_box$}
+\sendercontactlinetwo{$from.email$}
+
+%------------------------------------------------
+
+\termsandconditions{The Biostatistics Consulting Service is a fee-for-service facility that provides assistance to investigators both within the University and outside.  Since this is an A-21 compliant facility, the cost of the service can be charged to grants under the 'Other Expense' category.  The facility is directed by Kenneth B. Schechtman, PhD, and all faculty and staff in the division participate in the consulting service.  The faculty and staff have a wide range of expertise and is matched to the specific needs of the investigator. More information at https://biostatistics.wustl.edu.} % Note: must use \newline for new lines in this command
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	ESTIMATE ITEMS
+%----------------------------------------------------------------------------------------
+
+$body$
+
+%----------------------------------------------------------------------------------------
+
+\end{document}

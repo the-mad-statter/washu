@@ -264,7 +264,7 @@ wu_ldap_query_userPrincipalName <- function(userPrincipalName, user, pass) {
 #'   ldap_content("\n\n") %>%
 #'   gsub("^.+\n\tmail: ", "", .)
 #' }
-wu_ldap_query <- function(type = c("sAMAccountname",
+wu_ldap_query <- function(type = c("sAMAccountName",
                                    "userPrincipalName",
                                    "mail",
                                    "custom"),
@@ -274,7 +274,7 @@ wu_ldap_query <- function(type = c("sAMAccountname",
                           ...) {
   type <- match.arg(type)
   switch(type,
-         "sAMAccountname"    = wu_ldap_query_sAMAccountName(value, user, pass),
+         "sAMAccountName"    = wu_ldap_query_sAMAccountName(value, user, pass),
          "userPrincipalName" = wu_ldap_query_userPrincipalName(value, user, pass),
          "mail"              = wu_ldap_query_mail(value, user, pass),
          "custom"            = wu_ldap_query_default(user = user, pass = pass, ...))

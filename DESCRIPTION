@@ -27,4 +27,7 @@ Imports:
     curl,
     stringr,
     tidyr,
-    rmarkdown
+    rmarkdown,
+    knitr,
+    clipr,
+    glue
