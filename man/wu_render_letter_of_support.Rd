@@ -2,7 +2,7 @@
 % Please edit documentation in R/rmarkdown.R
 \name{wu_render_letter_of_support}
 \alias{wu_render_letter_of_support}
-\title{Render Letter of Support}
+\title{Render letter of support}
 \usage{
 wu_render_letter_of_support(
   from_name,
@@ -26,31 +26,11 @@ wu_render_letter_of_support(
 )
 }
 \arguments{
-\item{from_name}{full name}
+\item{from_name, from_title, from_department_type, from_department_name, from_department_url, from_campus_box, from_phone, from_email}{attributes of sender}
 
-\item{from_title}{position title}
+\item{to_name, to_address}{attributes of recipient}
 
-\item{from_department_type}{department type}
-
-\item{from_department_name}{department name}
-
-\item{from_department_url}{department url}
-
-\item{from_campus_box}{campus box}
-
-\item{from_phone}{phone}
-
-\item{from_email}{email}
-
-\item{to_name}{full name}
-
-\item{to_address}{character vector of address lines}
-
-\item{date}{date}
-
-\item{salutation}{salutation}
-
-\item{closing}{closing}
+\item{date, salutation, closing}{letter customization}
 
 \item{body}{body of letter}
 
@@ -64,7 +44,7 @@ an R Markdown document (.Rmd), or a plain markdown document.}
 \item{...}{parameters passed to \code{\link[rmarkdown]{render}}}
 }
 \description{
-Render Letter of Support
+Render letter of support
 }
 \examples{
 \dontrun{

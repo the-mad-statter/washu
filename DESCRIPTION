@@ -30,4 +30,5 @@ Imports:
     rmarkdown,
     knitr,
     clipr,
-    glue
+    glue,
+    readr

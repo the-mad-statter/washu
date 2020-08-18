@@ -5,8 +5,8 @@ estimate:
   description: "Nothing Every Day: An Inquiry into the Habits of Pooh Bears"
 to:
   name: Winnie the Pooh
-  title: 1966
-  campus_box: 
+  title: Anthropomorphic Bear
+  campus_box: 1966
   email: pooh@wustl.edu
 from:
   name: Piglet

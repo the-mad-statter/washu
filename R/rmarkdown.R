@@ -29,7 +29,7 @@ find_resource <- function(type = c("template_resource",
   absolute_path
 }
 
-#' TeX Setmainfont
+#' TeX setmainfont
 #' @param font desired font
 #' @param ext font extention
 #' @return character vector of TeX code
@@ -123,20 +123,10 @@ letter_of_support_body <-
     body
   }
 
-#' Render Letter of Support
-#' @param from_name full name
-#' @param from_title position title
-#' @param from_department_type department type
-#' @param from_department_name department name
-#' @param from_department_url department url
-#' @param from_campus_box campus box
-#' @param from_phone phone
-#' @param from_email email
-#' @param to_name full name
-#' @param to_address character vector of address lines
-#' @param date date
-#' @param salutation salutation
-#' @param closing closing
+#' Render letter of support
+#' @param from_name,from_title,from_department_type,from_department_name,from_department_url,from_campus_box,from_phone,from_email attributes of sender
+#' @param to_name,to_address attributes of recipient
+#' @param date,salutation,closing letter customization
 #' @param body body of letter
 #' @param signature path to signature file (empty string for no signature)
 #' @inheritParams rmarkdown::render
@@ -307,12 +297,10 @@ estimate_document <- function(template = find_resource("template_resource",
 
 #' Estimate items
 #' @param data A data frame, data frame extention (e.g. a tibble), or a lazy data frame (e.g., from dbplyr or dtplyr).
-#'
 #' @param service description of line item
 #' @param hours total hours for the line item
 #' @param rate rate per hour for the line item
 #' @param .protect flag whether to escape for TeX output
-#'
 #' @export
 estimate_items <- function(data, service, hours, rate, .protect = TRUE) {
   est_exprs <- list(
@@ -359,3 +347,83 @@ knit_print.washu_estimate_items <- function(x, ...) {
     )
   )
 }
+
+#' Render estimate
+#' @param ref,date,description estimate reference, date, and description
+#' @param to_name,to_title,to_campus_box,to_email recipient attributes
+#' @param from_name,from_title,from_campus_box,from_email sender attributes
+#' @param data path to estimate data object containing service, hours, and rate columns
+#' @inheritParams rmarkdown::render
+#' @param keep_input keep the input document
+#' @param ... parameters passed to \code{\link[rmarkdown]{render}}
+#' @export
+#' @examples
+#' \dontrun{
+#' ## some yaml may require quotes
+#' wu_render_estimate(
+#'   paste0(Sys.Date(), "-1"),
+#'   Sys.Date(),
+#'   "The Woozle Effect",
+#'   "Christopher Robin",
+#'   "Billy Moon",
+#'   "1920",
+#'   "robin@wustl.edu",
+#'   "Matthew Schuelke, PhD",
+#'   "Research Statistician",
+#'   "8067",
+#'   "schuelke@wustl.edu",
+#'   "dat/est.csv"
+#' )
+#' }
+wu_render_estimate <-
+  function(ref,
+           date,
+           description,
+           to_name,
+           to_title,
+           to_campus_box,
+           to_email,
+           from_name,
+           from_title,
+           from_campus_box,
+           from_email,
+           data,
+           input = "Estimate.Rmd",
+           keep_input = FALSE,
+           ...) {
+    find_resource("template_skeleton", "estimate") %>%
+      file() -> infile
+
+    input %>%
+      file() -> outfile
+
+    infile %>%
+      readLines() %>%
+      paste(collapse = "\n") %>%
+      tidy_sub("1926-10-14-1", ref) %>%
+      tidy_sub("1926-10-14", date) %>%
+      tidy_sub("\"Nothing Every Day: An Inquiry into the Habits of Pooh Bears\"", description) %>%
+      tidy_sub("Winnie the Pooh", to_name) %>%
+      tidy_sub("Anthropomorphic Bear", to_title) %>%
+      tidy_sub("1966", to_campus_box) %>%
+      tidy_sub("pooh@wustl.edu", to_email) %>%
+      tidy_sub("Piglet", from_name) %>%
+      tidy_sub("Very Small Animal", from_title) %>%
+      tidy_sub("1968", from_campus_box) %>%
+      tidy_sub("piglet@wustl.edu", from_email) %>%
+      tidy_sub("\n```\\{r\\}\n.+$", "", fixed = FALSE) %>%
+      append(paste(c("```{r, message=FALSE}",
+               sprintf("read_csv(\"%s\") %%>%%", data),
+               "  estimate_items(service, hours, rate)",
+               "```"), collapse = "\n")) %>%
+      writeLines(outfile)
+
+    close(infile)
+    close(outfile)
+
+    rmarkdown::render(input = input, ...)
+
+    if(!keep_input)
+      if(!file.remove(input))
+        stop("Error deleting skeleton")
+  }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rmarkdown.R
 \name{tex_setmainfont}
 \alias{tex_setmainfont}
-\title{TeX Setmainfont}
+\title{TeX setmainfont}
 \usage{
 tex_setmainfont(font = "LibreBaskerville", ext = "ttf")
 }
@@ -15,5 +15,5 @@ tex_setmainfont(font = "LibreBaskerville", ext = "ttf")
 character vector of TeX code
 }
 \description{
-TeX Setmainfont
+TeX setmainfont
 }

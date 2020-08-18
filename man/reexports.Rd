@@ -6,6 +6,7 @@
 \alias{\%>\%}
 \alias{.data}
 \alias{tribble}
+\alias{read_csv}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -14,6 +15,8 @@ below to see their documentation.
 
 \describe{
   \item{magrittr}{\code{\link[magrittr:pipe]{\%>\%}}}
+
+  \item{readr}{\code{\link[readr:read_delim]{read_csv}}}
 
   \item{rlang}{\code{\link[rlang:tidyeval-data]{.data}}}
 
