@@ -31,4 +31,5 @@ Imports:
     knitr,
     clipr,
     glue,
-    readr
+    readr,
+    base64enc

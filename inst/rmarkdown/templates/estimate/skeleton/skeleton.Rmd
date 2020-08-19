@@ -5,7 +5,7 @@ estimate:
   description: "Nothing Every Day: An Inquiry into the Habits of Pooh Bears"
 to:
   name: Winnie the Pooh
-  title: Anthropomorphic Bear
+  title: Teddy Bear
   campus_box: 1966
   email: pooh@wustl.edu
 from:

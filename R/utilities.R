@@ -76,6 +76,19 @@ protect_tex_input <- function(x, ...) {
   }
 }
 
+#' Embed external pdf in knitr documents
+#' @param path pdf path
+#' @export
+include_pdf <- function(path) {
+  paste0(
+    "<div class=\"iframe-pdf-container\">",
+    "<iframe class=\"iframe-pdf\" src=\"data:application/pdf;base64,%s\" />",
+    "</div>"
+  ) %>%
+    sprintf(base64enc::base64encode(path)) %>%
+    knitr::asis_output()
+}
+
 #' Purrr-like map
 #' @param .x A list or atomic vector
 #' @param .f A function to apply
