@@ -10,7 +10,7 @@ webplotdigitizer <- function() {
 #' Look up a user in ldap by email and copy data to clipboard to paste into the consult database.
 #' @param email mail of the user
 consult_db_copy_user <- function(email) {
-  q <- wu_ldap_query("mail", email)
+  q <- washu::wu_ldap_query("mail", email)
   v <- c("cn",
          "sn",
          "title",
@@ -27,6 +27,9 @@ consult_db_copy_user <- function(email) {
          "mail",
          "eduPersonNickname",
          "eduPersonPrimaryAffiliation")
+  for(m in setdiff(v, names(q))) {
+    q[m] <- NA
+  }
   q <- q[v]
   q$app_role <- "user"
   clipr::write_clip(q)

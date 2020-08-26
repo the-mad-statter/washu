@@ -36,5 +36,5 @@ library(washu)
 Analyses conducted in R [@R].
 
 ```{r}
-knitr::asis_output(ifelse(file.size("bib/bib.bib") > 0, "# Bibliography\\n", ""))
+knitr::asis_output(ifelse(file.size("bib/bib.bib") > 0, "# References\\n", ""))
 ```
