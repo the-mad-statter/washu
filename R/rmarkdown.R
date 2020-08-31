@@ -286,7 +286,7 @@ bib_add_pkg <- function(package = "base", bibliography = "bib/bib.bib", ...) {
 #' @param bib_path path to bibliography directory
 #' @export
 #' @references \href{https://github.com/citation-style-language/styles}{Citation Style Language Styles}
-use_csl <- function(csl = c("american-medical-association", "apa"), bib_path = "bib") {
+bib_use_csl <- function(csl = c("american-medical-association", "apa"), bib_path = "bib") {
   csl <- match.arg(csl)
 
   file.remove(file.path(bib_path, list.files(bib_path, "csl$")))
