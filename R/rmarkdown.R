@@ -266,17 +266,6 @@ consult_report_document <- function(toc = TRUE,
   )
 }
 
-#' Add R Reference to Bibliography File
-#' @export
-add_r_to_bib <- function() {
-  bib <- "bib/bib.bib"
-  old <- readLines(bib)
-  add <- readLines(find_resource("template_resource",
-                                 "consult_report",
-                                 "r.bib"))
-  writeLines(c(add, old), bib)
-}
-
 #' Add R package to bibliography
 #' @param bibliography path to bibliography file
 #' @param ... additional parameters passed to \code{\link[utils]{citation}}
