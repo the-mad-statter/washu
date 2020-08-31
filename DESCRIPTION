@@ -16,20 +16,24 @@ URL: https://github.com/the-mad-statter/washu
 BugReports: https://github.com/the-mad-statter/washu/issues
 RoxygenNote: 7.1.1
 Imports: 
+    base64enc,
+    clipr,
+    curl,
     dplyr,
     ggplot2,
-    httr,
-    rvest,
-    tibble,
-    xml2,
-    magrittr,
-    rlang,
-    curl,
-    stringr,
-    tidyr,
-    rmarkdown,
-    knitr,
-    clipr,
     glue,
-    readr,
-    base64enc
+    httr,
+    knitr,
+    pwr,
+    rlang,
+    rmarkdown,
+    rstudioapi,
+    rvest,
+    stats,
+    stringr,
+    tibble,
+    tidyr,
+    xlsx,
+    xml2
+Suggests: 
+    devtools

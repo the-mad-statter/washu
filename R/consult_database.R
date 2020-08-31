@@ -22,7 +22,7 @@ db_get_user_id <- function(email, db) {
 
 #db_max_user_id(db)
 db_max_user_id <- function(db) {
-  tbl_user <- readxl::read_xlsx(db, sheet = "user")
+  tbl_user <- xlsx::read.xlsx(db, sheetName = "user")
   row <- which.max(tbl_user$user_id)
   tbl_user$user_id[row]
 }

@@ -4,7 +4,7 @@ subtitle: Specially Prepared for Dr. Winnie Pooh
 author: "from the Division of Biostatistics"
 date: "`r Sys.Date()`"
 bibliography: bib/bib.bib
-csl: bib/apa.csl
+csl: bib/american-medical-association.csl
 nocite: '@*'
 output: washu::consult_report_document
 ---
@@ -33,7 +33,7 @@ library(washu)
 
 # Summary
 
-Analyses conducted in R [@R].
+Analyses conducted in R [@r_pkg_base].
 
 ```{r}
 knitr::asis_output(ifelse(file.size("bib/bib.bib") > 0, "# References\\n", ""))

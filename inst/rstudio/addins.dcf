@@ -1,0 +1,4 @@
+Name: Push Slashes
+Description: Replaces backslashes in highlighted text with forward slashes.
+Binding: addin_push_slashes
+Interactive: false
