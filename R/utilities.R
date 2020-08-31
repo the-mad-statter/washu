@@ -135,7 +135,8 @@ cseq <- function(center, by, length.out = 3) {
 
 #' Not In
 #' Return a logical vector indicating if there is not a match or is for its left operand
-#' @inheritParams base::match
+#' @param x vector or NULL: the values to be matched
+#' @param table vector or NULL: the values to be matched against
 #' @return A logical vector, indicating if a match was not located for each element of x: thus the values are TRUE or FALSE and never NA
 #' @references Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) The New S Language. Wadsworth & Brooks/Cole.
 #' @seealso \code{\link[base]{match}}

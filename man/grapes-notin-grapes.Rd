@@ -8,11 +8,9 @@ Return a logical vector indicating if there is not a match or is for its left op
 x \%notin\% table
 }
 \arguments{
-\item{x}{vector or \code{NULL}: the values to be matched.
-    \link[base]{Long vectors} are supported.}
+\item{x}{vector or NULL: the values to be matched}
 
-\item{table}{vector or \code{NULL}: the values to be matched against.
-    \link[base]{Long vectors} are not supported.}
+\item{table}{vector or NULL: the values to be matched against}
 }
 \value{
 A logical vector, indicating if a match was not located for each element of x: thus the values are TRUE or FALSE and never NA
