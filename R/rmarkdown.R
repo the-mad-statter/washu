@@ -296,8 +296,16 @@ bib_use_csl <- function(csl = c("american-medical-association", "apa"), bib_path
   source_editor_contents <- rstudioapi::getSourceEditorContext()$contents
   csl_row <- which(grepl("^csl: .+\\.csl$", source_editor_contents))
   csl_start <- rstudioapi::document_position(csl_row, 1)
-  csl_end <- rstudioapi::document_position(csl_row, nchar(source_editor_contents[csl_row]) + 1)
-  rstudioapi::modifyRange(rstudioapi::document_range(csl_start, csl_end), sprintf("csl: %s.csl", csl))
+  csl_end <- rstudioapi::document_position(
+    csl_row,
+    nchar(source_editor_contents[csl_row]) + 1
+  )
+  rstudioapi::modifyRange(
+    rstudioapi::document_range(csl_start, csl_end),
+    sprintf("csl: %s.csl",
+            ifelse(nchar(bib_path) > 0, file.path(bib_path, csl), csl)
+    )
+  )
 }
 
 #' Estimate document
