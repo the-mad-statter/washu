@@ -2,8 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{cseq}
 \alias{cseq}
-\title{Centered sequence generation
-Generate regular sequences based on a central value}
+\title{Centered sequence generation}
 \usage{
 cseq(center, by, length.out = 3)
 }
@@ -18,7 +17,6 @@ cseq(center, by, length.out = 3)
 vector of type integer or double
 }
 \description{
-Centered sequence generation
 Generate regular sequences based on a central value
 }
 \details{
@@ -41,7 +39,8 @@ cseq(center = 10, by = 2, length.out = 4)
 cseq(center = 10.5, by = 2.25, length.out = 7)
 }
 \references{
-Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) The New S Language. Wadsworth & Brooks/Cole.
+Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) The New S
+Language. Wadsworth & Brooks/Cole.
 }
 \seealso{
 \code{\link[base]{seq}},

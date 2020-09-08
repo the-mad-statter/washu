@@ -19,5 +19,6 @@ and \code{FALSE} to override this default.}
 Build and check a package, cleaning up automatically on success.
 }
 \note{
-Adds environment flag to skip time check as per \href{https://stat.ethz.ch/pipermail/r-package-devel/2019q1/003577.html}{r-package-devel}.
+Adds environment flag to skip time check as per
+\href{https://stat.ethz.ch/pipermail/r-package-devel/2019q1/003577.html}{r-package-devel}.
 }

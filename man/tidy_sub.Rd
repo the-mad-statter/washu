@@ -2,15 +2,15 @@
 % Please edit documentation in R/utilities.R
 \name{tidy_sub}
 \alias{tidy_sub}
-\title{Tidy Sub
-Utility function to make sub() work better with pipes}
+\title{Tidy Sub}
 \usage{
 tidy_sub(x, pattern, replacement, fixed = TRUE, ...)
 }
 \arguments{
 \item{x}{a character vector where matches are sought}
 
-\item{pattern}{character string containing a regular expression (or character string for fixed = TRUE) to be matched in the given character vector.}
+\item{pattern}{character string containing a regular expression (or character
+string for fixed = TRUE) to be matched in the given character vector.}
 
 \item{replacement}{a replacement for matched pattern in sub and gsub.}
 
@@ -19,6 +19,5 @@ tidy_sub(x, pattern, replacement, fixed = TRUE, ...)
 \item{...}{additional parameters passed to sub}
 }
 \description{
-Tidy Sub
 Utility function to make sub() work better with pipes
 }

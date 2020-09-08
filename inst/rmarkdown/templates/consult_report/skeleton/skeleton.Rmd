@@ -33,7 +33,7 @@ library(washu)
 
 # Summary
 
-Analyses conducted in R [@r_pkg_base].
+
 
 ```{r}
 knitr::asis_output(ifelse(file.size("bib/bib.bib") > 0, "# References\\n", ""))

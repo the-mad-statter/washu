@@ -2,8 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{consult_db_copy_user}
 \alias{consult_db_copy_user}
-\title{Copy user information from ldap to clipboard
-Look up a user in ldap by email and copy data to clipboard to paste into the consult database.}
+\title{Copy user information from ldap to clipboard}
 \usage{
 consult_db_copy_user(email)
 }
@@ -11,6 +10,6 @@ consult_db_copy_user(email)
 \item{email}{mail of the user}
 }
 \description{
-Copy user information from ldap to clipboard
-Look up a user in ldap by email and copy data to clipboard to paste into the consult database.
+Look up a user in ldap by email and copy data to clipboard to
+paste into the consult database.
 }

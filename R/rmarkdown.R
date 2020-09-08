@@ -266,48 +266,6 @@ consult_report_document <- function(toc = TRUE,
   )
 }
 
-#' Add R package to bibliography
-#' @param bibliography path to bibliography file
-#' @param ... additional parameters passed to \code{\link[utils]{citation}}
-#' @inheritParams utils::citation
-#' @export
-bib_add_pkg <- function(package = "base", bibliography = "bib/bib.bib", ...) {
-  old <- readLines(bibliography)
-  add <- utils::capture.output(utils::citation(package, ...))
-  add <- add[which(grepl("@Manual", add)):which(grepl("}$", add))]
-  add[1] <- sub(",", paste0("r_pkg_", package, ","), add[1])
-  add[length(add)-1] <- sub("},", "}", add[length(add)-1])
-  add <- substring(add, 3)
-  writeLines(c(old, "", add), bibliography)
-}
-
-#' Use citation style language
-#' @param csl citation style language
-#' @param bib_path path to bibliography directory
-#' @export
-#' @references \href{https://github.com/citation-style-language/styles}{Citation Style Language Styles}
-bib_use_csl <- function(csl = c("american-medical-association", "apa"), bib_path = "bib") {
-  csl <- match.arg(csl)
-
-  file.remove(file.path(bib_path, list.files(bib_path, "csl$")))
-  file.copy(find_resource("template_resource", "consult_report", sprintf("%s.csl", csl)),
-            file.path(bib_path, sprintf("%s.csl", csl)))
-
-  source_editor_contents <- rstudioapi::getSourceEditorContext()$contents
-  csl_row <- which(grepl("^csl: .+\\.csl$", source_editor_contents))
-  csl_start <- rstudioapi::document_position(csl_row, 1)
-  csl_end <- rstudioapi::document_position(
-    csl_row,
-    nchar(source_editor_contents[csl_row]) + 1
-  )
-  rstudioapi::modifyRange(
-    rstudioapi::document_range(csl_start, csl_end),
-    sprintf("csl: %s.csl",
-            ifelse(nchar(bib_path) > 0, file.path(bib_path, csl), csl)
-    )
-  )
-}
-
 #' Estimate document
 #' Format for creating a WashU estimate on School of Medicine letterhead
 #' @param template Pandoc template to use for rendering. Passed value ignored in favor of default.

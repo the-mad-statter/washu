@@ -2,8 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{send_mailgun}
 \alias{send_mailgun}
-\title{Send email message via Mailgun
-Send an email message via the Mailgun API}
+\title{Send an email message via the Mailgun API}
 \usage{
 send_mailgun(
   to = "robin@wustl.edu",
@@ -37,7 +36,6 @@ send_mailgun(
 TRUE if successful; error otherwise
 }
 \description{
-Send email message via Mailgun
 Send an email message via the Mailgun API
 }
 \examples{

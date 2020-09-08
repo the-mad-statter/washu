@@ -1,0 +1,107 @@
+#' Add R package to bibliography
+#' @param bibliography path to bibliography file
+#' @param ... additional parameters passed to \code{\link[utils]{citation}}
+#' @inheritParams utils::citation
+#' @export
+bib_add_pkg_local <- function(package = "base", bibliography = "bib/bib.bib", ...) {
+  old <- readLines(bibliography)
+  add <- utils::capture.output(utils::citation(package, ...))
+  add <- add[which(grepl("@Manual", add)):which(grepl("}$", add))]
+  add[1] <- sub(",", paste0("r_pkg_", package, ","), add[1])
+  add[length(add)-1] <- sub("},", "}", add[length(add)-1])
+  add <- substring(add, 3)
+  writeLines(c(old, "", add), bibliography)
+}
+
+#' Use citation style language
+#' @param csl citation style language
+#' @param bib_path path to bibliography directory
+#' @export
+#' @references \href{https://github.com/citation-style-language/styles}{Citation Style Language Styles}
+bib_use_csl <- function(csl = c("american-medical-association", "apa"), bib_path = "bib") {
+  csl <- match.arg(csl)
+
+  file.remove(file.path(bib_path, list.files(bib_path, "csl$")))
+  file.copy(find_resource("template_resource", "consult_report", sprintf("%s.csl", csl)),
+            file.path(bib_path, sprintf("%s.csl", csl)))
+
+  source_editor_contents <- rstudioapi::getSourceEditorContext()$contents
+  csl_row <- which(grepl("^csl: .+\\.csl$", source_editor_contents))
+  csl_start <- rstudioapi::document_position(csl_row, 1)
+  csl_end <- rstudioapi::document_position(
+    csl_row,
+    nchar(source_editor_contents[csl_row]) + 1
+  )
+  rstudioapi::modifyRange(
+    rstudioapi::document_range(csl_start, csl_end),
+    sprintf("csl: %s.csl",
+            ifelse(nchar(bib_path) > 0, file.path(bib_path, csl), csl)
+    )
+  )
+}
+
+#' Determine Zotero collection name from open RMarkdown file
+#' @return name of Zotero collection
+#' @export
+bib_project_collection <- function() {
+  sub("-v.+", "", basename(rstudioapi::getSourceEditorContext()$path))
+}
+
+#' Download Zotero collection
+#' @param collection_name name of the collection to download from
+#' @param bibliography path to the bibliography file
+#' @param ... additional parameters passed to httr-based functions
+#' @export
+#' @examples
+#' \dontrun{
+#' ## from RMarkdown
+#' collection <- bib_project_collection()
+#' bib_sync_zotero(collection)
+#' }
+bib_sync_zotero <- function(collection_name,
+                            bibliography = "bib/bib.bib",
+                            ...) {
+  collection_key <- zt_lookup_user_collection_key(
+    collection_name = collection_name,
+    ...)
+  zt_get_users_collections_items_top(collection_key = collection_key,
+                                     query = list(format = "bibtex"),
+                                     ...) %>%
+    httr::content() %>%
+    rawToChar() %>%
+    c("") %>%
+    writeLines(bibliography)
+
+  zt_get_users_collections_items(collection_key = collection_key, ...) %>%
+    httr::content() %>%
+    lapply(function(x) x[["links"]][["enclosure"]]) %>%
+    lapply(function(x) unlist(x)) %>%
+    dplyr::bind_rows() -> tbl_pdf
+
+  if(nrow(tbl_pdf) > 0) {
+    tbl_pdf %>%
+      dplyr::mutate(file_path = paste(file.path(dirname(bibliography), title))) %>%
+      dplyr::select(href, file_path) %>%
+      apply(1, function(x) {
+        zt_get(url = x[1], httr::write_disk(x[2], overwrite = TRUE), ...)
+      })
+  }
+}
+
+#' @rdname zt_add_pkg
+#' @export
+bib_add_pkg_zotero <- function(package, collection_name, ...) {
+  zt_add_pkg(package = package,
+             collection_name = collection_name,
+             ...)
+}
+
+#' @rdname zt_create_collection
+#' @export
+bib_use_zotero <- function(collection_name,
+                           parent_collection_key = NULL,
+                           ...) {
+  zt_create_collection(collection_name = collection_name,
+                       parent_collection_key = parent_collection_key,
+                       ...)
+}

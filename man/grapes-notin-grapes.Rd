@@ -2,8 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{\%notin\%}
 \alias{\%notin\%}
-\title{Not In
-Return a logical vector indicating if there is not a match or is for its left operand}
+\title{Not In}
 \usage{
 x \%notin\% table
 }
@@ -13,14 +12,16 @@ x \%notin\% table
 \item{table}{vector or NULL: the values to be matched against}
 }
 \value{
-A logical vector, indicating if a match was not located for each element of x: thus the values are TRUE or FALSE and never NA
+A logical vector, indicating if a match was not located for each
+element of x: thus the values are TRUE or FALSE and never NA
 }
 \description{
-Not In
-Return a logical vector indicating if there is not a match or is for its left operand
+Return a logical vector indicating if there is not a match or
+is for its left operand
 }
 \references{
-Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) The New S Language. Wadsworth & Brooks/Cole.
+Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) The New S
+Language. Wadsworth & Brooks/Cole.
 }
 \seealso{
 \code{\link[base]{match}}

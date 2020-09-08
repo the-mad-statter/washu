@@ -1,13 +1,16 @@
 #' WebPlotDigitizer
-#' Open the WebPlotDigitizer web app in the default browser.
-#' @details It is often necessary to reverse engineer images of data visualizations to extract the underlying numerical data. WebPlotDigitizer is a semi-automated tool that makes this process extremely easy:
+#' @description Open the WebPlotDigitizer web app in the default browser.
+#' @details It is often necessary to reverse engineer images of data
+#' visualizations to extract the underlying numerical data. WebPlotDigitizer is
+#' a semi-automated tool that makes this process extremely easy:
 #' @export
 webplotdigitizer <- function() {
   utils::browseURL("https://automeris.io/WebPlotDigitizer")
 }
 
 #' Copy user information from ldap to clipboard
-#' Look up a user in ldap by email and copy data to clipboard to paste into the consult database.
+#' @description Look up a user in ldap by email and copy data to clipboard to
+#' paste into the consult database.
 #' @param email mail of the user
 consult_db_copy_user <- function(email) {
   q <- washu::wu_ldap_query("mail", email)
@@ -43,9 +46,10 @@ push_slashes <- function(x) {
 }
 
 #' Tidy Sub
-#' Utility function to make sub() work better with pipes
+#' @description Utility function to make sub() work better with pipes
 #' @param x a character vector where matches are sought
-#' @param pattern character string containing a regular expression (or character string for fixed = TRUE) to be matched in the given character vector.
+#' @param pattern character string containing a regular expression (or character
+#'  string for fixed = TRUE) to be matched in the given character vector.
 #' @param replacement a replacement for matched pattern in sub and gsub.
 #' @param fixed logical. If TRUE, pattern is a string to be matched as is.
 #' @param ... additional parameters passed to sub
@@ -102,7 +106,7 @@ map <- function(.x, .f, ...) {
 }
 
 #' Centered sequence generation
-#' Generate regular sequences based on a central value
+#' @description Generate regular sequences based on a central value
 #' @param center the middle value of the sequence
 #' @param by number: decrement/increment of the sequence
 #' @param length.out desired length of the sequence
@@ -112,7 +116,8 @@ map <- function(.x, .f, ...) {
 #' If the value given is fractional, it will be rounded up.
 #' If the value given is even, it will be made odd by adding one.
 #' @return vector of type integer or double
-#' @references Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) The New S Language. Wadsworth & Brooks/Cole.
+#' @references Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) The New S
+#' Language. Wadsworth & Brooks/Cole.
 #' @seealso \code{\link[base]{seq}},
 #' @export
 #' @examples
@@ -134,18 +139,29 @@ cseq <- function(center, by, length.out = 3) {
 }
 
 #' Not In
-#' Return a logical vector indicating if there is not a match or is for its left operand
+#' @description Return a logical vector indicating if there is not a match or
+#' is for its left operand
 #' @param x vector or NULL: the values to be matched
 #' @param table vector or NULL: the values to be matched against
-#' @return A logical vector, indicating if a match was not located for each element of x: thus the values are TRUE or FALSE and never NA
-#' @references Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) The New S Language. Wadsworth & Brooks/Cole.
+#' @return A logical vector, indicating if a match was not located for each
+#' element of x: thus the values are TRUE or FALSE and never NA
+#' @references Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) The New S
+#' Language. Wadsworth & Brooks/Cole.
 #' @seealso \code{\link[base]{match}}
 #' @export
 "%notin%" <- function(x, table) {
   match(x, table, nomatch = 0) == 0
 }
 
-#' Send email message via Mailgun
+#' Default in the event of NULL arguments
+#' @param x argument to check if null
+#' @param default value to supply if argument is null
+#' @return original argument if not null; default otherwise
+#' @export
+match_arg <- function(x, default) {
+  ifelse(is.null(x), default, x)
+}
+
 #' Send an email message via the Mailgun API
 #' @param to email address of recipient
 #' @param from name of sender (but will come from mailgun@domain_name)
@@ -197,8 +213,11 @@ send_mailgun <- function(to = "robin@wustl.edu",
 #' Build and check a package, cleaning up automatically on success.
 #' @inheritParams devtools::check
 #' @param ... additional parameters passed to \code{\link[devtools]{check}}
-#' @note Adds environment flag to skip time check as per \href{https://stat.ethz.ch/pipermail/r-package-devel/2019q1/003577.html}{r-package-devel}.
+#' @note Adds environment flag to skip time check as per
+#' \href{https://stat.ethz.ch/pipermail/r-package-devel/2019q1/003577.html}{r-package-devel}.
 #' @export
-check <- function(document = FALSE, env_vars = c("_R_CHECK_SYSTEM_CLOCK_" = FALSE), ...) {
+check <- function(document = FALSE,
+                  env_vars = c("_R_CHECK_SYSTEM_CLOCK_" = FALSE),
+                  ...) {
     devtools::check(document = document, env_vars = env_vars, ...)
 }
