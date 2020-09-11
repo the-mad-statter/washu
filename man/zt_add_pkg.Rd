@@ -5,7 +5,7 @@
 \alias{zt_add_pkg}
 \title{Zotero Add Package}
 \usage{
-bib_add_pkg_zotero(package, collection_name, ...)
+bib_add_pkg_zotero(package, collection_name = bib_zotero_collection(), ...)
 
 zt_add_pkg(package, collection_name, ...)
 }

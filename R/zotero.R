@@ -4,7 +4,6 @@
 #' @inheritParams httr::GET
 #'
 #' @return \link[httr]{response} object
-#' @export
 zt_get <- function(url = "https://api.zotero.org",
                    api_key = Sys.getenv("ZOTERO_API_KEY"),
                    ...) {
@@ -20,7 +19,6 @@ zt_get <- function(url = "https://api.zotero.org",
 #' @inheritParams zt_get
 #'
 #' @return \link[httr]{response} object
-#' @export
 zt_get_users <- function(path = "",
                          api_user = Sys.getenv("ZOTERO_API_USER"),
                          ...) {
@@ -32,7 +30,6 @@ zt_get_users <- function(path = "",
 #' @inheritParams zt_get_users
 #'
 #' @return \link[httr]{response} object
-#' @export
 zt_get_users_collections <- function(path = "", ...) {
   zt_get_users(path = sprintf("collections/%s", path), ...)
 }
@@ -43,7 +40,6 @@ zt_get_users_collections <- function(path = "", ...) {
 #' @inheritParams zt_get_users_collections
 #'
 #' @return \link[httr]{response} object
-#' @export
 zt_get_users_collections_items <- function(collection_key, path = "", ...) {
   zt_get_users_collections(path = sprintf("%s/items/%s", collection_key, path),
                            ...)
@@ -54,7 +50,6 @@ zt_get_users_collections_items <- function(collection_key, path = "", ...) {
 #' @inheritParams zt_get_users_collections_items
 #'
 #' @return \link[httr]{response} object
-#' @export
 zt_get_users_collections_items_top <- function(collection_key, ...) {
   zt_get_users_collections_items(collection_key = collection_key,
                                  path = "top",
@@ -67,7 +62,6 @@ zt_get_users_collections_items_top <- function(collection_key, ...) {
 #' @inheritParams httr::POST
 #'
 #' @return \link[httr]{response} object
-#' @export
 zt_post <- function(url = "https://api.zotero.org",
                     api_key = Sys.getenv("ZOTERO_API_KEY"),
                     ...) {
@@ -83,7 +77,6 @@ zt_post <- function(url = "https://api.zotero.org",
 #' @inheritParams zt_post
 #'
 #' @return \link[httr]{response} object
-#' @export
 zt_post_users <- function(path = "",
                           api_user = Sys.getenv("ZOTERO_API_USER"),
                           ...) {
@@ -95,7 +88,6 @@ zt_post_users <- function(path = "",
 #' @inheritParams zt_post_users
 #'
 #' @return \link[httr]{response} object
-#' @export
 zt_post_users_items <- function(path = "", ...) {
   zt_post_users(path = sprintf("items/%s", path), ...)
 }
@@ -105,7 +97,6 @@ zt_post_users_items <- function(path = "", ...) {
 #' @inheritParams zt_post_users
 #'
 #' @return \link[httr]{response} object
-#' @export
 zt_post_users_collections <- function(path = "", ...) {
   zt_post_users(path = sprintf("collections/%s", path), ...)
 }
@@ -115,7 +106,6 @@ zt_post_users_collections <- function(path = "", ...) {
 #' @inheritParams zt_get_users_collections
 #'
 #' @return named character vector
-#' @export
 zt_lookup_user_collections_name_key_pairs <- function(...) {
   collections <- httr::content(zt_get_users_collections(...))
   names <- vapply(collections, function(x) x[["data"]][["name"]], character(1))
@@ -130,7 +120,6 @@ zt_lookup_user_collections_name_key_pairs <- function(...) {
 #' @inheritParams zt_lookup_user_collections_name_key_pairs
 #'
 #' @return collection key
-#' @export
 zt_lookup_user_collection_key <- function(collection_name, ...) {
   unname(zt_lookup_user_collections_name_key_pairs(...)[collection_name])
 }
@@ -140,8 +129,6 @@ zt_lookup_user_collection_key <- function(collection_name, ...) {
 #' @param package a character string with the name of a single package
 #' @param collection_name name of collection to add citation to
 #' @inheritParams zt_post_users_items
-#'
-#' @export
 zt_add_pkg <- function(package,
                        collection_name,
                        ...) {
@@ -181,8 +168,6 @@ zt_add_pkg <- function(package,
 #' @param collection_name name of the collection
 #' @param parent_collection_key collection key of the parent collections
 #' @inheritParams zt_post_users_collections
-#'
-#' @export
 zt_create_collection <- function(collection_name,
                                  parent_collection_key = NULL,
                                  ...) {

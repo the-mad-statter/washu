@@ -40,10 +40,10 @@ bib_use_csl <- function(csl = c("american-medical-association", "apa"), bib_path
   )
 }
 
-#' Determine Zotero collection name from open RMarkdown file
+#' Determine Zotero collection name from open RMarkdown file name
 #' @return name of Zotero collection
 #' @export
-bib_project_collection <- function() {
+bib_zotero_collection <- function() {
   sub("-v.+", "", basename(rstudioapi::getSourceEditorContext()$path))
 }
 
@@ -52,13 +52,7 @@ bib_project_collection <- function() {
 #' @param bibliography path to the bibliography file
 #' @param ... additional parameters passed to httr-based functions
 #' @export
-#' @examples
-#' \dontrun{
-#' ## from RMarkdown
-#' collection <- bib_project_collection()
-#' bib_sync_zotero(collection)
-#' }
-bib_sync_zotero <- function(collection_name,
+bib_sync_zotero <- function(collection_name = bib_zotero_collection(),
                             bibliography = "bib/bib.bib",
                             ...) {
   collection_key <- zt_lookup_user_collection_key(
@@ -80,17 +74,20 @@ bib_sync_zotero <- function(collection_name,
 
   if(nrow(tbl_pdf) > 0) {
     tbl_pdf %>%
-      dplyr::mutate(file_path = paste(file.path(dirname(bibliography), title))) %>%
+      dplyr::mutate(file_path = file.path(dirname(bibliography), title)) %>%
       dplyr::select(href, file_path) %>%
-      apply(1, function(x) {
-        zt_get(url = x[1], httr::write_disk(x[2], overwrite = TRUE), ...)
+      purrr::pmap(function(href, file_path) {
+        zt_get(url = href,
+               config = httr::write_disk(path = file_path, overwrite = TRUE))
       })
   }
 }
 
 #' @rdname zt_add_pkg
 #' @export
-bib_add_pkg_zotero <- function(package, collection_name, ...) {
+bib_add_pkg_zotero <- function(package,
+                               collection_name = bib_zotero_collection(),
+                               ...) {
   zt_add_pkg(package = package,
              collection_name = collection_name,
              ...)
@@ -98,7 +95,7 @@ bib_add_pkg_zotero <- function(package, collection_name, ...) {
 
 #' @rdname zt_create_collection
 #' @export
-bib_use_zotero <- function(collection_name,
+bib_use_zotero <- function(collection_name = bib_zotero_collection(),
                            parent_collection_key = NULL,
                            ...) {
   zt_create_collection(collection_name = collection_name,

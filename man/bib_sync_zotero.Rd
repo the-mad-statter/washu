@@ -4,7 +4,11 @@
 \alias{bib_sync_zotero}
 \title{Download Zotero collection}
 \usage{
-bib_sync_zotero(collection_name, bibliography = "bib/bib.bib", ...)
+bib_sync_zotero(
+  collection_name = bib_zotero_collection(),
+  bibliography = "bib/bib.bib",
+  ...
+)
 }
 \arguments{
 \item{collection_name}{name of the collection to download from}
@@ -15,11 +19,4 @@ bib_sync_zotero(collection_name, bibliography = "bib/bib.bib", ...)
 }
 \description{
 Download Zotero collection
-}
-\examples{
-\dontrun{
-## from RMarkdown
-collection <- bib_project_collection()
-bib_sync_zotero(collection)
-}
 }

@@ -96,15 +96,6 @@ include_pdf <- function(path) {
     knitr::asis_output()
 }
 
-#' Purrr-like map
-#' @param .x A list or atomic vector
-#' @param .f A function to apply
-#' @param ... additional arguments
-#' @note implemented to avoid dependence on purrr
-map <- function(.x, .f, ...) {
-  lapply(.x, .f, ...)
-}
-
 #' Centered sequence generation
 #' @description Generate regular sequences based on a central value
 #' @param center the middle value of the sequence
@@ -157,7 +148,6 @@ cseq <- function(center, by, length.out = 3) {
 #' @param x argument to check if null
 #' @param default value to supply if argument is null
 #' @return original argument if not null; default otherwise
-#' @export
 match_arg <- function(x, default) {
   ifelse(is.null(x), default, x)
 }

@@ -5,7 +5,11 @@
 \alias{zt_create_collection}
 \title{Zotero create collection}
 \usage{
-bib_use_zotero(collection_name, parent_collection_key = NULL, ...)
+bib_use_zotero(
+  collection_name = bib_zotero_collection(),
+  parent_collection_key = NULL,
+  ...
+)
 
 zt_create_collection(collection_name, parent_collection_key = NULL, ...)
 }

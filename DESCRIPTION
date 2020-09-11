@@ -34,6 +34,7 @@ Imports:
     tibble,
     tidyr,
     xlsx,
-    xml2
+    xml2,
+    purrr
 Suggests: 
     devtools

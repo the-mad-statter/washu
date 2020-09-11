@@ -308,7 +308,7 @@ estimate_items <- function(data, service, hours, rate, .protect = TRUE) {
     hours = rlang::enquo(hours) %missing% NA_character_,
     rate = rlang::enquo(rate) %missing% NA_character_)
 
-  out <- dplyr::as_tibble(map(est_exprs, rlang::eval_tidy, data = data))
+  out <- dplyr::as_tibble(purrr::map(est_exprs, rlang::eval_tidy, data = data))
 
   structure(out,
             preserve = names(est_exprs),
