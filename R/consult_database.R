@@ -141,5 +141,5 @@ db_search_consults <- function(db = Sys.getenv("WU_CONSULT_DB")) {
     }, escape = FALSE)
   }
 
-  shiny::runGadget(ui, server, viewer = browserViewer())
+  shiny::runGadget(ui, server, viewer = shiny::browserViewer())
 }
