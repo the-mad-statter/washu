@@ -5,3 +5,7 @@ addin_push_slashes <- function() {
   str_rpl <- push_slashes(str_org)
   rstudioapi::modifyRange(sel_rng, str_rpl)
 }
+
+addin_search_consults <- function() {
+  db_search_consults()
+}

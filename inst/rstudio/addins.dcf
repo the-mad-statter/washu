@@ -2,3 +2,9 @@ Name: Push Slashes
 Description: Replaces backslashes in highlighted text with forward slashes.
 Binding: addin_push_slashes
 Interactive: false
+
+
+Name: Search Consults
+Description: Shiny Gadget to Search the Consult Database
+Binding: addin_search_consults
+Interactive: true

@@ -51,7 +51,7 @@ h3 {
 }
 
 strong {
-  color: #003B5C;
+  color: #A51417;
 }
 
 body {
@@ -73,7 +73,7 @@ caption, .caption{
   font-style:italic;
   margin-top:1em;
   text-align: left;
-  color: #003B5C;
+  color: #A51417;
 }
 
 #TOC {border-color: #a51417;}
@@ -85,7 +85,7 @@ caption, .caption{
 }
 
 .tocify .list-group-item.active:hover, .tocify .list-group-item.active:focus {
-    background-color: #003B5C;
+    background-color: #A51417;
 }
 
 .tocify .list-group-item.active, .tocify .list-group-item.active:focus {

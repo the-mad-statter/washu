@@ -61,7 +61,7 @@ db_add_consult <- function(consult_id,
                            referal = "",
                            berd_record_id = "",
                            berd_study_type = "",
-                           title = "",
+                           consult_title = "",
                            cloud_share = "",
                            award_pre_work = "",
                            award_post_work = "",
@@ -82,7 +82,7 @@ db_add_consult <- function(consult_id,
                referal = referal,
                berd_record_id = berd_record_id,
                berd_study_type = berd_study_type,
-               title = title,
+               consult_title = consult_title,
                cloud_share = cloud_share,
                award_pre_work = award_pre_work,
                award_post_work = award_post_work,
@@ -118,14 +118,28 @@ db_get_user_consults <- function(email, db = Sys.getenv("WU_CONSULT_DB")) {
     dplyr::filter(consult_id %in% consult_ids)
 }
 
-db_view_user_consults <- function(email, db = Sys.getenv("WU_CONSULT_DB")) {
-  ui <- miniUI::miniPage(miniUI::miniContentPanel(padding = 0, DT::dataTableOutput("consults")))
+db_search_consults <- function(db = Sys.getenv("WU_CONSULT_DB")) {
+  ui <- miniUI::miniPage(
+    miniUI::miniContentPanel(
+      DT::dataTableOutput("consult_database"),
+      padding = 0))
 
   server <- function(input, output, session) {
-    output$consults <- DT::renderDataTable({ db_get_user_consults(email, db) })
+    output$consult_database <- DT::renderDataTable({
+      readxl::read_xlsx(db, "user_consult") %>%
+        dplyr::left_join(readxl::read_xlsx(db, "user"), "user_id") %>%
+        dplyr::left_join(readxl::read_xlsx(db, "consult"), "consult_id") %>%
+        dplyr::mutate(
+          consult_id = sprintf("<a href=\"file:///%s\">%s</a>",
+                               file.path(dirname(db), sub("-v[0-9]+$", "", consult_id)),
+                               consult_id),
+          cloud_share = dplyr::if_else(nchar(cloud_share) > 0,
+                                       sprintf("<a href=\"%s\" target=\"_blank\">%s</a>",
+                                               cloud_share, cloud_share),
+                                       "")
+        )
+    }, escape = FALSE)
   }
 
-  viewer <- shiny::dialogViewer(paste("Consults for", email), width = 800, height = 400)
-
-  shiny::runGadget(ui, server, viewer = viewer)
+  shiny::runGadget(ui, server, viewer = browserViewer())
 }
