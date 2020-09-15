@@ -200,6 +200,16 @@ send_mailgun <- function(to = "robin@wustl.edu",
   return(TRUE)
 }
 
+#' Open directory
+#' @param dir directory to open
+#' @export
+dir.open <- function(dir = getwd()) {
+  if (.Platform['OS.type'] == "windows")
+    shell.exec(dir)
+  else
+    system(paste(Sys.getenv("R_BROWSER"), dir))
+}
+
 #' Build and check a package, cleaning up automatically on success.
 #' @inheritParams devtools::check
 #' @param ... additional parameters passed to \code{\link[devtools]{check}}
