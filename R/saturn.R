@@ -131,9 +131,14 @@ saturn_job_running <- function(session, job_name) {
   !grepl("Unknown Job Id Error", rawToChar(r$stderr))
 }
 
-saturn_job_remove <- function(session, job_name, ...) {
-  load(file.path(job_name, ".sjob"))
-  r <- saturn_execute(session, sprintf("rm -rf %s", file.path(.sjob$spath, job_name)), ...)
+saturn_job_remove <- function(session, job_name, location = c("remote", "local"), ...) {
+  location <- match.arg(location)
+  if(location == "remote") {
+    load(file.path(job_name, ".sjob"))
+    r <- saturn_execute(session, sprintf("rm -rf %s", file.path(.sjob$spath, job_name)), ...)
+  } else {
+    unlink(job_name, TRUE, ...)
+  }
 }
 
 saturn_job_edit_source <- function(job_name) {
@@ -164,4 +169,5 @@ saturn_pbsnodes <- function(session, ...) {
 # saturn_job_running(session, job_name)
 # saturn_job_download(session, job_name)
 # saturn_job_remove(session, job_name)
+# saturn_job_remove(session, job_name, "local")
 # saturn_disconnect(session)
