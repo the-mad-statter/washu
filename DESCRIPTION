@@ -35,6 +35,13 @@ Imports:
     tidyr,
     xlsx,
     xml2,
-    purrr
+    purrr,
+    DT,
+    htmltools,
+    miniUI,
+    readxl,
+    rjson,
+    shiny,
+    ssh
 Suggests: 
     devtools

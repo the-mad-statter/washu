@@ -132,6 +132,8 @@ zt_lookup_user_collection_key <- function(collection_name, ...) {
 zt_add_pkg <- function(package,
                        collection_name,
                        ...) {
+  citation <- NULL
+
   r_pkg_citation <- citation(package)
 
   zt_get(path = "items/new", query = list(itemType = "book"), ...) %>%

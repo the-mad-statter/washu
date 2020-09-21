@@ -111,11 +111,11 @@ db_add_user_consult <- function(consult_id, user_id, role, db = Sys.getenv("WU_C
 
 db_get_user_consults <- function(email, db = Sys.getenv("WU_CONSULT_DB")) {
   readxl::read_xlsx(db, "user_consult") %>%
-    dplyr::filter(user_id == db_get_user_id(email, db)) %>%
-    dplyr::pull(consult_id) -> consult_ids
+    dplyr::filter(.data$user_id == db_get_user_id(email, db)) %>%
+    dplyr::pull(.data$consult_id) -> consult_ids
 
   readxl::read_xlsx(db, "consult") %>%
-    dplyr::filter(consult_id %in% consult_ids)
+    dplyr::filter(.data$consult_id %in% consult_ids)
 }
 
 db_search_consults <- function(db = Sys.getenv("WU_CONSULT_DB")) {
@@ -160,8 +160,8 @@ db_search_consults <- function(db = Sys.getenv("WU_CONSULT_DB")) {
         dplyr::left_join(readxl::read_xlsx(db, "user"), "user_id") %>%
         dplyr::left_join(readxl::read_xlsx(db, "consult"), "consult_id") %>%
         dplyr::mutate(
-          consult_id = purrr::map_chr(consult_id, mk_consult_id_link),
-          cloud_share = purrr::map_chr(cloud_share, mk_cloud_share_link)
+          consult_id = purrr::map_chr(.data$consult_id, mk_consult_id_link),
+          cloud_share = purrr::map_chr(.data$cloud_share, mk_cloud_share_link)
         )
     }, escape = FALSE)
   }

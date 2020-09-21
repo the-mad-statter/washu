@@ -55,6 +55,8 @@ bib_zotero_collection <- function() {
 bib_sync_zotero <- function(collection_name = bib_zotero_collection(),
                             bibliography = "bib/bib.bib",
                             ...) {
+  title <- href <- file_path <- NULL
+
   collection_key <- zt_lookup_user_collection_key(
     collection_name = collection_name,
     ...)
