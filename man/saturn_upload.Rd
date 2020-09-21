@@ -28,5 +28,5 @@ saturn_upload(session, files, "~/target")
 
 }
 \seealso{
-\code{\link[ssh]{scp_upload}}
+\code{\link[ssh]{scp}}
 }

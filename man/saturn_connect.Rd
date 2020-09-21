@@ -32,5 +32,5 @@ session <- saturn_connect()
 
 }
 \seealso{
-\code{\link[ssh]{ssh_connect}}
+\code{\link[ssh]{ssh}}
 }

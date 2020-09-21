@@ -20,5 +20,5 @@ saturn_disconnect(session)
 
 }
 \seealso{
-\code{\link[ssh]{ssh_disconnect}}
+\code{\link[ssh]{ssh}}
 }

@@ -12,7 +12,7 @@
 #' session <- saturn_connect()
 #' }
 #'
-#' @seealso \code{\link[ssh]{ssh_connect}}
+#' @seealso \code{\link[ssh]{ssh}}
 saturn_connect <- function(user = Sys.getenv("WUSTL_KEY_USER"),
                            passwd = Sys.getenv("WUSTL_KEY_PASS"),
                            verbose = FALSE) {
@@ -36,7 +36,7 @@ saturn_connect <- function(user = Sys.getenv("WUSTL_KEY_USER"),
 #' rawToChar(out$stdout)
 #' }
 #'
-#' @seealso \code{\link[ssh]{ssh_exec_internal}}
+#' @seealso \code{\link[ssh]{ssh_exec}}
 saturn_execute <- function(session,
                            command = "whoami",
                            error = TRUE) {
@@ -57,7 +57,7 @@ saturn_execute <- function(session,
 #' saturn_download(session, "~/target/*", tempdir())
 #' }
 #'
-#' @seealso \code{\link[ssh]{scp_download}}
+#' @seealso \code{\link[ssh]{scp}}
 saturn_download <- function(session,
                             files,
                             to = ".",
@@ -80,7 +80,7 @@ saturn_download <- function(session,
 #' saturn_upload(session, files, "~/target")
 #' }
 #'
-#' @seealso \code{\link[ssh]{scp_upload}}
+#' @seealso \code{\link[ssh]{scp}}
 saturn_upload <- function(session,
                           files,
                           to = ".",
@@ -100,7 +100,7 @@ saturn_upload <- function(session,
 #' saturn_disconnect(session)
 #' }
 #'
-#' @seealso \code{\link[ssh]{ssh_disconnect}}
+#' @seealso \code{\link[ssh]{ssh}}
 saturn_disconnect <- function(session) {
   ssh::ssh_disconnect(session)
 }

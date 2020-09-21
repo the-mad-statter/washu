@@ -27,5 +27,5 @@ saturn_download(session, "~/target/*", tempdir())
 
 }
 \seealso{
-\code{\link[ssh]{scp_download}}
+\code{\link[ssh]{scp}}
 }

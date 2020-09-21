@@ -28,5 +28,5 @@ rawToChar(out$stdout)
 
 }
 \seealso{
-\code{\link[ssh]{ssh_exec_internal}}
+\code{\link[ssh]{ssh_exec}}
 }
