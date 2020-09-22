@@ -109,10 +109,10 @@ saturn_disconnect <- function(session) {
 #' Saturn Job Initialize
 #'
 #' @param job_name job name
-#' @param user user account
 #' @param spath directory on the destination where files will be copied into
 #' @param nodes number of nodes
 #' @param ppn processors per node
+#' @param user user account
 #' @param property requested node property
 #' @param walltime total time requested for the job
 #' @param queue queue name (note, this will be auto redirected depending on resource request)
@@ -124,13 +124,13 @@ saturn_disconnect <- function(session) {
 #' @examples
 #' \dontrun{
 #' job_name <- "my_job"
-#' saturn_job_init(job_name, "pooh")
+#' saturn_job_init(job_name)
 #' }
 saturn_job_init <- function(job_name,
-                            user,
                             spath = ".",
                             nodes = 1,
                             ppn = 4,
+                            user = Sys.getenv("WUSTL_KEY_USER"),
                             property = c("", "R", "SAS", "MPlus", "EL7"),
                             walltime = "00:00:00",
                             queue = c("fast", "quick", "batch", "interactive"),

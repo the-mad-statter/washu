@@ -6,10 +6,10 @@
 \usage{
 saturn_job_init(
   job_name,
-  user,
   spath = ".",
   nodes = 1,
   ppn = 4,
+  user = Sys.getenv("WUSTL_KEY_USER"),
   property = c("", "R", "SAS", "MPlus", "EL7"),
   walltime = "00:00:00",
   queue = c("fast", "quick", "batch", "interactive"),
@@ -21,13 +21,13 @@ saturn_job_init(
 \arguments{
 \item{job_name}{job name}
 
-\item{user}{user account}
-
 \item{spath}{directory on the destination where files will be copied into}
 
 \item{nodes}{number of nodes}
 
 \item{ppn}{processors per node}
+
+\item{user}{user account}
 
 \item{property}{requested node property}
 
@@ -47,6 +47,6 @@ Saturn Job Initialize
 \examples{
 \dontrun{
 job_name <- "my_job"
-saturn_job_init(job_name, "pooh")
+saturn_job_init(job_name)
 }
 }
