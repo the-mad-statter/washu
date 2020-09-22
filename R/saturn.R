@@ -119,12 +119,38 @@ saturn_disconnect <- function(session) {
 #' @param M email address to send notifications
 #' @param m email notifications: (a) abort, (b) begin, (e) end
 #' @param edit_script open script for editing
+#' @param add_cron add cron file for job scheduling
+#' @param cron_schedule cron schedule
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' job_name <- "my_job"
 #' saturn_job_init(job_name)
+#' }
+#'
+#' @details
+#' A crontab file has five scheduling fields:
+#' \tabular{ll}{
+#' \strong{Field} \tab \strong{Details}                                                         \cr
+#' Minute         \tab minute of the hour the command will run on, ranging from 0 to 59.        \cr
+#' Hour           \tab on what hour the command will run on, ranging from 0 to 23.              \cr
+#' Day of Month   \tab on what day of the month you want the command run, ranging from 1 to 31. \cr
+#' Month          \tab on what month will the specified command run on, ranging from 1 to 12.   \cr
+#' Day of Week    \tab on what day of the week you want a command run, ranging from 0 to 7.
+#' }
+#'
+#' Use of these fields can be extended with:
+#' \tabular{ll}{
+#' \strong{Value}    \tab \strong{Details}                                                                                                                           \cr
+#' Asterisk (*)      \tab to define all the scheduling parameter                                                                                                     \cr
+#' Comma (,)         \tab to maintain two or more execution times of a single command                                                                                \cr
+#' Hyphen (-)        \tab to determine the range of time when setting several execution times of a single command                                                    \cr
+#' Slash (/)         \tab for creating predetermined intervals of time in a specific range                                                                           \cr
+#' Last (L)          \tab for the specific purpose to determine the last day of the week in a given month. For example, 3L means the last Wednesday                  \cr
+#' Weekday (W)       \tab to determine the closest weekday of a given time. For example, 1W means if the 1st is a Saturday, the command will run on Monday (the 3rd) \cr
+#' Hash (#)          \tab for determining the day of the week, followed by a number ranging from 1 to 5. For example, 1#2 means the second Monday                    \cr
+#' Question mark (?) \tab to leave blank                                                                                                                             \cr
 #' }
 saturn_job_init <- function(job_name,
                             spath = ".",
@@ -136,7 +162,9 @@ saturn_job_init <- function(job_name,
                             queue = c("fast", "quick", "batch", "interactive"),
                             M,
                             m = "abe",
-                            edit_script = TRUE) {
+                            edit_script = TRUE,
+                            add_cron = FALSE,
+                            cron_schedule = "* * * * *") {
   # prep
   property <- match.arg(property)
   property <- ifelse(length(property == 0), property, sprintf(":%s", property))
@@ -155,16 +183,19 @@ saturn_job_init <- function(job_name,
   save(.sjob, file = ".sjob")
 
   # pbs script
-  pbs_script <- file(sprintf("%s.pbs", job_name), "wb")
+  pbs_script_name <- sprintf("%s.pbs", job_name)
+  pbs_script <- file(pbs_script_name, "wb")
   write(c(sprintf("#PBS -N %s", job_name),
           sprintf("#PBS -q %s", queue),
           sprintf("#PBS -l nodes=%s:ppn=%s%s", nodes, ppn, property),
-          sprintf("#PBS -o %s.out", job_name),
-          sprintf("#PBS -e %s.err", job_name)),
+          sprintf("#PBS -d %s", remote_path), # PBS_O_INITDIR
+          sprintf("#PBS -o %s.out", file.path(remote_path, job_name)),
+          sprintf("#PBS -e %s.err", file.path(remote_path, job_name))),
         pbs_script)
 
   if(walltime != "00:00:00")
-    write(sprintf("#PBS -l walltime=%s", walltime), pbs_script, append = TRUE)
+    write(sprintf("#PBS -l walltime=%s", walltime),
+          pbs_script, append = TRUE)
 
   if(!missing(M))
     write(c(sprintf("#PBS -M %s", M),
@@ -174,6 +205,17 @@ saturn_job_init <- function(job_name,
   write(sprintf("/usr/lib64/R/bin/Rscript %s/%s.r",
                 remote_path, job_name), pbs_script, append = TRUE)
   close(pbs_script)
+
+  # cron file
+  if(add_cron) {
+    cron_file_name <- sprintf("%s.cron", job_name)
+    cron_file <- file(cron_file_name, "wb")
+    write(sprintf("%s qsub %s",
+                  cron_schedule,
+                  file.path(remote_path, pbs_script_name)),
+          cron_file)
+    close(cron_file)
+  }
 
   # source file
   source_file_name <- sprintf("%s.r", job_name)
@@ -245,6 +287,58 @@ saturn_job_submit <- function(session, job_name, ...) {
   .sjob$id <- sub("\\..+$", "", rawToChar(response$stdout))
   save(.sjob, file = file.path(job_name, ".sjob"))
   r <- saturn_upload(session, file.path(job_name, ".sjob"), file.path(.sjob$spath, .sjob$name), ...)
+}
+
+#' Saturn Job Schedule
+#'
+#' @param session ssh connection created with \code{\link{saturn_connect}}
+#' @param job_name job name
+#' @param ... additional arguments passed to \code{\link{saturn_execute}}, \code{\link{saturn_upload}}
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' session <- saturn_connect()
+#' job_name <- "my_job"
+#' saturn_job_init(job_name, add_cron = TRUE)
+#' saturn_job_upload(session, job_name)
+#' saturn_job_schedule(session, job_name)
+#' }
+#'
+#' @details \tabular{ll}{
+#' \strong{Command}         \tab \strong{Details}               \cr
+#' crontab -e               \tab create and edit a crontab file \cr
+#' crontab -l               \tab view contents of crontab file  \cr
+#' crontab -r               \tab unschedule all jobs            \cr
+#' crontab -a job_name.cron \tab schedule a job
+#' }
+#'
+#' @note check mail with mail command
+saturn_job_schedule <- function(session, job_name, ...) {
+  load(file.path(job_name, ".sjob"))
+
+  remote_path <- ifelse(.sjob$spath == ".",
+                        file.path("/home", .sjob$user, .sjob$name),
+                        file.path("/home", .sjob$user, .sjob$spath, .sjob$name))
+  cron_file <- sprintf("%s/%s.cron", remote_path, .sjob$name)
+
+  # check if cron file exists
+  r <- saturn_execute(session,
+                      c(sprintf("cd %s", .sjob$spath),
+                        sprintf("cd %s", .sjob$name),
+                        sprintf("if test -f %s.cron; then echo \"exist\"; fi", .sjob$name)),
+                      ...)
+
+  if(length(r$stdout) == 0)
+    stop(sprintf("The remote cron file %s not found.", cron_file))
+
+  # add cron to crontab
+  r <- saturn_execute(session,
+                      c(sprintf("cd %s", .sjob$spath),
+                        sprintf("cd %s", .sjob$name),
+                        sprintf("crontab %s.cron", .sjob$name)),
+                      ...)
 }
 
 #' Saturn Job Running
@@ -343,6 +437,24 @@ saturn_job_remove <- function(session, job_name, location = c("remote", "local")
 #' }
 saturn_job_edit_source <- function(job_name) {
   rstudioapi::navigateToFile(file.path(job_name, sprintf("%s.r", job_name)))
+}
+
+#' Saturn Job Edit Cron
+#'
+#' @param job_name job name
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' job_name <- "my_job"
+#' saturn_job_init(job_name)
+#' saturn_job_edit_cron(job_name)
+#' }
+#'
+#' @note The output of the cron command will be automatically sent to your local email account. If you want to stop receiving these emails, you can add >/dev/null 2>&1 to the syntax as in the following example: 0 5 * * * /root/backup.sh >/dev/null 2>&1
+saturn_job_edit_cron <- function(job_name) {
+  rstudioapi::navigateToFile(file.path(job_name, sprintf("%s.cron", job_name)))
 }
 
 #' Saturn qstat Command
