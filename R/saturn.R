@@ -200,7 +200,7 @@ saturn_job_init <- function(job_name,
 #' \dontrun{
 #' session <- saturn_connect()
 #' job_name <- "my_job"
-#' saturn_job_init(job_name, "pooh")
+#' saturn_job_init(job_name)
 #' saturn_job_upload(session, job_name)
 #' }
 saturn_job_upload <- function(session, job_name, mk_spath = FALSE, ...) {
@@ -231,7 +231,7 @@ saturn_job_upload <- function(session, job_name, mk_spath = FALSE, ...) {
 #' \dontrun{
 #' session <- saturn_connect()
 #' job_name <- "my_job"
-#' saturn_job_init(job_name, "pooh")
+#' saturn_job_init(job_name)
 #' saturn_job_upload(session, job_name)
 #' saturn_job_submit(session, job_name)
 #' }
@@ -259,7 +259,7 @@ saturn_job_submit <- function(session, job_name, ...) {
 #' \dontrun{
 #' session <- saturn_connect()
 #' job_name <- "my_job"
-#' saturn_job_init(job_name, "pooh")
+#' saturn_job_init(job_name)
 #' saturn_job_upload(session, job_name)
 #' saturn_job_submit(session, job_name)
 #' saturn_job_running(session, job_name)
@@ -283,7 +283,7 @@ saturn_job_running <- function(session, job_name) {
 #' \dontrun{
 #' session <- saturn_connect()
 #' job_name <- "my_job"
-#' saturn_job_init(job_name, "pooh")
+#' saturn_job_init(job_name)
 #' saturn_job_upload(session, job_name)
 #' saturn_job_submit(session, job_name)
 #' saturn_job_running(session, job_name)
@@ -310,7 +310,7 @@ saturn_job_download <- function(session, job_name, ...) {
 #' \dontrun{
 #' session <- saturn_connect()
 #' job_name <- "my_job"
-#' saturn_job_init(job_name, "pooh")
+#' saturn_job_init(job_name)
 #' saturn_job_upload(session, job_name)
 #' saturn_job_submit(session, job_name)
 #' saturn_job_running(session, job_name)
@@ -338,7 +338,7 @@ saturn_job_remove <- function(session, job_name, location = c("remote", "local")
 #' @examples
 #' \dontrun{
 #' job_name <- "my_job"
-#' saturn_job_init(job_name, "pooh", edit_script = FALSE)
+#' saturn_job_init(job_name, edit_script = FALSE)
 #' saturn_job_edit_source(job_name)
 #' }
 saturn_job_edit_source <- function(job_name) {

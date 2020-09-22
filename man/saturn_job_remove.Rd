@@ -22,7 +22,7 @@ Saturn Job Remove
 \dontrun{
 session <- saturn_connect()
 job_name <- "my_job"
-saturn_job_init(job_name, "pooh")
+saturn_job_init(job_name)
 saturn_job_upload(session, job_name)
 saturn_job_submit(session, job_name)
 saturn_job_running(session, job_name)

@@ -15,7 +15,7 @@ Saturn Job Edit Source
 \examples{
 \dontrun{
 job_name <- "my_job"
-saturn_job_init(job_name, "pooh", edit_script = FALSE)
+saturn_job_init(job_name, edit_script = FALSE)
 saturn_job_edit_source(job_name)
 }
 }
