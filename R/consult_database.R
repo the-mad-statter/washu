@@ -151,6 +151,10 @@ db_search_consults <- function(db = Sys.getenv("WU_CONSULT_DB")) {
       padding = 0))
 
   server <- function(input, output, session) {
+    session$onSessionEnded(function() {
+      stopApp()
+    })
+    
     shiny::observeEvent(input$consult_id_link, {
       dir.open(input$consult_id_link)
     })
