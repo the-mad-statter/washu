@@ -4,7 +4,10 @@
 \alias{bib_use_csl}
 \title{Use citation style language}
 \usage{
-bib_use_csl(csl = c("american-medical-association", "apa"), bib_path = "bib")
+bib_use_csl(
+  csl = c("american-medical-association", "apa"),
+  bib_path = bib_bibliography(dirname = TRUE)
+)
 }
 \arguments{
 \item{csl}{citation style language}

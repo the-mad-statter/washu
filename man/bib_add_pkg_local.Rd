@@ -4,7 +4,7 @@
 \alias{bib_add_pkg_local}
 \title{Add R package to bibliography}
 \usage{
-bib_add_pkg_local(package = "base", bibliography = "bib/bib.bib", ...)
+bib_add_pkg_local(package = "base", bibliography = bib_bibliography(), ...)
 }
 \arguments{
 \item{package}{a character string with the name of a single package.

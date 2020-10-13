@@ -5,12 +5,15 @@
 \title{Download Zotero collection}
 \usage{
 bib_sync_zotero(
+  download_pdfs = TRUE,
   collection_name = bib_zotero_collection(),
-  bibliography = "bib/bib.bib",
+  bibliography = bib_bibliography(),
   ...
 )
 }
 \arguments{
+\item{download_pdfs}{flag to download pdfs (if any)}
+
 \item{collection_name}{name of the collection to download from}
 
 \item{bibliography}{path to the bibliography file}

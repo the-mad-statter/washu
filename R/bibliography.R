@@ -3,7 +3,7 @@
 #' @param ... additional parameters passed to \code{\link[utils]{citation}}
 #' @inheritParams utils::citation
 #' @export
-bib_add_pkg_local <- function(package = "base", bibliography = "bib/bib.bib", ...) {
+bib_add_pkg_local <- function(package = "base", bibliography = bib_bibliography(), ...) {
   old <- readLines(bibliography)
   add <- utils::capture.output(utils::citation(package, ...))
   add <- add[which(grepl("@Manual", add)):which(grepl("}$", add))]
@@ -18,7 +18,7 @@ bib_add_pkg_local <- function(package = "base", bibliography = "bib/bib.bib", ..
 #' @param bib_path path to bibliography directory
 #' @export
 #' @references \href{https://github.com/citation-style-language/styles}{Citation Style Language Styles}
-bib_use_csl <- function(csl = c("american-medical-association", "apa"), bib_path = "bib") {
+bib_use_csl <- function(csl = c("american-medical-association", "apa"), bib_path = bib_bibliography(dirname = TRUE)) {
   csl <- match.arg(csl)
 
   file.remove(file.path(bib_path, list.files(bib_path, "csl$")))
@@ -47,13 +47,31 @@ bib_zotero_collection <- function() {
   sub("-v.+", "", basename(rstudioapi::getSourceEditorContext()$path))
 }
 
+#' Determine bibliography from RMarkdown YAML
+#'
+#' @param dirname flag to return the bibliography directory instead of the full relative path
+#'
+#' @return full bibliography path specified in the RMarkdown YAML or parent directory
+#' @export
+bib_bibliography <- function(dirname = FALSE) {
+  source_editor_contents <- rstudioapi::getSourceEditorContext()$contents
+  bib_row <- which(grepl("^bibliography: .+$", source_editor_contents))
+  bibliography <- sub("bibliography: ", "", source_editor_contents[bib_row])
+  if(dirname)
+    dirname(bibliography)
+  else
+    bibliography
+}
+
 #' Download Zotero collection
+#' @param download_pdfs flag to download pdfs (if any)
 #' @param collection_name name of the collection to download from
 #' @param bibliography path to the bibliography file
 #' @param ... additional parameters passed to httr-based functions
 #' @export
-bib_sync_zotero <- function(collection_name = bib_zotero_collection(),
-                            bibliography = "bib/bib.bib",
+bib_sync_zotero <- function(download_pdfs = TRUE,
+                            collection_name = bib_zotero_collection(),
+                            bibliography = bib_bibliography(),
                             ...) {
   title <- href <- file_path <- NULL
 
@@ -74,7 +92,7 @@ bib_sync_zotero <- function(collection_name = bib_zotero_collection(),
     lapply(function(x) unlist(x)) %>%
     dplyr::bind_rows() -> tbl_pdf
 
-  if(nrow(tbl_pdf) > 0) {
+  if(download_pdfs & nrow(tbl_pdf) > 0) {
     tbl_pdf %>%
       dplyr::mutate(file_path = file.path(dirname(bibliography), title)) %>%
       dplyr::select(href, file_path) %>%
