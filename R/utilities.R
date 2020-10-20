@@ -221,3 +221,11 @@ check <- function(document = FALSE,
                   ...) {
     devtools::check(document = document, env_vars = env_vars, ...)
 }
+
+#' NIH grant numbers reference pdf
+#'
+#' @export
+nih_grant_numbers <- function() {
+  path <- find_resource("global_resource", "img", "nih_grant_numbers.pdf")
+  return_code <- system(paste0('open "', path, '"'))
+}

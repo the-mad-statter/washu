@@ -61,3 +61,29 @@ wu_directory <- function(search_name = "", email = "", phone = "") {
     lapply(parse_directory_entry) %>%
     dplyr::bind_rows()
 }
+
+#' ICTS membership directory search
+#'
+#' @param query search query
+#'
+#' @return tibble of results
+#' @export
+icts_directory <- function(query) {
+  httr::GET("https://icts.wustl.edu/wp-json/wp/v2/people", 
+            query = list(per_page = 50,        
+                         order = "asc", 
+                         orderby = "washu_ppi_last",
+                         page = 1,
+                         search = query,
+                         `_fields` = "id,title,meta,featured_image,type,featured_media,people_type,link",
+                         washu_people_type = 9,
+                         `_locale` = "user")) %>% 
+    httr::content() %>% 
+    purrr::map_dfr(~ dplyr::bind_cols(
+      dplyr::as_tibble(.x[-which(names(.x) %in% c("title", "meta", "people_type"))]),
+      dplyr::tibble(title = .x$title$rendered),
+      dplyr::as_tibble(.x$meta[-which(names(.x$meta) == "washu_ppi_map")]),
+      dplyr::tibble(people_type = paste(.x$people_type, collapse = ",")),
+      dplyr::tibble(washu_ppi_map = paste(.x$meta$washu_ppi_map, collapse = ","))
+    ))
+}
