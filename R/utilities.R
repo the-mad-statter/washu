@@ -8,36 +8,6 @@ webplotdigitizer <- function() {
   utils::browseURL("https://automeris.io/WebPlotDigitizer")
 }
 
-#' Copy user information from ldap to clipboard
-#' @description Look up a user in ldap by email and copy data to clipboard to
-#' paste into the consult database.
-#' @param email mail of the user
-consult_db_copy_user <- function(email) {
-  q <- washu::wu_ldap_query("mail", email)
-  v <- c("cn",
-         "sn",
-         "title",
-         "physicalDeliveryOfficeName",
-         "telephoneNumber",
-         "givenName",
-         "displayName",
-         "department",
-         "streetAddress",
-         "personalTitle",
-         "name",
-         "sAMAccountName",
-         "userPrincipalName",
-         "mail",
-         "eduPersonNickname",
-         "eduPersonPrimaryAffiliation")
-  for(m in setdiff(v, names(q))) {
-    q[m] <- NA
-  }
-  q <- q[v]
-  q$app_role <- "user"
-  clipr::write_clip(q)
-}
-
 #' Push slashes
 #' @param x text to modify
 #' @return x with backslashes replaced with forward slashes

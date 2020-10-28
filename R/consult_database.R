@@ -1,3 +1,42 @@
+#' Copy user information from ldap to clipboard
+#' 
+#' @description Look up a user in ldap by email and copy data to clipboard to
+#' paste into the consult database.
+#' 
+#' @param email mail of the user
+#' 
+#' @export
+db_clip_user <- function(email) {
+  q <- washu::wu_ldap_query("mail", email)
+  v <- c("cn",
+         "sn",
+         "title",
+         "physicalDeliveryOfficeName",
+         "telephoneNumber",
+         "givenName",
+         "displayName",
+         "department",
+         "streetAddress",
+         "personalTitle",
+         "name",
+         "sAMAccountName",
+         "userPrincipalName",
+         "mail",
+         "eduPersonNickname",
+         "eduPersonPrimaryAffiliation")
+  for(m in setdiff(v, names(q))) {
+    q[m] <- NA
+  }
+  q <- q[v]
+  q$app_role <- "user"
+  clipr::write_clip(q)
+}
+
+#' Run shiny app to search consult database
+#'
+#' @param db location of the database
+#'
+#' @export
 db_search_consults <- function(db = Sys.getenv("WU_CONSULT_DB")) {
   # internal function to make onclick method for consult id links
   mk_consult_id_onclick <- function(consult_id) {
