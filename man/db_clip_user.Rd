@@ -2,7 +2,7 @@
 % Please edit documentation in R/consult_database.R
 \name{db_clip_user}
 \alias{db_clip_user}
-\title{Copy user information from ldap to clipboard}
+\title{Copy data in SQL insert syntax for new users to the clipboard}
 \usage{
 db_clip_user(email)
 }
