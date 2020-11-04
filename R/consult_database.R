@@ -186,7 +186,7 @@ db_sql_insert_ortho_consult_clip <- function(
     project_id = 6546)
   ) {
   sql <- db_sql_insert_ortho_consult(consult_id,
-                                     orthod_record_id,
+                                     ortho_record_id,
                                      redcap_credentials)
   clipr::write_clip(sql)
 }
