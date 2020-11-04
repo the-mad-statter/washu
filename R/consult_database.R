@@ -50,7 +50,8 @@ db_new_user <- function(email, user_id, icts, app_role = c("user", "admin")) {
 #' @return SQL syntax to insert a new user
 db_sql_insert_user_single <- function(email, user_id, icts, app_role = "user") {
   q <- db_new_user(email, user_id, icts, app_role)
-  sprintf("INSERT INTO wustl_consults.user VALUES ('%s');", paste(q, collapse = "', '"))
+  sprintf("INSERT INTO wustl_consults.user VALUES ('%s');",
+          paste(q, collapse = "', '"))
 }
 
 #' Construct SQL insert syntax for new users
@@ -132,8 +133,12 @@ db_sql_insert_ortho_consult <- function(
       ortho_record_id = request_number,
       project_title = project_title,
       study_type = study_type,
-      timeline_start_requested = as.character(as.Date(timeline_start, origin = "1970-01-01")),
-      timeline_end_requested = as.character(as.Date(timeline_end, origin = "1970-01-01")),
+      timeline_start_requested =
+        as.character(as.Date(timeline_start,
+                             origin = "1970-01-01")),
+      timeline_end_requested =
+        as.character(as.Date(timeline_end,
+                             origin = "1970-01-01")),
       timeline_notes = timeline_notes,
       project_hypotheses = project_hypotheses,
       project_outcome_variables = project_outcome_variables,
@@ -155,17 +160,26 @@ db_sql_insert_ortho_consult <- function(
       proposal_direct_costs = pre_award_direct_costs,
       proposal_indirect_costs = pre_award_indirect_costs,
       proposal_period_of_performance = pre_award_period_of_performance,
-      proposal_submit_date = as.character(as.Date(pre_award_submit_date, origin = "1970-01-01")),
+      proposal_submit_date =
+        as.character(as.Date(pre_award_submit_date,
+                             origin = "1970-01-01")),
       publication_outlet = publication_journal,
-      publication_submit_date = as.character(as.Date(publication_submit_date, origin = "1970-01-01")),
+      publication_submit_date =
+        as.character(as.Date(publication_submit_date,
+                             origin = "1970-01-01")),
       cloud_share = documentation_cloud_share,
-      timeline_received = as.character(as.Date(as.POSIXlt(request_timestamp, tz = "UTC", origin = "1970-01-01")))
+      timeline_received =
+        as.character(as.Date(as.POSIXlt(request_timestamp,
+                                        tz = "UTC",
+                                        origin = "1970-01-01")))
     ) %>%
     dplyr::select_if(~ !is.na(.)) -> tbl_data
 
   column_names <- paste(colnames(tbl_data), collapse = ", ")
   values <- paste(tbl_data, collapse = "', '")
-  sprintf("INSERT INTO wustl_consults.consult (%s) VALUES ('%s');", column_names, values)
+  sprintf("INSERT INTO wustl_consults.consult (%s) VALUES ('%s');",
+          column_names,
+          values)
 }
 
 #' Copy SQL insert syntax for new ortho consults to the clipboard
@@ -205,10 +219,19 @@ db_sql_insert_ortho_consult_clip <- function(
 #' @param role role of the user on the consult
 #'
 #' @return SQL syntax to insert a new user-consult pairing
-db_sql_insert_user_consult_single <- function(user_consult_id, consult_id, user_id, role = c("principal", "statistician", "student", "resident", "coinvestigator")) {
+db_sql_insert_user_consult_single <- function(
+  user_consult_id,
+  consult_id,
+  user_id, role = c("principal",
+                    "statistician",
+                    "student",
+                    "resident",
+                    "coinvestigator")
+  ) {
   role <- match.arg(role)
   d <- c(user_consult_id, consult_id, user_id, role)
-  sprintf("INSERT INTO wustl_consults.user_consult VALUES ('%s');", paste(d, collapse = "', '"))
+  sprintf("INSERT INTO wustl_consults.user_consult VALUES ('%s');",
+          paste(d, collapse = "', '"))
 }
 
 #' Construct SQL insert syntax for new user-consult pairings
@@ -216,8 +239,13 @@ db_sql_insert_user_consult_single <- function(user_consult_id, consult_id, user_
 #' @inheritParams db_sql_insert_user_consult_single
 #'
 #' @return SQL syntax to insert new users
-db_sql_insert_user_consult <- function(user_consult_id, consult_id, user_id, role) {
-  purrr::pmap_chr(dplyr::tibble(user_consult_id, consult_id, user_id, role), db_sql_insert_user_consult_single)
+db_sql_insert_user_consult <- function(
+  user_consult_id,
+  consult_id,
+  user_id,
+  role) {
+  purrr::pmap_chr(dplyr::tibble(user_consult_id, consult_id, user_id, role),
+                  db_sql_insert_user_consult_single)
 }
 
 #' Copy SQL insert syntax for new user-consult pairings to the clipboard
@@ -233,8 +261,15 @@ db_sql_insert_user_consult <- function(user_consult_id, consult_id, user_id, rol
 #'                                 user_id = c(1, 14),
 #'                                 role = c("statistician", "principal"))
 #' }
-db_sql_insert_user_consult_clip <- function(user_consult_id, consult_id, user_id, role) {
-  sql <- db_sql_insert_user_consult(user_consult_id, consult_id, user_id, role)
+db_sql_insert_user_consult_clip <- function(
+  user_consult_id,
+  consult_id,
+  user_id,
+  role) {
+  sql <- db_sql_insert_user_consult(user_consult_id,
+                                    consult_id,
+                                    user_id,
+                                    role)
   clipr::write_clip(sql)
 }
 
@@ -246,14 +281,18 @@ db_sql_insert_user_consult_clip <- function(user_consult_id, consult_id, user_id
 
 #' Run shiny app to search consult database
 #'
-#' @param db location of the database
+#' @param cnf MySQL configuration file
+#' @param group name of group in cnf file
+#' @param consult_dir consult directory
 #'
 #' @export
-db_search_consults <- function(db = Sys.getenv("WU_CONSULT_DB")) {
+db_search_consults <- function(cnf = "~/.my.cnf",
+                               group = "aws-rds-mysql80",
+                               consult_dir = Sys.getenv("WU_CONSULT_DIR")) {
   # internal function to make onclick method for consult id links
   mk_consult_id_onclick <- function(consult_id) {
     sprintf('Shiny.setInputValue("consult_id_link", "%s", {priority: "event"});',
-            file.path(dirname(db), sub("-v[0-9]+$", "", consult_id))
+            file.path(dirname(consult_dir), sub("-v[0-9]+$", "", consult_id))
     )
   }
 
@@ -291,9 +330,24 @@ db_search_consults <- function(db = Sys.getenv("WU_CONSULT_DB")) {
     })
 
     output$consult_database <- DT::renderDataTable({
-      readxl::read_xlsx(db, "user_consult") %>%
-        dplyr::left_join(readxl::read_xlsx(db, "user"), "user_id") %>%
-        dplyr::left_join(readxl::read_xlsx(db, "consult"), "consult_id") %>%
+      con <- DBI::dbConnect(RMySQL::MySQL(),
+                            default.file = cnf,
+                            group = group)
+
+      dbtbl_user_db <- dplyr::tbl(con, "user")
+      tbl_user <- dplyr::collect(dbtbl_user_db)
+
+      dbtbl_consult <- dplyr::tbl(con, "consult")
+      tbl_consult <- dplyr::collect(dbtbl_consult)
+
+      dbtbl_user_consult <- dplyr::tbl(con, "user_consult")
+      tbl_user_consult <- dplyr::collect(dbtbl_user_consult)
+
+      DBI::dbDisconnect(con)
+
+      tbl_user_consult %>%
+        dplyr::left_join(tbl_user, "user_id") %>%
+        dplyr::left_join(tbl_consult, "consult_id") %>%
         dplyr::mutate(
           consult_id = purrr::map_chr(.data$consult_id, mk_consult_id_link),
           cloud_share = purrr::map_chr(.data$cloud_share, mk_cloud_share_link)

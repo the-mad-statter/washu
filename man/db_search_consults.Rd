@@ -4,10 +4,18 @@
 \alias{db_search_consults}
 \title{Run shiny app to search consult database}
 \usage{
-db_search_consults(db = Sys.getenv("WU_CONSULT_DB"))
+db_search_consults(
+  cnf = "~/.my.cnf",
+  group = "aws-rds-mysql80",
+  consult_dir = Sys.getenv("WU_CONSULT_DIR")
+)
 }
 \arguments{
-\item{db}{location of the database}
+\item{cnf}{MySQL configuration file}
+
+\item{group}{name of group in cnf file}
+
+\item{consult_dir}{consult directory}
 }
 \description{
 Run shiny app to search consult database
