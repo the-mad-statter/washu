@@ -291,8 +291,10 @@ db_search_consults <- function(cnf = "~/.my.cnf",
                                consult_dir = Sys.getenv("WU_CONSULT_DIR")) {
   # internal function to make onclick method for consult id links
   mk_consult_id_onclick <- function(consult_id) {
+    consult_dir_forward_slashes <- gsub("\\\\", "/", consult_dir)
+    consult_id_no_version <- sub("-v[0-9]+$", "", consult_id)
     sprintf('Shiny.setInputValue("consult_id_link", "%s", {priority: "event"});',
-            file.path(consult_dir, sub("-v[0-9]+$", "", consult_id))
+            file.path(consult_dir_forward_slashes, consult_id_no_version)
     )
   }
 
