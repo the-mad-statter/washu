@@ -20,9 +20,9 @@ Copy SQL insert syntax for new user-consult pairings to the clipboard
 }
 \examples{
 \dontrun{
-db_sql_insert_user_consult_clip(user_consult_id = 57:58, 
-                                consult_id = "2020-11-01-1-v1", 
-                                user_id = c(1, 14), 
+db_sql_insert_user_consult_clip(user_consult_id = 57:58,
+                                consult_id = "2020-11-01-1-v1",
+                                user_id = c(1, 14),
                                 role = c("statistician", "principal"))
 }
 }

@@ -12,7 +12,7 @@
 #' @return a tibble with populated user information
 db_new_user <- function(email, user_id, icts, app_role = c("user", "admin")) {
   app_role <- match.arg(app_role)
-  
+
   q <- washu::wu_ldap_query("mail", email)
   v <- c("user_id",
          "cn",
@@ -68,8 +68,8 @@ db_sql_insert_user <- function(email, user_id, icts, app_role) {
 #' @inheritParams db_new_user
 #'
 #' @export
-#' 
-#' @examples 
+#'
+#' @examples
 #' \dontrun{
 #' db_sql_insert_user_clip(email = c("poo@wustl.edu", "piglet@wustl.edu"),
 #'                         user_id = 1:2,
@@ -82,17 +82,113 @@ db_sql_insert_user_clip <- function(email, user_id, icts, app_role) {
 }
 
 #' Copy data in SQL insert syntax for new users to the clipboard
-#' 
+#'
 #' @description Look up a user in ldap by email and copy data to clipboard to
 #' paste into the consult database.
-#' 
+#'
 #' @inheritParams db_new_user
-#' 
+#'
 #' @export
 db_clip_user <- function(email) {
   .Deprecated("db_sql_insert_user_clip")
   u <- db_new_user(email, 1, 1)
   clipr::write_clip(u)
+}
+
+
+
+################################################################################
+# CONSULT TABLE FUNCTIONS
+################################################################################
+
+#' Construct SQL insert syntax for a new ortho consult
+#'
+#' @param consult_id id of the consult including version
+#' @param ortho_record_id REDCap Ortho request identifier
+#' @param redcap_credentials REDcap credentials
+#'
+#' @return SQL syntax to insert requisite data
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' db_sql_insert_ortho_consult("2020-11-04-1-v1", 7)
+#' }
+db_sql_insert_ortho_consult <- function(
+  consult_id,
+  ortho_record_id,
+  redcap_credentials = REDCapR::retrieve_credential_local(
+    path_credential = "~/.REDCapR",
+    project_id = 6546)
+  ) {
+  REDCapR::redcap_read(
+    redcap_uri = redcap_credentials$redcap_uri,
+    token = redcap_credentials$token
+  ) %>%
+    `[[`("data") %>%
+    dplyr::filter(request_number == ortho_record_id) %>%
+    dplyr::transmute(
+      consult_id = consult_id,
+      ortho_record_id = request_number,
+      project_title = project_title,
+      study_type = study_type,
+      timeline_start_requested = as.character(as.Date(timeline_start, origin = "1970-01-01")),
+      timeline_end_requested = as.character(as.Date(timeline_end, origin = "1970-01-01")),
+      timeline_notes = timeline_notes,
+      project_hypotheses = project_hypotheses,
+      project_outcome_variables = project_outcome_variables,
+      funded_project = request_reason___post_award,
+      proposal_project = request_reason___pre_award,
+      publication_project = request_reason___publication,
+      student_project = request_reason___student_project,
+      resident_project = request_reason___resident_project,
+      quality_improvement_project = request_reason___quality_improvement,
+      funded_agency = post_award_funding_agency,
+      funded_mechanism = post_award_funding_mechanism,
+      funded_locator = post_award_grant_number,
+      funded_direct_costs = post_award_directs,
+      funded_indirect_costs = post_award_indirects,
+      funded_period_of_performance = post_award_period_of_performance,
+      proposal_agency = pre_award_funding_agency,
+      proposal_mechanism = pre_award_funding_mechanism,
+      proposal_locator = pre_award_rfa_identifier,
+      proposal_direct_costs = pre_award_direct_costs,
+      proposal_indirect_costs = pre_award_indirect_costs,
+      proposal_period_of_performance = pre_award_period_of_performance,
+      proposal_submit_date = as.character(as.Date(pre_award_submit_date, origin = "1970-01-01")),
+      publication_outlet = publication_journal,
+      publication_submit_date = as.character(as.Date(publication_submit_date, origin = "1970-01-01")),
+      cloud_share = documentation_cloud_share,
+      timeline_received = as.character(as.Date(as.POSIXlt(request_timestamp, tz = "UTC", origin = "1970-01-01")))
+    ) %>%
+    dplyr::select_if(~ !is.na(.)) -> tbl_data
+
+  column_names <- paste(colnames(tbl_data), collapse = ", ")
+  values <- paste(tbl_data, collapse = "', '")
+  sprintf("INSERT INTO wustl_consults.consult (%s) VALUES ('%s');", column_names, values)
+}
+
+#' Copy SQL insert syntax for new ortho consults to the clipboard
+#'
+#' @inheritParams db_sql_insert_ortho_consult
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' db_sql_insert_ortho_consult_clip("2020-11-04-1-v1", 7)
+#' }
+db_sql_insert_ortho_consult_clip <- function(
+  consult_id,
+  ortho_record_id,
+  redcap_credentials = REDCapR::retrieve_credential_local(
+    path_credential = "~/.REDCapR",
+    project_id = 6546)
+  ) {
+  sql <- db_sql_insert_ortho_consult(consult_id,
+                                     orthod_record_id,
+                                     redcap_credentials)
+  clipr::write_clip(sql)
 }
 
 
@@ -129,12 +225,12 @@ db_sql_insert_user_consult <- function(user_consult_id, consult_id, user_id, rol
 #' @inheritParams db_sql_insert_user_consult_single
 #'
 #' @export
-#' 
-#' @examples 
+#'
+#' @examples
 #' \dontrun{
-#' db_sql_insert_user_consult_clip(user_consult_id = 57:58, 
-#'                                 consult_id = "2020-11-01-1-v1", 
-#'                                 user_id = c(1, 14), 
+#' db_sql_insert_user_consult_clip(user_consult_id = 57:58,
+#'                                 consult_id = "2020-11-01-1-v1",
+#'                                 user_id = c(1, 14),
 #'                                 role = c("statistician", "principal"))
 #' }
 db_sql_insert_user_consult_clip <- function(user_consult_id, consult_id, user_id, role) {
@@ -189,7 +285,7 @@ db_search_consults <- function(db = Sys.getenv("WU_CONSULT_DB")) {
     session$onSessionEnded(function() {
       stopApp()
     })
-    
+
     shiny::observeEvent(input$consult_id_link, {
       dir.open(input$consult_id_link)
     })
