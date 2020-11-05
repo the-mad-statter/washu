@@ -5,10 +5,12 @@
 \title{Valid project name
 Check to see if project name follow YYYY-MM-DD-N format}
 \usage{
-valid_project_name(project_name)
+valid_project_name(project_name, version = FALSE)
 }
 \arguments{
 \item{project_name}{proposed project name to check}
+
+\item{version}{flag to check for version number}
 }
 \description{
 Valid project name

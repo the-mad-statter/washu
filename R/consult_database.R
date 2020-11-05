@@ -1,6 +1,4 @@
-################################################################################
-# USER TABLE FUNCTIONS
-################################################################################
+# USER TABLE FUNCTIONS ---------------------------------------------------------
 
 #' Populate a tibble with new user information from LDAP
 #'
@@ -96,11 +94,32 @@ db_clip_user <- function(email) {
   clipr::write_clip(u)
 }
 
+#' Next available user_id
+#'
+#' @param cnf MySQL configuration file
+#' @param group name of group in cnf file
+#'
+#' @return integer value of next available user_id
+#' @export
+db_next_user_id <- function(cnf = "~/.my.cnf",
+                            group = "aws-rds-mysql80") {
+  con <- DBI::dbConnect(RMySQL::MySQL(),
+                        default.file = cnf,
+                        group = group)
+
+  dplyr::tbl(con, "user") %>%
+    dplyr::select(user_id) %>%
+    dplyr::filter(user_id == max(user_id, na.rm = TRUE)) %>%
+    dplyr::collect() -> d
+
+  DBI::dbDisconnect(con)
+
+  d$user_id + 1
+}
 
 
-################################################################################
-# CONSULT TABLE FUNCTIONS
-################################################################################
+
+# CONSULT TABLE FUNCTIONS ------------------------------------------------------
 
 #' Construct SQL insert syntax for a new ortho consult
 #'
@@ -122,6 +141,8 @@ db_sql_insert_ortho_consult <- function(
     path_credential = "~/.REDCapR",
     project_id = 6546)
   ) {
+  stopifnot(valid_project_name(consult_id, version = TRUE))
+
   REDCapR::redcap_read(
     redcap_uri = redcap_credentials$redcap_uri,
     token = redcap_credentials$token
@@ -207,9 +228,7 @@ db_sql_insert_ortho_consult_clip <- function(
 
 
 
-################################################################################
-# USER_CONSULT TABLE FUNCTIONS
-################################################################################
+# USER_CONSULT TABLE FUNCTIONS -------------------------------------------------
 
 #' Construct SQL insert syntax for a new user-consult pairing
 #'
@@ -228,6 +247,7 @@ db_sql_insert_user_consult_single <- function(
                     "resident",
                     "coinvestigator")
   ) {
+  stopifnot(valid_project_name(consult_id, version = TRUE))
   role <- match.arg(role)
   d <- c(user_consult_id, consult_id, user_id, role)
   sprintf("INSERT INTO wustl_consults.user_consult VALUES ('%s');",
@@ -273,11 +293,32 @@ db_sql_insert_user_consult_clip <- function(
   clipr::write_clip(sql)
 }
 
+#' Next available user_consult_id
+#'
+#' @param cnf MySQL configuration file
+#' @param group name of group in cnf file
+#'
+#' @return integer value of next available user_consult_id
+#' @export
+db_next_user_consult_id <- function(cnf = "~/.my.cnf",
+                            group = "aws-rds-mysql80") {
+  con <- DBI::dbConnect(RMySQL::MySQL(),
+                        default.file = cnf,
+                        group = group)
+
+  dplyr::tbl(con, "user_consult") %>%
+    dplyr::select(user_consult_id) %>%
+    dplyr::filter(user_consult_id == max(user_consult_id, na.rm = TRUE)) %>%
+    dplyr::collect() -> d
+
+  DBI::dbDisconnect(con)
+
+  d$user_consult_id + 1
+}
 
 
-################################################################################
-# SHINY APP
-################################################################################
+
+# SHINY APP --------------------------------------------------------------------
 
 #' Run shiny app to search consult database
 #'
