@@ -12,7 +12,7 @@ output: washu::consult_report_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 
-library(washu)
+library(dplyr)
 ```
 
 # Overview
