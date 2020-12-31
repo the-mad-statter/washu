@@ -32,8 +32,11 @@ wu_skim_with <- function(fct_n_levels = NULL, fct_percents = TRUE, fct_digits = 
           pairs <- sprintf("%s: %s (%s%%)", names(conts), conts, percs)
         }
         
-        if(!is.null(fct_n_levels))
-          pairs <- pairs[1:fct_n_levels]
+        if(!is.null(fct_n_levels)) {
+          pairs <- pairs[1:min(fct_n_levels, length(conts))]
+          if(fct_n_levels < length(conts))
+             pairs <- c(pairs, "...")
+        }
         
         paste(pairs, collapse = fct_delimiter)
       }
