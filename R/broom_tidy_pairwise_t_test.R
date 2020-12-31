@@ -49,10 +49,10 @@ broom_tidy_pairwise_t_test_two_sample <- function(data, response, group, ...) {
 #'
 #' @return a tibble with information about the model components; one model per row
 #' @export
-broom_tidy_pairwise_t_test_dep_sample <- function(data, response, group, frame, ...) {
+broom_tidy_pairwise_t_test_dep_sample <- function(data, response, group, unit, ...) {
   response <- rlang::ensym(response)
   group <- rlang::ensym(group)
-  frame <- rlang::ensym(frame)
+  unit <- rlang::ensym(unit)
   
   data %>% 
     dplyr::pull(!!group) %>% 
@@ -65,7 +65,7 @@ broom_tidy_pairwise_t_test_dep_sample <- function(data, response, group, frame, 
       # make pairwise complete subset
       data %>% 
         dplyr::filter(!is.na(!!response), !!group %in% conditions[p]) %>% 
-        dplyr::group_by(!!frame) %>% 
+        dplyr::group_by(!!unit) %>% 
         dplyr::filter(n() == 2) %>% 
         dplyr::ungroup() -> data_pairwise_complete
       
