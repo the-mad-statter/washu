@@ -36,7 +36,12 @@ broom_tidy_pairwise_t_test_two_sample <- function(data, response, group, ...) {
         ) %>% 
         dplyr::select(response, group1, group2, dplyr::everything())
     }) %>% 
-    dplyr::bind_rows()
+    dplyr::bind_rows() %>% 
+    dplyr::mutate(sig = dplyr::case_when(p.value < .001 ~ "***",
+                                         p.value < .010 ~ "**",
+                                         p.value < .050 ~ "*",
+                                         p.value < .100 ~ ".",
+                                         TRUE ~ ""))
 }
 
 #' Pairwise t tests
@@ -91,7 +96,12 @@ broom_tidy_pairwise_t_test_dep_sample <- function(data, response, group, unit, .
         ) %>% 
         dplyr::select(response, group1, group2, dplyr::everything())
     }) %>% 
-    dplyr::bind_rows()
+    dplyr::bind_rows() %>% 
+    dplyr::mutate(sig = dplyr::case_when(p.value < .001 ~ "***",
+                                         p.value < .010 ~ "**",
+                                         p.value < .050 ~ "*",
+                                         p.value < .100 ~ ".",
+                                         TRUE ~ ""))
 }
 
 #' Pairwise t tests
@@ -132,5 +142,10 @@ broom_tidy_pairwise_t_test_one_sample <- function(data, response, group, mu = 0,
         ) %>% 
         dplyr::select(response, group, dplyr::everything())
     }) %>% 
-    dplyr::bind_rows()
+    dplyr::bind_rows() %>% 
+    dplyr::mutate(sig = dplyr::case_when(p.value < .001 ~ "***",
+                                         p.value < .010 ~ "**",
+                                         p.value < .050 ~ "*",
+                                         p.value < .100 ~ ".",
+                                         TRUE ~ ""))
 }
