@@ -4,7 +4,7 @@
 \alias{broom_tidy_pairwise_t_test_dep_sample}
 \title{Pairwise t tests}
 \usage{
-broom_tidy_pairwise_t_test_dep_sample(data, response, group, frame, ...)
+broom_tidy_pairwise_t_test_dep_sample(data, response, group, unit, ...)
 }
 \arguments{
 \item{data}{tidy data containing the response, group, and unit variables}
@@ -13,9 +13,9 @@ broom_tidy_pairwise_t_test_dep_sample(data, response, group, frame, ...)
 
 \item{group}{grouping variable}
 
-\item{...}{additional parameters passed onto t.test()}
-
 \item{unit}{sampling unit variable (e.g., persons)}
+
+\item{...}{additional parameters passed onto t.test()}
 }
 \value{
 a tibble with information about the model components; one model per row

@@ -199,3 +199,49 @@ nih_grant_numbers <- function() {
   path <- find_resource("global_resource", "img", "nih_grant_numbers.pdf")
   return_code <- system(paste0('open "', path, '"'))
 }
+
+#' Recover Data Viewer Cache Objects
+#'
+#' @details If the current R session is terminated while an object is being
+#' viewed with utils::View(), RStudio will cache the object, meaning the object
+#' can be recovered.
+#'
+#' @return a list containing recovered utils::View() objects
+#' @export
+#'
+#' @references
+#' https://support.rstudio.com/hc/en-us/articles/200534577-Resetting-RStudio-Desktop-s-State
+recover_data_viewer_cache_objects <- function() {
+  active_project <- rstudioapi::getActiveProject()
+
+  if(is.null(active_project)) {
+    if(.Platform$OS.type == "windows")
+      viewer_cache_files <- Sys.glob(file.path(Sys.getenv("localappdata"),
+                                               "RStudio-Desktop",
+                                               "viewer-cache",
+                                               "*.Rdata"))
+    else
+      viewer_cache_files <- Sys.glob(file.path("~",
+                                               ".rstudio-desktop",
+                                               "viewer-cache",
+                                               "*.Rdata"))
+  } else {
+    viewer_cache_files <- Sys.glob(file.path(active_project,
+                                             ".Rproj.user",
+                                             "*",
+                                             "viewer-cache",
+                                             "*.Rdata"))
+  }
+
+  # record environment, load cached objects, return environment diff
+  # (apply family does not work with base::load() or base::get())
+  ls_0 <- ls()
+  for(o in viewer_cache_files)
+    load(o)
+  new_objects <- setdiff(ls(), c(ls_0, "ls_0", "o"))
+  recovered_objects <- list()
+  for(o in seq_along(new_objects))
+    recovered_objects[[new_objects[o]]] <- get(new_objects[o])
+
+  recovered_objects
+}
