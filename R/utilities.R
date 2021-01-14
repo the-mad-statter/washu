@@ -245,3 +245,18 @@ recover_data_viewer_cache_objects <- function() {
 
   recovered_objects
 }
+
+#' Custom compare
+#'
+#' @details Compare as with ==, but NA == NA returns TRUE
+#'
+#' @param lhs left-hand side
+#' @param rhs right-hand side
+#'
+#' @return logical indicating match
+#' @export
+`%==%` <- function(lhs, rhs) {
+  dplyr::case_when(!is.na(lhs) & !is.na(rhs) ~ lhs == rhs,
+                   is.na(lhs) & is.na(rhs) ~ TRUE,
+                   TRUE ~ FALSE)
+}

@@ -1,9 +1,27 @@
+#' Add significance flag
+#'
+#' @param data data frame containing a column of p-values
+#' @param p_val_col name of the p-value column
+#'
+#' @return a data frame with an additional character column named p_flag
+#' @export
+add_significance_flag <- function(data, p_val_col) {
+  data %>% 
+    dplyr::mutate(p_flag = dplyr::case_when({{ p_val_col }} < .001 ~ "***",
+                                            {{ p_val_col }} < .010 ~ "**",
+                                            {{ p_val_col }} < .050 ~ "*",
+                                            {{ p_val_col }} < .100 ~ ".",
+                                            TRUE ~ ""))
+}
+
 #' Pairwise t tests
+#' 
+#' @description Performs independent sample t-tests for each pair of groups from tidy data.
 #'
 #' @param data tidy data containing the response and group variables
 #' @param response response variable
 #' @param group grouping variable
-#' @param ... additional parameters passed onto t.test()
+#' @param ... additional parameters passed onto \code{\link[stats:t.test]{t.test()}}
 #'
 #' @return a tibble with information about the model components; one model per row
 #' @export
@@ -37,20 +55,20 @@ broom_tidy_pairwise_t_test_two_sample <- function(data, response, group, ...) {
         dplyr::select(response, group1, group2, dplyr::everything())
     }) %>% 
     dplyr::bind_rows() %>% 
-    dplyr::mutate(sig = dplyr::case_when(p.value < .001 ~ "***",
-                                         p.value < .010 ~ "**",
-                                         p.value < .050 ~ "*",
-                                         p.value < .100 ~ ".",
-                                         TRUE ~ ""))
+    add_significance_flag(p.value)
 }
 
 #' Pairwise t tests
+#' 
+#' @description Performs paired t-tests for each pair of groups where observations are paired by unit from tidy data.
 #'
 #' @param data tidy data containing the response, group, and unit variables
 #' @param response response variable
 #' @param group grouping variable
 #' @param unit sampling unit variable (e.g., persons)
-#' @param ... additional parameters passed onto t.test()
+#' @param ... additional parameters passed onto \code{\link[stats:t.test]{t.test()}}
+#' 
+#' @note Tests are performed on pairwise complete data.
 #'
 #' @return a tibble with information about the model components; one model per row
 #' @export
@@ -97,20 +115,18 @@ broom_tidy_pairwise_t_test_dep_sample <- function(data, response, group, unit, .
         dplyr::select(response, group1, group2, dplyr::everything())
     }) %>% 
     dplyr::bind_rows() %>% 
-    dplyr::mutate(sig = dplyr::case_when(p.value < .001 ~ "***",
-                                         p.value < .010 ~ "**",
-                                         p.value < .050 ~ "*",
-                                         p.value < .100 ~ ".",
-                                         TRUE ~ ""))
+    add_significance_flag(p.value)
 }
 
 #' Pairwise t tests
+#' 
+#' @description Performs one-sample t-tests for each group from tidy data.
 #'
 #' @param data tidy data containing the response and group variables
 #' @param response response variable
 #' @param group grouping variable
 #' @param mu a number indicating the true value of the mean
-#' @param ... additional parameters passed onto t.test()
+#' @param ... additional parameters passed onto \code{\link[stats:t.test]{t.test()}}
 #'
 #' @return a tibble with information about the model components; one model per row
 #' @export
@@ -143,9 +159,39 @@ broom_tidy_pairwise_t_test_one_sample <- function(data, response, group, mu = 0,
         dplyr::select(response, group, dplyr::everything())
     }) %>% 
     dplyr::bind_rows() %>% 
-    dplyr::mutate(sig = dplyr::case_when(p.value < .001 ~ "***",
-                                         p.value < .010 ~ "**",
-                                         p.value < .050 ~ "*",
-                                         p.value < .100 ~ ".",
-                                         TRUE ~ ""))
+    add_significance_flag(p.value)
+}
+
+#' Pairwise cor tests
+#' 
+#' @description Test for association between paired samples, using one of Pearson's product moment correlation coefficient, Kendall's tau or Spearman's rho for each pair of variables.
+#'
+#' @param data data frame containing the variables
+#' @param ... further arguments passed to \code{\link[stats:cor.test]{cor.test()}}
+#'
+#' @return a tibble with information about the model components; one model per row
+#' @export
+broom_tidy_cor_test <- function(data, ...) {
+  vars <- names(data)
+  combn(1:length(vars), 2) %>% 
+    split(rep(1:ncol(.), each = nrow(.))) %>% 
+    lapply(function(p) {
+      # split into (x, y)
+      x <- data[[vars[p[1]]]]
+      y <- data[[vars[p[2]]]]
+      
+      # model
+      ct <- cor.test(x, y, ...)
+      
+      # tidy
+      ct %>%
+        broom::tidy() %>% 
+        dplyr::mutate(
+          v1 = vars[p][1],
+          v2 = vars[p][2]
+        ) %>% 
+        dplyr::select(v1, v2, dplyr::everything())
+    }) %>% 
+    dplyr::bind_rows() %>% 
+    add_significance_flag(p.value)
 }
