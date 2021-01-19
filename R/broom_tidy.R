@@ -218,18 +218,25 @@ select_via_cor_sig <- function(.data, x, p.value, ...) {
     names() %>%
     lapply(function(candidate) {
       c(rlang::as_string(x), candidate)
-    }) %>%
-    lapply(function(pair) {
-      x <- .data[[pair[1]]]
-      y <- .data[[pair[2]]]
+    }) -> ls_pairs
+  
+  ls_pairs %>% 
+    lapply(function(vec_pair) {
+      x <- .data[[vec_pair[1]]]
+      y <- .data[[vec_pair[2]]]
 
       cor.test(x, y, ...) %>%
         broom::tidy() %>%
-        dplyr::mutate(v1 = pair[1], v2 = pair[2]) %>%
+        dplyr::mutate(v1 = vec_pair[1], v2 = vec_pair[2]) %>%
         dplyr::select(v1, v2, dplyr::everything())
     }) %>%
-    dplyr::bind_rows() %>%
+    dplyr::bind_rows() -> tbl_tidy_cor_test
+  
+  tbl_tidy_cor_test %>% 
     dplyr::filter(p.value < {{p.value}}) %>%
-    dplyr::pull(v2) %>%
-    { suppressMessages(dplyr::select(.data, dplyr::all_of(c(rlang::as_string(x), .)))) }
+    dplyr::pull(v2) %>% 
+    c(rlang::as_string(x), .) -> keepers
+  
+  .data %>% 
+    dplyr::select(dplyr::all_of(keepers))
 }
