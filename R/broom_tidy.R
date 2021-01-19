@@ -214,7 +214,7 @@ select_via_cor_sig <- function(.data, x, p.value, ...) {
   x <- rlang::ensym(x)
 
   .data %>%
-    select(-x) %>%
+    dplyr::select(-dplyr::all_of(x)) %>%
     names() %>%
     lapply(function(candidate) {
       c(rlang::as_string(x), candidate)
