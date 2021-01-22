@@ -260,3 +260,27 @@ recover_data_viewer_cache_objects <- function() {
                    is.na(lhs) & is.na(rhs) ~ TRUE,
                    TRUE ~ FALSE)
 }
+
+#' Assign a Value to a Name
+#'
+#' @inheritParams base::assign
+#' @param print logical whether to also print
+#' @param ... additional arguments passed to \link[base]{assign}
+#'
+#' @return value object (invisibly)
+#' @export
+#'
+#' @seealso \link[base]{assign}
+#'
+#' @examples
+#' ## print and assign copy of mtcars
+#' mtcars %>% print() %>% assign_in_global("mtcars2")
+#'
+#' ## same as above but using print argument
+#' mtcars %>% assign_in_global("mtcars2", TRUE)
+assign_in_global <- function(value, x, print = FALSE, envir = .GlobalEnv, ...) {
+  if(print)
+    print(value)
+
+  base::assign(x, value, envir = envir, ...)
+}
