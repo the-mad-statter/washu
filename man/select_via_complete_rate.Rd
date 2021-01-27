@@ -4,12 +4,14 @@
 \alias{select_via_complete_rate}
 \title{Subset columns by variable completion rate}
 \usage{
-select_via_complete_rate(.data, complete_rate)
+select_via_complete_rate(.data, rate, greater = TRUE)
 }
 \arguments{
 \item{.data}{a data frame, data frame extension (e.g. a tibble), or a lazy data frame (e.g. from dbplyr or dtplyr)}
 
-\item{complete_rate}{minimally acceptable completion rate}
+\item{rate}{completion rate}
+
+\item{greater}{if TRUE, rate is the minimally acceptable completion rate}
 }
 \value{
 an object of the same type as .data
@@ -18,6 +20,6 @@ an object of the same type as .data
 Subset columns by variable completion rate
 }
 \examples{
-## select columns containing less than 5\% missing
+## select columns with at least a 95\% completion rate
 select_via_complete_rate(airquality, 0.95)
 }

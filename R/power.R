@@ -208,3 +208,76 @@ es_map <- function(size, type = c("r", "R^2", "d", "or", "f", "f^2", "eta^2", "o
               "omega^2" = `omega^2`,
               "cl"      = cl))
 }
+
+#' Cohen's d
+#'
+#' @param m_0 mean of group 0
+#' @param m_1 mean of group 1
+#' @param s_0 standard deviation of group 0
+#' @param s_1 standard deviation of group 1
+#'
+#' @return Cohen's d
+#' @export
+#' 
+#' @examples
+#' mtcars %>% 
+#'   group_by(vs) %>% 
+#'   summarize(m = mean(mpg), s = sd(mpg)) %>% 
+#'   tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) %>% 
+#'   rowwise() %>% 
+#'   mutate(cohens_d = es_cohens_d(m_0, m_1, s_0, s_1))
+#' 
+#' @references 
+#' Cohen, J. (1988). Statistical power analysis for the behavioral sciences. Routledge.
+es_cohens_d <- function(m_0, m_1, s_0, s_1) {
+  (m_1 - m_0) / sqrt((s_0^2 + s_1^2) / 2)
+}
+
+#' Glass' Delta
+#'
+#' @param m_0 mean of group 0
+#' @param m_1 mean of group 1
+#' @param s standard deviation of control group
+#'
+#' @return Glass' delta
+#' @export
+#' 
+#' @examples
+#' mtcars %>% 
+#'   group_by(vs) %>% 
+#'   summarize(m = mean(mpg), s = sd(mpg)) %>% 
+#'   tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) %>% 
+#'   rowwise() %>% 
+#'   mutate(glass_delta = es_glass_delta(m_0, m_1, s_0))
+#' 
+#' @references 
+#' Hedges, L. V. & Olkin, I. (1985). Statistical methods for meta-analysis. Academic Press.
+es_glass_delta <- function(m_0, m_1, s) {
+  (m_1 - m_0) / s
+}
+
+#' Hedges g
+#'
+#' @param n_0 number of observations in group 0
+#' @param n_1 number of observations in group 1
+#' @param m_0 mean of group 0
+#' @param m_1 mean of group 1
+#' @param s_0 standard deviation of group 0
+#' @param s_1 standard deviation of group 1
+#'
+#' @examples 
+#' mtcars %>% 
+#'   group_by(vs) %>% 
+#'   summarize(n = n(), m = mean(mpg), s = sd(mpg)) %>% 
+#'   tidyr::pivot_wider(names_from = vs, values_from = c(n, m, s)) %>% 
+#'   rowwise() %>% 
+#'   mutate(hedges_g = es_hedges_g(n_0, n_1, m_0, m_1, s_0, s_1))
+#' 
+#' @return
+#' @export
+#' 
+#' @references 
+#' Hedges, L. V. (1981). Distribution theory for Glass' estimator of effect size and related estimators. Journal of Educational Statistics, 6(2), 107-128. https://doi.org/10.3102/10769986006002107
+es_hedges_g <- function(n_0, n_1, m_0, m_1, s_0, s_1) {
+  (m_1 - m_0) / sqrt(((n_0 - 1) * s_0^2 + (n_1 - 1) * s_1^2) / (n_0 + n_1 - 2))
+}

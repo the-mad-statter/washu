@@ -4,12 +4,14 @@
 \alias{select_via_class}
 \title{Select columns by class}
 \usage{
-select_via_class(.data, class)
+select_via_class(.data, class, keep = TRUE)
 }
 \arguments{
 \item{.data}{a data frame, data frame extension (e.g. a tibble), or a lazy data frame (e.g. from dbplyr or dtplyr)}
 
-\item{class}{the class of variable to select based on (can be negated with `-`)}
+\item{class}{variable class to select on}
+
+\item{keep}{if TRUE, keep variables of type class, otherwise drop}
 }
 \value{
 an object of the same type as .data
@@ -19,11 +21,11 @@ Select columns by class
 }
 \examples{
 ## select factor columns
-select_via_class(iris, factor)
+select_via_class(iris, "factor")
 
 ## select everything but factor columns
-select_via_class(iris, -factor)
+select_via_class(iris, "factor", FALSE)
 
 ## select numeric
-select_via_class(iris, numeric)
+select_via_class(iris, "numeric")
 }
