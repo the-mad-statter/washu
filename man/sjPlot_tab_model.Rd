@@ -6,6 +6,7 @@
 \usage{
 sjPlot_tab_model(
   ...,
+  show.omnibus.f = FALSE,
   show.auc = FALSE,
   show.hosmer_lemeshow = FALSE,
   show.deviance_test = FALSE,
@@ -18,6 +19,8 @@ sjPlot_tab_model(
 }
 \arguments{
 \item{...}{arguments passed on to \link[sjPlot]{tab_model}; notably one or more regression models to summarize}
+
+\item{show.omnibus.f}{Logical, if TRUE, the omnibus F-test is computed and printed}
 
 \item{show.auc}{Logical, if TRUE, the AUC is calculated and printed}
 

@@ -1,6 +1,7 @@
 #' @inherit sjPlot::tab_model
 #'
 #' @param ... arguments passed on to \link[sjPlot]{tab_model}; notably one or more regression models to summarize
+#' @param show.omnibus.f Logical, if TRUE, the omnibus F-test is computed and printed
 #' @param show.auc Logical, if TRUE, the AUC is calculated and printed
 #' @param show.hosmer_lemeshow Logical, if TRUE, a Hosmer-Lemeshow goodness of fit test is calculated and printed
 #' @param show.deviance_test Logical, if TRUE, a deviance-test comparing to the null model is calculated and printed
@@ -11,6 +12,7 @@
 #' @references
 #' Hosmer, David W.; Lemeshow, Stanley (2013). Applied Logistic Regression. New York: Wiley.
 sjPlot_tab_model <- function(...,
+                             show.omnibus.f = FALSE,
                              show.auc = FALSE,
                              show.hosmer_lemeshow = FALSE,
                              show.deviance_test = FALSE,
@@ -29,6 +31,28 @@ sjPlot_tab_model <- function(...,
   )
 
   new_html <- character(0)
+
+  if(show.omnibus.f) {
+    new_html <- c(new_html, "  <tr>")
+    new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">Omnibus F</td>")
+    summary_test_obj <- lapply(unnamed_args, summary)
+    summary_test_htm <- vapply(summary_test_obj, function(x) {
+      numdf <- x$fstatistic[["numdf"]]
+      dendf <- x$fstatistic[["dendf"]]
+      fstat <- x$fstatistic[["value"]]
+      pvalu <- pf(fstat, numdf, dendf, lower.tail = FALSE)
+      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"3\">F(%s, %s) = %s, p = %s</td>",
+              numdf,
+              dendf,
+              format(round(fstat, digits), nsmall = digits),
+              format(round(pvalu, digits.p), nsmall = digits.p)
+      )
+    },
+    character(1)
+    )
+    new_html <- c(new_html, summary_test_htm)
+    new_html <- c(new_html, "  </tr>")
+  }
 
   if(show.auc) {
     new_html <- c(new_html, "  <tr>")
