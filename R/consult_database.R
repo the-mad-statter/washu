@@ -373,8 +373,8 @@ db_search_consults <- function(cnf = "~/.my.cnf",
     })
 
     output$consult_database <- DT::renderDataTable({
-      con <- DBI::dbConnect(RMySQL::MySQL(),
-                            default.file = cnf,
+      con <- DBI::dbConnect(RMariaDB::MariaDB(),
+                            default.file = normalizePath(cnf), # https://github.com/r-dbi/RMariaDB/issues/197
                             group = group)
 
       dbtbl_user_db <- dplyr::tbl(con, "user")
