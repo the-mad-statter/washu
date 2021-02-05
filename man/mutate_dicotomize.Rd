@@ -21,4 +21,8 @@ Create a dicotomized x column based on first rpart split
 }
 \examples{
 mutate_dicotomize(iris, Sepal.Length, Sepal.Width)
+
+}
+\seealso{
+\link[rpart]{rpart}
 }

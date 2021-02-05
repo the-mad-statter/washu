@@ -9,6 +9,8 @@
 #'
 #' @examples
 #' mutate_dicotomize(iris, Sepal.Length, Sepal.Width)
+#' 
+#' @seealso \link[rpart]{rpart}
 mutate_dicotomize <- function(.data, x, y) {
   m <- rpart::rpart(substitute(y ~ x), .data)
   k <- m$splits[1, "index"]

@@ -58,6 +58,90 @@ pp_f2 <- function(data, N, u1 = 1, u2 = 0, sig.level = 0.05, min_pwr = NULL, eff
   return(pp)
 }
 
+#' Power plot for Cohen's d and dz
+#' @param data tibble of effect size data
+#' @param n sample sizes per sample for which to compute power
+#' @param type type of t test : one- two- or paired-samples
+#' @param alternative a character string specifying the alternative hypothesis, must be one of "two.sided" (default), "greater" or "less"
+#' @param sig.level significance level (Type I error probability)
+#' @param min_pwr minimum desirable power to label (NULL for no label)
+#' @param effect variable in data representing the effect sizes
+#' @param labels effect labels to be used for legend
+#' @return object of class "ggplot"
+#' @export
+#' @examples
+#' ## Exercise 2.1 P. 40 from Cohen (1988)
+#' dplyr::tibble(d = .50,
+#'               y = "learning",
+#'               x = "opportunity",
+#'               source = "Cohen (1988)") %>% 
+#'   pp_d(15:45,
+#'        labels = sprintf("%s %s", format(round(d, 2), nsmall = 2), source))
+#' @note The effect variable is converted to factor in the given order and labels applied respectively.
+#' @references Cohen, J. (1988). Statistical power analysis for the behavioral sciences (2nd ed.). Hillsdale,NJ: Lawrence Erlbaum.
+#' @seealso \code{\link[ggplot2]{ggplot}}, \code{\link[pwr]{pwr.t.test}}
+pp_d <- function (
+  data,
+  n,
+  type = c("two.sample", "one.sample", "paired"), 
+  alternative = c("two.sided", "less", "greater"), 
+  sig.level = 0.05,
+  min_pwr = NULL,
+  effect = .data$d,
+  labels = .data$d
+) {
+  type <- match.arg(type)
+  alternative <- match.arg(alternative)
+  
+  guide_label <- ifelse(type == "paired", "Cohen's dz", "Cohen's d")
+  
+  grid <- expand.grid(i = 1:nrow(data), n = n)
+  grid <- cbind(data[grid$i, ], grid)
+  
+  grid %>%
+    dplyr::select(-.data$i) %>%
+    dplyr::mutate(
+      type = type,
+      alternative = alternative, 
+      sig.level = sig.level,
+      d_fct = factor({{ effect }},
+                     unique({{ effect }}),
+                     labels = unique({{ labels }}))
+    ) %>% 
+    dplyr::rowwise() %>% 
+    dplyr::mutate(
+      power = pwr::pwr.t.test(
+        n = .data$n, 
+        d = {{ effect }}, 
+        sig.level = .data$sig.level, 
+        power = NULL, 
+        type = .data$type, 
+        alternative = .data$alternative)$power
+    ) %>% 
+    dplyr::ungroup() %>% 
+    ggplot2::ggplot(ggplot2::aes(x = .data$n, 
+                                 y = .data$power, 
+                                 color = .data$d_fct, 
+                                 linetype = .data$d_fct)) +
+    ggplot2::geom_line() +
+    ggplot2::labs(
+      x = "Number of observations (per sample)", 
+      y = "Power",
+      color = guide_label, 
+      linetype = guide_label
+    ) -> pp
+  
+  if (!is.null(min_pwr)) {
+    pp <- pp + ggplot2::geom_hline(
+      yintercept = min_pwr,
+      color = "red",
+      linetype = "dashed"
+    )
+  }
+  
+  return(pp)
+}
+
 #' Map between various effect sizes
 #' @param size effect size to convert (see details)
 #' @param type the effect type to convert
