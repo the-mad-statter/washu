@@ -6,6 +6,10 @@ addin_push_slashes <- function() {
   rstudioapi::modifyRange(sel_rng, str_rpl)
 }
 
+addin_open_win_charmap <- function() {
+  open_win_charmap()
+}
+
 addin_search_consults <- function() {
   db_search_consults()
 }

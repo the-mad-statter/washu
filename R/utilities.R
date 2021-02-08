@@ -15,6 +15,12 @@ push_slashes <- function(x) {
   gsub("\\\\", "/", x)
 }
 
+#' Open Windows character map
+#' @export
+open_win_charmap <- function() {
+  system2("charmap", wait = FALSE, invisible = FALSE)
+}
+
 #' Tidy Sub
 #' @description Utility function to make sub() work better with pipes
 #' @param x a character vector where matches are sought
@@ -283,4 +289,22 @@ assign_in_global <- function(value, x, print = FALSE, envir = .GlobalEnv, ...) {
     print(value)
 
   base::assign(x, value, envir = envir, ...)
+}
+
+#' WU emphasis
+#'
+#' @param x text to span
+#' @param color color to use
+#' @param bold = TRUE
+#'
+#' @return html span element with requested inline css attributes
+#' @export
+#'
+#' @examples
+#' wu_emph("I will be bold red text.")
+wu_emph <- function(x, color = wu_colors$red, bold = TRUE) {
+  if(bold)
+    sprintf('<span style="color:%s; font-weight:bold;">%s</span>', color, x)
+  else
+    sprintf('<span style="color:%s;">%s</span>', color, x)
 }

@@ -4,6 +4,12 @@ Binding: addin_push_slashes
 Interactive: false
 
 
+Name: Open Charmap
+Description: Open the Windows Character Map program.
+Binding: addin_open_win_charmap
+Interactive: false
+
+
 Name: Search Consults
 Description: Shiny Gadget to Search the Consult Database
 Binding: addin_search_consults

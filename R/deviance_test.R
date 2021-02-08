@@ -4,9 +4,9 @@
 #' @return object of class "dtest"
 #' @export
 deviance_test <- function(mdl) {
-  robj <- tibble(df = mdl$df.null - mdl$df.residual,
-                 chisq = mdl$null.deviance - mdl$deviance,
-                 p.value = 1 - pchisq(chisq, df)
+  robj <- dplyr::tibble(df = mdl$df.null - mdl$df.residual,
+                        chisq = mdl$null.deviance - mdl$deviance,
+                        p.value = 1 - pchisq(chisq, df)
   )
   attr(robj, "class") <- append(attr(robj, "class"), "dtest", 0)
   return(robj)
@@ -30,11 +30,11 @@ print.dtest <- function(x, format = c("tibble", "text"), digits = 4, ...) {
     "text" = {
       print(
         sprintf(
-          "\u03c7\u00b2(%s) = %s, p = %s", 
-          x$df, 
-          format(round(x$chisq, digits), nsmall = digits), 
+          "\u03c7\u00b2(%s) = %s, p = %s",
+          x$df,
+          format(round(x$chisq, digits), nsmall = digits),
           format(round(x$p.value, digits), nsmall = digits)
-        ), 
+        ),
         ...
       )
     }
