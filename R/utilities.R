@@ -308,3 +308,10 @@ wu_emph <- function(x, color = wu_colors$red, bold = TRUE) {
   else
     sprintf('<span style="color:%s;">%s</span>', color, x)
 }
+
+#' Create Names for Temporary HTML File
+#'
+#' @describeIn tempfile tempfile_html returns a vector of character strings which can be used as names for temporary html files.
+tempfile_html <- function(pattern = "file", tmpdir = tempdir()) {
+  tempfile(pattern, tmpdir, ".html")
+}

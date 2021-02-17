@@ -125,3 +125,58 @@ sjPlot_tab_model <- function(...,
       htmltools::includeHTML(file)
   }
 }
+
+#' Print a fitted model as HTML ANOVA table
+#'
+#' @param mdl a model returned by a model fitting function (e.g., lm or glm)
+#' @param title character, will be used as table caption.
+#' @param pred.labels character vector with labels of predictor varaibles
+#' @param full_width logical controlling whether the html table should have 100\% width
+#' @param digits amount of decimals for numbers
+#' @param scientific logical specifying whether to encode numbers in scientific format
+#'
+#' @return a character vector of the table source code
+#' @export
+#'
+#' @examples
+#' m <- lm(mpg ~ cyl, mtcars)
+#' tab_anova(m)
+#' 
+#' @seealso \link[sjPlot]{tab_model}, \link[stats]{anova}, \link[base]{format}, \link[kableExtra]{kbl}, \link[kableExtra]{kable_classic}
+tab_anova <- function(mdl, 
+                      title = NULL, 
+                      pred.labels = NULL, 
+                      full_width = NULL, # kable_styling
+                      digits = getOption("digits"), 
+                      scientific = FALSE,
+                      ...) {
+  mdl %>% 
+    anova() %>% 
+    dplyr::as_tibble() %>% 
+    janitor::clean_names() %>% 
+    washu::add_significance_flag(pr_f) %>% 
+    dplyr::mutate(
+      dplyr::across(
+        c(tidyselect:::where(is.numeric), -df),
+        ~ format(round(., digits), nsmall = digits, scientific = scientific)
+      ), 
+      dplyr::across(
+        .fns = trimws
+      ), 
+      dplyr::across(
+        .fns = ~ dplyr::if_else(. == "NA", "", .)
+      ),
+      predictor = rownames(anova(mdl)), 
+      p = paste0(pr_f, p_flag)
+    ) %>% 
+    dplyr::select(predictor, sum_sq, dplyr::everything(), -c(pr_f, p_flag)) -> tbl
+  
+  if(!is.null(pred.labels)) {
+    tbl %>% 
+      mutate(predictor = dplyr::all_of(pred.labels)) -> tbl
+  }
+  
+  tbl %>% 
+    kableExtra::kbl(col.names = c("Predictor", "SS", "df", "MS", "F", "p"), caption = title, ...) %>% 
+    kableExtra::kable_classic(full_width = full_width, ...)
+}
