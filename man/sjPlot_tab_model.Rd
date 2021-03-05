@@ -10,6 +10,7 @@ sjPlot_tab_model(
   show.auc = FALSE,
   show.hosmer_lemeshow = FALSE,
   show.deviance_test = FALSE,
+  footnote = NULL,
   digits = 2,
   digits.p = 3,
   file = NULL,
@@ -27,6 +28,8 @@ sjPlot_tab_model(
 \item{show.hosmer_lemeshow}{Logical, if TRUE, a Hosmer-Lemeshow goodness of fit test is calculated and printed}
 
 \item{show.deviance_test}{Logical, if TRUE, a deviance-test comparing to the null model is calculated and printed}
+
+\item{footnote}{optional footnote for table}
 
 \item{digits}{Amount of decimals for estimates}
 

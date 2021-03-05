@@ -219,8 +219,8 @@ select_via_cor_sig <- function(.data, x, p.value, ...) {
     lapply(function(candidate) {
       c(rlang::as_string(x), candidate)
     }) -> ls_pairs
-  
-  ls_pairs %>% 
+
+  ls_pairs %>%
     lapply(function(vec_pair) {
       x <- .data[[vec_pair[1]]]
       y <- .data[[vec_pair[2]]]
@@ -231,12 +231,20 @@ select_via_cor_sig <- function(.data, x, p.value, ...) {
         dplyr::select(v1, v2, dplyr::everything())
     }) %>%
     dplyr::bind_rows() -> tbl_tidy_cor_test
-  
-  tbl_tidy_cor_test %>% 
+
+  tbl_tidy_cor_test %>%
     dplyr::filter(p.value < {{p.value}}) %>%
-    dplyr::pull(v2) %>% 
+    dplyr::pull(v2) %>%
     c(rlang::as_string(x), .) -> keepers
-  
-  .data %>% 
+
+  .data %>%
     dplyr::select(dplyr::all_of(keepers))
+}
+
+#' Logistic Regression
+#' @description Fit a logistic regression model.
+#' @inheritParams stats::glm
+#' @export
+lr <- function(formula, data, ...) {
+  glm(formula, binomial, data, ...)
 }

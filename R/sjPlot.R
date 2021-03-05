@@ -5,6 +5,7 @@
 #' @param show.auc Logical, if TRUE, the AUC is calculated and printed
 #' @param show.hosmer_lemeshow Logical, if TRUE, a Hosmer-Lemeshow goodness of fit test is calculated and printed
 #' @param show.deviance_test Logical, if TRUE, a deviance-test comparing to the null model is calculated and printed
+#' @param footnote optional footnote for table
 #' @param print Logical, if TRUE in non-interactive mode, the html table code is inserted into the document
 #'
 #' @export
@@ -16,32 +17,45 @@ sjPlot_tab_model <- function(...,
                              show.auc = FALSE,
                              show.hosmer_lemeshow = FALSE,
                              show.deviance_test = FALSE,
+                             footnote = NULL,
                              digits = 2,
                              digits.p = 3,
                              file = NULL,
                              use.viewer = TRUE,
                              print = TRUE) {
-  all_args <- append(list(...), list(ignore_me = 1))
-  unnamed_args <- all_args[names(all_args) == ""]
+  # get references to model objects (the unnamed args) in ...
+  models <- list(...)[names(list(...)) == ""]
 
+  # build base table
   sjTable <- sjPlot::tab_model(
     ...,
     digits = digits,
     digits.p = digits.p
   )
 
+  # count columns for later use
+  sjTable$page.complete %>%
+    xml2::read_html() %>%
+    rvest::html_node("tr") %>%
+    rvest::html_nodes("td") %>%
+    length() -> ncols
+  ncols_per_model <- (ncols - 1) / length(models)
+
+  # construct 0 to 5 additional rows to append
   new_html <- character(0)
 
+  # 1. row for if omnibus f
   if(show.omnibus.f) {
     new_html <- c(new_html, "  <tr>")
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">Omnibus F</td>")
-    summary_test_obj <- lapply(unnamed_args, summary)
+    summary_test_obj <- lapply(models, summary)
     summary_test_htm <- vapply(summary_test_obj, function(x) {
       numdf <- x$fstatistic[["numdf"]]
       dendf <- x$fstatistic[["dendf"]]
       fstat <- x$fstatistic[["value"]]
       pvalu <- pf(fstat, numdf, dendf, lower.tail = FALSE)
-      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"3\">F(%s, %s) = %s, p = %s</td>",
+      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">F(%s, %s) = %s, p = %s</td>",
+              ncols_per_model,
               numdf,
               dendf,
               format(round(fstat, digits), nsmall = digits),
@@ -54,22 +68,26 @@ sjPlot_tab_model <- function(...,
     new_html <- c(new_html, "  </tr>")
   }
 
+  # 2. row for if auc
   if(show.auc) {
     new_html <- c(new_html, "  <tr>")
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">AUC</td>")
-    auc_num <- vapply(unnamed_args, function(mdl) modEvA::AUC(mdl, plot = FALSE)$AUC, numeric(1))
-    auc_htm <- sprintf("    <td class=\"tdata summary summarydata\" colspan=\"3\">%s</td>",
+    auc_num <- vapply(models, function(mdl) modEvA::AUC(mdl, plot = FALSE)$AUC, numeric(1))
+    auc_htm <- sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">%s</td>",
+                       ncols_per_model,
                        format(round(auc_num, digits), nsmall = digits))
     new_html <- c(new_html, auc_htm)
     new_html <- c(new_html, "  </tr>")
   }
 
+  # 3. row for if hosmer lemeshow
   if(show.hosmer_lemeshow) {
     new_html <- c(new_html, "  <tr>")
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">Hosmer Lemeshow</td>")
-    hosmer_lemeshow_test_obj <- lapply(unnamed_args, function(mdl) vcdExtra::HosmerLemeshow(mdl))
+    hosmer_lemeshow_test_obj <- lapply(models, function(mdl) vcdExtra::HosmerLemeshow(mdl))
     hosmer_lemeshow_test_htm <- vapply(hosmer_lemeshow_test_obj, function(x) {
-      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"3\">&#120536;&sup2;(%s) = %s, p = %s</td>",
+      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %s, p = %s</td>",
+              ncols_per_model,
               x$df,
               format(round(x$chisq, digits), nsmall = digits),
               format(round(x$p.value, digits.p), nsmall = digits.p)
@@ -81,12 +99,14 @@ sjPlot_tab_model <- function(...,
     new_html <- c(new_html, "  </tr>")
   }
 
+  # 4. row for is deviance test
   if(show.deviance_test) {
     new_html <- c(new_html, "  <tr>")
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">Deviance</td>")
-    deviance_test_obj <- lapply(unnamed_args, function(mdl) washu::deviance_test(mdl))
+    deviance_test_obj <- lapply(models, function(mdl) washu::deviance_test(mdl))
     deviance_test_htm <- vapply(deviance_test_obj, function(x) {
-      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"3\">&#120536;&sup2;(%s) = %s, p = %s</td>",
+      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %s, p = %s</td>",
+              ncols_per_model,
               x$df,
               format(round(x$chisq, digits), nsmall = digits),
               format(round(x$p.value, digits.p), nsmall = digits.p)
@@ -97,16 +117,36 @@ sjPlot_tab_model <- function(...,
     new_html <- c(new_html, deviance_test_htm)
     new_html <- c(new_html, "  </tr>")
   }
-  new_html <- c(new_html, "</table>")
 
-  page_complete <- sub("</table>", paste(new_html, collapse = "\n"), sjTable$page.complete)
+  # 5. footnote
+  if(!is.null(footnote)) {
+    new_html <- c(
+      new_html,
+      c(
+        "<tfoot>",
+        "  <tr>",
+        sprintf(
+          "    <td colspan=\"%s\" style=\"word-wrap: break-word;\">%s</td>",
+          ncols,
+          footnote
+        ),
+        "  </tr>",
+        "</tfoot>"
+      )
+    )
+  }
 
+  # append the 0 to 5 additional rows
+  page_complete <- sub("</table>", paste(c(new_html, "</table>"), collapse = "\n"), sjTable$page.complete)
+
+  # write the table out if and where specified
   if(is.null(file))
     file <- tempfile(fileext = ".html")
   conn <- file(file)
   writeLines(page_complete, conn)
   close(conn)
 
+  # view output
   if(interactive()) {
     if(use.viewer) {
       # need to ensure viewer file is temp file for viewer to show
@@ -141,42 +181,51 @@ sjPlot_tab_model <- function(...,
 #' @examples
 #' m <- lm(mpg ~ cyl, mtcars)
 #' tab_anova(m)
-#' 
+#'
 #' @seealso \link[sjPlot]{tab_model}, \link[stats]{anova}, \link[base]{format}, \link[kableExtra]{kbl}, \link[kableExtra]{kable_classic}
-tab_anova <- function(mdl, 
-                      title = NULL, 
-                      pred.labels = NULL, 
+tab_anova <- function(mdl,
+                      title = NULL,
+                      pred.labels = NULL,
                       full_width = NULL, # kable_styling
-                      digits = getOption("digits"), 
+                      digits = getOption("digits"),
                       scientific = FALSE,
                       ...) {
-  mdl %>% 
-    anova() %>% 
-    dplyr::as_tibble() %>% 
-    janitor::clean_names() %>% 
-    washu::add_significance_flag(pr_f) %>% 
+  mdl %>%
+    anova() %>%
+    dplyr::as_tibble() %>%
+    janitor::clean_names() %>%
+    washu::add_significance_flag(pr_f) %>%
     dplyr::mutate(
       dplyr::across(
         c(tidyselect:::where(is.numeric), -df),
         ~ format(round(., digits), nsmall = digits, scientific = scientific)
-      ), 
+      ),
       dplyr::across(
         .fns = trimws
-      ), 
+      ),
       dplyr::across(
         .fns = ~ dplyr::if_else(. == "NA", "", .)
       ),
-      predictor = rownames(anova(mdl)), 
+      predictor = rownames(anova(mdl)),
       p = paste0(pr_f, p_flag)
-    ) %>% 
+    ) %>%
     dplyr::select(predictor, sum_sq, dplyr::everything(), -c(pr_f, p_flag)) -> tbl
-  
+
   if(!is.null(pred.labels)) {
-    tbl %>% 
+    tbl %>%
       mutate(predictor = dplyr::all_of(pred.labels)) -> tbl
   }
-  
-  tbl %>% 
-    kableExtra::kbl(col.names = c("Predictor", "SS", "df", "MS", "F", "p"), caption = title, ...) %>% 
+
+  tbl %>%
+    kableExtra::kbl(col.names = c("Predictor", "SS", "df", "MS", "F", "p"), caption = title, ...) %>%
     kableExtra::kable_classic(full_width = full_width, ...)
+}
+
+#' Increment regression model table counter
+#'
+#' @details If using the title argument for sjPlot::tab_model(), the tables are automatically numbered through the use of a css counter. This function can be used in inline R code to insert html code to increment this counter in case a particular table number is desired to be skipped over.
+#'
+#' @export
+sjPlot_tab_model_increment_counter <- function() {
+  knitr::asis_output("<div style=\"counter-increment: table;\" />")
 }
