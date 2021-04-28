@@ -23,8 +23,9 @@ sjPlot_tab_model <- function(...,
                              file = NULL,
                              use.viewer = TRUE,
                              print = TRUE) {
-  # get references to model objects (the unnamed args) in ...
-  models <- list(...)[names(list(...)) == ""]
+  models <- list(...)
+  if(length(class(models[[1]])) == 1 && class(models[[1]]) == "list") 
+    models <- lapply(models[[1]], function(x) x)
 
   # build base table
   sjTable <- sjPlot::tab_model(
@@ -36,8 +37,7 @@ sjPlot_tab_model <- function(...,
   # count columns for later use
   sjTable$page.complete %>%
     xml2::read_html() %>%
-    rvest::html_node("tr") %>%
-    rvest::html_nodes("td") %>%
+    rvest::html_nodes("td.depvarhead") %>%
     length() -> ncols
   ncols_per_model <- (ncols - 1) / length(models)
 
