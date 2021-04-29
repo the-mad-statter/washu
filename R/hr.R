@@ -34,7 +34,7 @@ coef_convert_hr_to_beta <- function(hr, se) {
 #' @param n number of samples from which the hazard ratios were estimated
 #'
 #' @return A list with class "htest" containing the following components:
-#' \tabular{rr}{
+#' \tabular{ll}{
 #' statistic \tab the value of the t-statistic. \cr
 #' parameter \tab the degrees of freedom for the t-statistic. \cr
 #' p.value \tab the p-value for the test. \cr
