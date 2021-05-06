@@ -14,3 +14,9 @@ Name: Search Consults
 Description: Shiny Gadget to Search the Consult Database
 Binding: addin_search_consults
 Interactive: true
+
+
+Name: Insert SAS Chunk
+Description: Insert code chunks supporting a SAS chunk.
+Binding: addin_insert_sas_code_chunk
+Interactive: false

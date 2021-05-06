@@ -21,7 +21,7 @@ hr.test(beta1, se1, beta2, se2, r = 0, n = 10000)
 }
 \value{
 A list with class "htest" containing the following components:
-\tabular{rr}{
+\tabular{ll}{
 statistic \tab the value of the t-statistic. \cr
 parameter \tab the degrees of freedom for the t-statistic. \cr
 p.value \tab the p-value for the test. \cr
