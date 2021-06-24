@@ -315,3 +315,26 @@ wu_emph <- function(x, color = wu_colors$red, bold = TRUE) {
 tempfile_html <- function(pattern = "file", tmpdir = tempdir()) {
   tempfile(pattern, tmpdir, ".html")
 }
+
+#' Write web shortcut file
+#'
+#' @param con A \link[base]{connections} object or character string
+#' @param url URL of location
+#' @param title title of link page
+#' @param ... additional arguments passed to \link[base]{writeLines}
+#'
+#' @export
+write_web_link_file <- function(con, url, title = "", ...) {
+  html <- c(
+    '<html xmlns="http://www.w3.org/1999/xhtml">',
+    '  <head>',
+    sprintf('  <title>%s</title>', title),
+    sprintf('  <meta http-equiv="refresh" content="0;URL=\'%s\'" />', url),
+    '  </head>',
+    '  <body>',
+    sprintf('  <p>This page has moved to a <a href="%s">%s</a>.</p>', url, url),
+    '  </body>',
+    '</html>'
+  )
+  writeLines(html, con, ...)
+}

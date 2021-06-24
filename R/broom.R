@@ -241,6 +241,24 @@ select_via_cor_sig <- function(.data, x, p.value, ...) {
     dplyr::select(dplyr::all_of(keepers))
 }
 
+#' Augment data with information from an object
+#'
+#' @param x Model object of class lmerModLmerTest with information to append to observations.
+#' @param data observations to be augmented
+#' @param ... Addition arguments to augment method.
+#'
+#' @return A \link[tibble]{tibble} with information about data points.
+#' @export
+broom_augment.lmerModLmerTest <- function(x, data, ...) {
+  data %>% 
+    tibble::rownames_to_column(".rowname") %>% 
+    dplyr::left_join(
+      tibble::tibble(.rowname = names(fitted), .fitted = predict(mdl_thigh_pain)),
+      by = ".rowname"
+    ) %>% 
+    select(-.rowname)
+}
+
 #' Logistic Regression
 #' @description Fit a logistic regression model.
 #' @inheritParams stats::glm
