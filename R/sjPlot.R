@@ -23,16 +23,22 @@ sjPlot_tab_model <- function(...,
                              file = NULL,
                              use.viewer = TRUE,
                              print = TRUE) {
+  # because models can be passed as separate objects in ... or as a single list, 
+  # capture them in a models object and if we accidentally listed a list, unbox
+  # this makes it easier to count and manipulate the models in later code
   models <- list(...)
   if(length(class(models[[1]])) == 1 && class(models[[1]]) == "list") 
     models <- lapply(models[[1]], function(x) x)
 
   # build base table
-  sjTable <- sjPlot::tab_model(
-    ...,
-    digits = digits,
-    digits.p = digits.p
-  )
+  ## invisible(capture.output()) to suppress cat'd profiling message
+  invisible(capture.output(
+    sjTable <- sjPlot::tab_model(
+      ...,
+      digits = digits,
+      digits.p = digits.p
+    )
+  ))
 
   # count columns for later use
   sjTable$page.complete %>%
