@@ -24,7 +24,7 @@ sjPlot_tab_model <- function(...,
                              use.viewer = TRUE,
                              print = TRUE) {
   # because models can be passed as separate objects in ... or as a single list, 
-  # capture them in a models object and if we accidentally listed a list, unbox
+  # capture them in a models object, and if we accidentally listed a list, unbox
   # this makes it easier to count and manipulate the models in later code
   models <- list(...)
   if(length(class(models[[1]])) == 1 && class(models[[1]]) == "list") 
