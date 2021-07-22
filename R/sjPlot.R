@@ -62,12 +62,11 @@ sjPlot_tab_model <- function(...,
       dendf <- x$fstatistic[["dendf"]]
       fstat <- x$fstatistic[["value"]]
       pvalu <- pf(fstat, numdf, dendf, lower.tail = FALSE)
-      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">F(%s, %s) = %s, p = %s</td>",
+      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">F(%s, %s) = %.*f, p = %s</td>",
               ncols_per_model,
-              numdf,
-              dendf,
-              format(round(fstat, digits), nsmall = digits),
-              format(round(pvalu, digits.p), nsmall = digits.p)
+              numdf, dendf,
+              digits, fstat,
+              sub("0.", ".", sprintf("%.*f", digits.p, pvalu))
       )
     },
     character(1)
@@ -81,9 +80,9 @@ sjPlot_tab_model <- function(...,
     new_html <- c(new_html, "  <tr>")
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">AUC</td>")
     auc_num <- vapply(models, function(mdl) modEvA::AUC(mdl, plot = FALSE)$AUC, numeric(1))
-    auc_htm <- sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">%s</td>",
+    auc_htm <- sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">%.*f</td>",
                        ncols_per_model,
-                       format(round(auc_num, digits), nsmall = digits))
+                       digits, auc_num)
     new_html <- c(new_html, auc_htm)
     new_html <- c(new_html, "  </tr>")
   }
@@ -94,11 +93,11 @@ sjPlot_tab_model <- function(...,
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">Hosmer Lemeshow</td>")
     hosmer_lemeshow_test_obj <- lapply(models, function(mdl) vcdExtra::HosmerLemeshow(mdl))
     hosmer_lemeshow_test_htm <- vapply(hosmer_lemeshow_test_obj, function(x) {
-      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %s, p = %s</td>",
+      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %.*f, p = %s</td>",
               ncols_per_model,
               x$df,
-              format(round(x$chisq, digits), nsmall = digits),
-              format(round(x$p.value, digits.p), nsmall = digits.p)
+              digits, x$chisq,
+              sub("0.", ".", sprintf("%.*f", digits.p, x$p.value))
       )
     },
     character(1)
@@ -113,11 +112,11 @@ sjPlot_tab_model <- function(...,
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">Deviance</td>")
     deviance_test_obj <- lapply(models, function(mdl) washu::deviance_test(mdl))
     deviance_test_htm <- vapply(deviance_test_obj, function(x) {
-      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %s, p = %s</td>",
+      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %.*f, p = %s</td>",
               ncols_per_model,
               x$df,
-              format(round(x$chisq, digits), nsmall = digits),
-              format(round(x$p.value, digits.p), nsmall = digits.p)
+              digits, x$chisq,
+              sub("0.", ".", sprintf("%.*f", digits.p, x$p.value))
       )
     },
     character(1)

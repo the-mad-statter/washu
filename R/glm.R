@@ -167,7 +167,7 @@ print.glm <- function(x,
         hl_obj <- vcdExtra::HosmerLemeshow(x, g)
         hl_str <- print(hl_obj, "text", ...)
         sink()
-        sprintf("The model %s significantly better than the null model, %s, %s, and a Hosmer Lemeshow test suggested %s fit %s.",
+        sprintf("The model %s significantly better than the null model, %s, %s, and a Hosmer-Lemeshow test suggested %s fit, %s.",
                 ifelse(dt_obj$p.value < sig.level, "was", "was not"),
                 r2_str,
                 dt_str,
