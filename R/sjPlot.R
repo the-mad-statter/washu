@@ -20,6 +20,7 @@ sjPlot_tab_model <- function(...,
                              footnote = NULL,
                              digits = 2,
                              digits.p = 3,
+                             digits.rsq = 3,
                              file = NULL,
                              use.viewer = TRUE,
                              print = TRUE) {
@@ -36,7 +37,8 @@ sjPlot_tab_model <- function(...,
     sjTable <- sjPlot::tab_model(
       ...,
       digits = digits,
-      digits.p = digits.p
+      digits.p = digits.p,
+      digits.rsq = digits.rsq
     )
   ))
 

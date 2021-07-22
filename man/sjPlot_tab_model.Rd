@@ -13,6 +13,7 @@ sjPlot_tab_model(
   footnote = NULL,
   digits = 2,
   digits.p = 3,
+  digits.rsq = 3,
   file = NULL,
   use.viewer = TRUE,
   print = TRUE
@@ -35,9 +36,11 @@ sjPlot_tab_model(
 
 \item{digits.p}{Amount of decimals for p-values}
 
+\item{digits.rsq}{Amount of decimals for r-squared values}
+
 \item{file}{Destination file, if the output should be saved as file.
 If \code{NULL} (default), the output will be saved as temporary file and
-openend either in the IDE's viewer pane or the default web browser.}
+opened either in the IDE's viewer pane or the default web browser.}
 
 \item{use.viewer}{Logical, if \code{TRUE}, the HTML table is shown in the IDE's
 viewer pane. If \code{FALSE} or no viewer available, the HTML table is

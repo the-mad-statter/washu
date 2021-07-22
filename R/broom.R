@@ -258,11 +258,3 @@ broom_augment.lmerModLmerTest <- function(x, data, ...) {
     ) %>% 
     select(-.rowname)
 }
-
-#' Logistic Regression
-#' @description Fit a logistic regression model.
-#' @inheritParams stats::glm
-#' @export
-lr <- function(formula, data, ...) {
-  glm(formula, binomial, data, ...)
-}
