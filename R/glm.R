@@ -163,7 +163,8 @@ print.glm <- function(x,
         r2_str <- print(r2_obj, "text", ...)
         dt_obj <- deviance_test(x)
         dt_str <- print(dt_obj, "text", ...)
-        hl_obj <- vcdExtra::HosmerLemeshow(x, ...)
+        g <- ifelse(is.null(list(...)$g), 10, list(...)$g)
+        hl_obj <- vcdExtra::HosmerLemeshow(x, g)
         hl_str <- print(hl_obj, "text", ...)
         sink()
         sprintf("The model %s significantly better than the null model, %s, %s, and a Hosmer Lemeshow test suggested %s fit %s.",
