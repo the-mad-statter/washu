@@ -1,3 +1,15 @@
+Name: Search Consults
+Description: Shiny Gadget to Search the Consult Database
+Binding: addin_cdb_search_app
+Interactive: true
+
+
+Name: Edit Consult
+Description: Shiny Gadget to Edit the Consult Database
+Binding: addin_cdb_edit_app
+Interactive: true
+
+
 Name: Push Slashes
 Description: Replaces backslashes in highlighted text with forward slashes.
 Binding: addin_push_slashes
@@ -8,12 +20,6 @@ Name: Open Charmap
 Description: Open the Windows Character Map program.
 Binding: addin_open_win_charmap
 Interactive: false
-
-
-Name: Search Consults
-Description: Shiny Gadget to Search the Consult Database
-Binding: addin_search_consults
-Interactive: true
 
 
 Name: Insert SAS Chunk

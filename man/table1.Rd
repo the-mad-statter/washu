@@ -13,7 +13,7 @@ table1(
 )
 }
 \arguments{
-\item{x}{An object, typically a \code{formula} or list of \code{data.frame}s.}
+\item{x}{An object, typically a \code{formula} or list of \code{data.frame}s (see Details).}
 
 \item{data}{For the formula interface, a \code{data.frame} from which the
 variables in \code{x} should be taken.}

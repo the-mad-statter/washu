@@ -7,9 +7,9 @@
 check(document = FALSE, env_vars = c(`_R_CHECK_SYSTEM_CLOCK_` = FALSE), ...)
 }
 \arguments{
-\item{document}{If \code{NA} and the package uses roxygen2, will
-rerun \code{\link[devtools:document]{document()}} prior to checking. Use \code{TRUE}
-and \code{FALSE} to override this default.}
+\item{document}{By default (\code{NULL}) will document if your installed
+roxygen2 version matches the version declared in the \code{DESCRIPTION}
+file. Use \code{TRUE} or \code{FALSE} to override the default.}
 
 \item{env_vars}{Environment variables set during \verb{R CMD check}}
 

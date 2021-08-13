@@ -21,6 +21,48 @@ $for(header-includes)$
 $header-includes$
 $endfor$
 
+\providecommand{\wuclose}{%
+$closing$
+
+\vspace{1\baselineskip}
+
+$if(signature)$
+\ifthenelse{\equal{$signature$}{piglet.png}}{\includegraphics[height=1\baselineskip]{\pigletsignature}}{\includegraphics[height=1\baselineskip]{$signature$}} \par
+$else$
+\vspace{1\baselineskip}
+$endif$
+
+\vspace{1\baselineskip}
+
+$from.name$ \\
+$from.title$ \bigskip }
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+  
+$if(csl-refs)$
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[3] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1 \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces\fi
+  % set entry spacing
+  \ifnum #2 > 0
+  \setlength{\parskip}{#2\baselineskip}
+  \fi
+ }%
+ {}
+\usepackage{calc} % for \widthof, \maxof
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\maxof{\widthof{#1}}{\csllabelwidth}}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth}{#1}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+$endif$
+
 \begin{document}
 
 \includegraphics[width=4.5in]{\washusomlogo} \bigskip
@@ -38,20 +80,5 @@ $to.address$ \bigskip
 $salutation$ \bigskip
 
 $body$ \bigskip
-
-$closing$
-
-\vspace{1\baselineskip}
-
-$if(signature)$
-\ifthenelse{\equal{$signature$}{piglet.png}}{\includegraphics[height=1\baselineskip]{\pigletsignature}}{\includegraphics[height=1\baselineskip]{$signature$}} \par
-$else$
-\vspace{1\baselineskip}
-$endif$
-
-\vspace{1\baselineskip}
-
-$from.name$ \\
-$from.title$
 
 \end{document}

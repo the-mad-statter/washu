@@ -6,6 +6,8 @@ date: "`r Sys.Date()`"
 bibliography: bib/bib.bib
 csl: bib/american-medical-association.csl
 nocite: '@*'
+cloud_files:
+  - https://wustl.app.box.com
 output: washu::consult_report_document
 ---
 

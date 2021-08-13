@@ -102,6 +102,44 @@ letter_document <- function(template = find_resource("template_resource",
                           ...)
 }
 
+#' TeX Close Letter
+#' @return character vector of TeX code
+#' @export
+tex_close_letter <- function() {
+  input <- knitr_current_input()
+  yaml <- rmarkdown::yaml_front_matter(input)
+
+  writeLines(
+    c(
+      yaml$closing,
+      "",
+      "\\vspace{1\\baselineskip}",
+      "",
+      sprintf("\\includegraphics[height=1\\baselineskip]{%s}", gsub("\\\\", "/", yaml$signature)),
+      "",
+      "\\vspace{1\\baselineskip}",
+      "",
+      sprintf("%s \\ ", yaml$from$name),
+      "",
+      yaml$from$title
+    )
+  )
+}
+
+#' @inherit knitr::current_input
+knitr_current_input <- function(dir = FALSE) {
+  if(interactive()) {
+    context <- rstudioapi::getSourceEditorContext()
+    path <- context$path
+    if(!is.null(path))
+      ifelse(dir, path, basename(path))
+    else
+      NULL
+  } else {
+    knitr::current_input(dir)
+  }
+}
+
 #' Letter of support body
 #' @param title title of the project to be supported
 #' @param template path to letter of support body template provided by user

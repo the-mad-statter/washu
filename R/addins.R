@@ -10,8 +10,12 @@ addin_open_win_charmap <- function() {
   open_win_charmap()
 }
 
-addin_search_consults <- function() {
-  db_search_consults()
+addin_cdb_edit_app <- function() {
+  cdb_edit_app()
+}
+
+addin_cdb_search_app <- function() {
+  cdb_search_app()
 }
 
 addin_insert_sas_code_chunk <- function() {
@@ -41,11 +45,11 @@ addin_insert_sas_code_chunk <- function() {
       '  comment = NA',
       ')',
       '```'
-    ), 
+    ),
     collapse = "\n"
   )
-  
+
   id <- rstudioapi::getSourceEditorContext()$id
-  
+
   rstudioapi::insertText(text = text, id = id)
 }

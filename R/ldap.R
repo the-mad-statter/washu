@@ -60,16 +60,40 @@ ldap_as_tibble <- function(ldap_content) {
 #'
 #' @seealso \code{\link{ldap_as_tibble}}
 ldap_clean_tibble <- function(ldap_tibble) {
-  ldap_tibble %>%
-    dplyr::mutate(
-      objectClass = stringr::str_extract(.data$DN,
-                                         stringr::regex("(?<=objectClass: ).+$", dotall = TRUE)),
-      objectClass = stringr::str_replace_all(.data$objectClass,
-                                             stringr::regex("\n\tobjectClass: ", dotall = TRUE),
-                                             "\t"),
-      DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$", dotall = TRUE)),
-      memberOf = stringr::str_replace_all(.data$memberOf,
-                                          stringr::regex("\n\tmemberOf: ", dotall = TRUE), "\t"))
+  column_names <- names(ldap_tibble)
+
+  if("DN" %in% column_names) {
+    ldap_tibble %>%
+      dplyr::mutate(
+        objectClass = stringr::str_extract(.data$DN,
+                                           stringr::regex("(?<=objectClass: ).+$", dotall = TRUE)),
+        objectClass = stringr::str_replace_all(.data$objectClass,
+                                               stringr::regex("\n\tobjectClass: ", dotall = TRUE),
+                                               "\t"),
+        DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$", dotall = TRUE))) -> ldap_tibble
+  }
+
+  if("memberOf" %in% column_names) {
+    ldap_tibble %>%
+      dplyr::mutate(
+        memberOf = stringr::str_replace_all(.data$memberOf,
+                                            stringr::regex("\n\tmemberOf: ", dotall = TRUE), "\t")
+      ) -> ldap_tibble
+  }
+
+  ldap_tibble$value <- NULL
+
+  return(ldap_tibble)
+
+    #dplyr::mutate(
+    #  objectClass = stringr::str_extract(.data$DN,
+    #                                     stringr::regex("(?<=objectClass: ).+$", dotall = TRUE)),
+    #  objectClass = stringr::str_replace_all(.data$objectClass,
+    #                                         stringr::regex("\n\tobjectClass: ", dotall = TRUE),
+    #                                         "\t"),
+    #  DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$", dotall = TRUE)),
+    #  memberOf = stringr::str_replace_all(.data$memberOf,
+    #                                      stringr::regex("\n\tmemberOf: ", dotall = TRUE), "\t"))
 }
 
 #' Generic LDAP query

@@ -1,1 +1,0 @@
-Put image objects received or produced here.

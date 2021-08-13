@@ -4,12 +4,10 @@
 \alias{wu_consult_project}
 \title{Consult Project}
 \usage{
-wu_consult_project(path, principal_investigator = "Dr. Winnie Pooh", ...)
+wu_consult_project(path, ...)
 }
 \arguments{
 \item{path}{path to new project}
-
-\item{principal_investigator}{name of the principal investigator}
 
 \item{...}{parameters passed from the new project dialog}
 }
