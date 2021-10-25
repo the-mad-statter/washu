@@ -18,6 +18,10 @@ addin_cdb_search_app <- function() {
   cdb_search_app()
 }
 
+addin_cdb_open_current_consult_directory <- function() {
+  cdb_open_current_consult_directory()
+}
+
 addin_insert_sas_code_chunk <- function() {
   text <- paste(
     c('```{r switch_to_sas_engine}',

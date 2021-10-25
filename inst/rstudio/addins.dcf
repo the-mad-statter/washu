@@ -10,6 +10,12 @@ Binding: addin_cdb_edit_app
 Interactive: true
 
 
+Name: Open Consult Directory
+Description: Open the current consult directory.
+Binding: addin_cdb_open_current_consult_directory
+Interactive: false
+
+
 Name: Push Slashes
 Description: Replaces backslashes in highlighted text with forward slashes.
 Binding: addin_push_slashes

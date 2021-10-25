@@ -43,7 +43,7 @@ wu_consult_project <- function(path, ...) {
   if(!cdb_consult_exists(project_name))
     stop(sprintf("Consult %s not in the database.", project_name))
 
-  # retrieve pi name
+  # retrieve pi information to place in rmd
   tbl_pi <- cdb_get_principal_investigator(project_name)
   principal_investigator <- paste(tbl_pi$personalTitle, tbl_pi$givenName, tbl_pi$sn)
 

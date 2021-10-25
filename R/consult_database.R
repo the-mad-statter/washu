@@ -153,6 +153,12 @@ cdb_current_consult <- function() {
     stop("Current source document does not appear to be a consult document.")
 }
 
+#' Open the Current Consult Directory
+cdb_open_current_consult_directory <- function() {
+  k <- cdb_current_consult()
+  dir.open(file.path(Sys.getenv("WU_CONSULT_DIR"), k))
+}
+
 
 
 # SHINY EDIT APP ---------------------------------------------------------------
