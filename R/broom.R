@@ -298,3 +298,84 @@ broom_augment.lmerModLmerTest <- function(x, data, ...) {
     ) %>%
     select(-.rowname)
 }
+
+#' Pairwise Wilcoxon (Mann Whitney U) Rank Sum Tests
+#'
+#' @description Performs independent sample Wilcoxon tests for each pair of groups from tidy data.
+#'
+#' @param data tidy data containing the response and group variables
+#' @param response response variable
+#' @param group grouping variable
+#' @param descriptives = logical to add descriptive statistics or not
+#' @param ... additional parameters passed onto \code{\link[stats:wilcox.test]{wilcox.test()}}
+#'
+#' @return a tibble with information about the model components; one model per row
+#' @export
+broom_tidy_pairwise_wilcox_test_two_sample <- function(
+  data,
+  response,
+  group,
+  descriptives = TRUE,
+  ...
+) {
+  response <- rlang::ensym(response)
+  group <- rlang::ensym(group)
+
+  data %>%
+    dplyr::pull(!!group) %>%
+    factor() %>%
+    levels() -> conditions
+
+  combn(1:length(conditions), 2) %>%
+    split(rep(1:ncol(.), each = nrow(.))) %>%
+    lapply(function(p) {
+      # make subset
+      data %>%
+        dplyr::filter(!!group %in% conditions[p]) -> ss
+
+      # model
+      wrst <- rlang::eval_tidy(rlang::quo(wilcox.test(!!response ~ !!group, data = ss, ...)))
+
+      # tidy
+      wrst %>%
+        broom::tidy() %>%
+        dplyr::mutate(
+          "response" = rlang::as_string(response),
+          "group_1" = !!paste0(group, "==", conditions[p][1]),
+          "group_2" = !!paste0(group, "==", conditions[p][2])
+        ) %>%
+        dplyr::rename(
+          w_value = statistic,
+          p_value = p.value
+        ) -> tdy_infr
+
+      ss %>%
+        dplyr::group_by(!!group) %>%
+        dplyr::summarize(
+          n = sum(!is.na(!!response)),
+          md = median(!!response, na.rm = TRUE),
+          q25 = quantile(!!response, 0.25, na.rm = TRUE, names = FALSE),
+          q75 = quantile(!!response, 0.75, na.rm = TRUE, names = FALSE),
+          iqr = q75 - q25
+        ) %>%
+        tidyr::pivot_wider(
+          names_from = !!group,
+          values_from = -!!group
+        ) -> tdy_desc
+      names(tdy_desc) <- c("n_1", "n_2", "md_1", "md_2", "q25_1", "q25_2", "q75_1", "q75_2", "iqr_1", "iqr_2")
+
+      if (descriptives) {
+        dplyr::bind_cols(tdy_desc, tdy_infr)
+      } else {
+        tdy_infr
+      }
+    }) %>%
+    dplyr::bind_rows() %>%
+    add_significance_flag(p_value) %>%
+    dplyr::select(
+      response,
+      group_1,
+      group_2,
+      dplyr::everything()
+    )
+}
