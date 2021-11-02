@@ -21,11 +21,16 @@ add_significance_flag <- function(data, p_val_col) {
 #' @param data tidy data containing the response and group variables
 #' @param response response variable
 #' @param group grouping variable
+#' @param descriptives = logical to add descriptive statistics or not
 #' @param ... additional parameters passed onto \code{\link[stats:t.test]{t.test()}}
 #'
 #' @return a tibble with information about the model components; one model per row
 #' @export
-broom_tidy_pairwise_t_test_two_sample <- function(data, response, group, ...) {
+broom_tidy_pairwise_t_test_two_sample <- function(data,
+                                                  response,
+                                                  group,
+                                                  descriptives = TRUE,
+                                                  ...) {
   response <- rlang::ensym(response)
   group <- rlang::ensym(group)
 
@@ -49,13 +54,48 @@ broom_tidy_pairwise_t_test_two_sample <- function(data, response, group, ...) {
         broom::tidy() %>%
         dplyr::mutate(
           "response" = rlang::as_string(response),
-          "group1" = !!paste0(group, "==", conditions[p][1]),
-          "group2" = !!paste0(group, "==", conditions[p][2])
+          "group_1" = !!paste0(group, "==", conditions[p][1]),
+          "group_2" = !!paste0(group, "==", conditions[p][2])
         ) %>%
-        dplyr::select(response, group1, group2, dplyr::everything())
+        dplyr::rename(
+          mean_diff_est = estimate,
+          mean_diff_lwr = conf.low,
+          mean_diff_upr = conf.high,
+          t_value = statistic,
+          df = parameter,
+          p_value = p.value
+        ) %>%
+        dplyr::select(
+          -dplyr::starts_with("estimate")
+        ) -> tdy_infr
+
+      ss %>%
+        dplyr::group_by(!!group) %>%
+        dplyr::summarize(
+          n = sum(!is.na(!!response)),
+          m = mean(!!response, na.rm = TRUE),
+          s = sd(!!response, na.rm = TRUE),
+        ) %>%
+        tidyr::pivot_wider(
+          names_from = !!group,
+          values_from = -!!group
+        ) -> tdy_desc
+      names(tdy_desc) <- c("n_1", "n_2", "m_1", "m_2", "s_1", "s_2")
+
+      if (descriptives) {
+        dplyr::bind_cols(tdy_desc, tdy_infr)
+      } else {
+        tdy_infr
+      }
     }) %>%
     dplyr::bind_rows() %>%
-    add_significance_flag(p.value)
+    add_significance_flag(p_value) %>%
+    dplyr::select(
+      response,
+      group_1,
+      group_2,
+      dplyr::everything()
+    )
 }
 
 #' Pairwise t tests
@@ -250,11 +290,11 @@ select_via_cor_sig <- function(.data, x, p.value, ...) {
 #' @return A \link[tibble]{tibble} with information about data points.
 #' @export
 broom_augment.lmerModLmerTest <- function(x, data, ...) {
-  data %>% 
-    tibble::rownames_to_column(".rowname") %>% 
+  data %>%
+    tibble::rownames_to_column(".rowname") %>%
     dplyr::left_join(
       tibble::tibble(.rowname = names(fitted), .fitted = predict(mdl_thigh_pain)),
       by = ".rowname"
-    ) %>% 
+    ) %>%
     select(-.rowname)
 }

@@ -4,7 +4,13 @@
 \alias{broom_tidy_pairwise_t_test_two_sample}
 \title{Pairwise t tests}
 \usage{
-broom_tidy_pairwise_t_test_two_sample(data, response, group, ...)
+broom_tidy_pairwise_t_test_two_sample(
+  data,
+  response,
+  group,
+  descriptives = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{tidy data containing the response and group variables}
@@ -12,6 +18,8 @@ broom_tidy_pairwise_t_test_two_sample(data, response, group, ...)
 \item{response}{response variable}
 
 \item{group}{grouping variable}
+
+\item{descriptives}{= logical to add descriptive statistics or not}
 
 \item{...}{additional parameters passed onto \code{\link[stats:t.test]{t.test()}}}
 }
