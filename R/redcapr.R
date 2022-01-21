@@ -10,6 +10,17 @@ retrieve_credential_local <- function(project_id,
   )
 }
 
+#' @inherit REDCapR::redcap_read
+#' @export
+redcap_read <- function(project_id, path_credential = '~/.REDCapR', ...) {
+  credentials <- REDCapR::retrieve_credential_local(path_credential, project_id)
+  REDCapR::redcap_read(
+    redcap_uri = credentials$redcap_uri,
+    token = credentials$token,
+    ...
+  )$data
+}
+
 #' Delete REDCap records
 #'
 #' @param redcap_uri The URI (uniform resource identifier) of the REDCap project. Required.
@@ -26,13 +37,13 @@ retrieve_credential_local <- function(project_id,
 #' }
 redcap_delete_records <- function(redcap_uri, token, records) {
   param_set_1 <- list(
-    token = token, 
-    action = "delete", 
+    token = token,
+    action = "delete",
     content = "record"
   )
-  
+
   param_set_2 <- as.list(as.character(records))
   names(param_set_2) <- sprintf("records[%s]", 0:(length(records) - 1))
-  
+
   httr::POST(redcap_uri, body = c(param_set_1, param_set_2))
 }

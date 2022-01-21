@@ -379,3 +379,48 @@ broom_tidy_pairwise_wilcox_test_two_sample <- function(
       dplyr::everything()
     )
 }
+
+#' One-sided Confidence Intervals
+#'
+#' @param x An lm object created by stats::lm().
+#' @param alternatives Logical indicating whether or not to include a confidence interval in the tidied output. Defaults to FALSE.
+#' @param conf.level The confidence level to use for the confidence interval if conf.int = TRUE. Must be strictly greater than 0 and less than 1. Defaults to 0.95, which corresponds to a 95 percent confidence interval.
+#' @param exponentiate Logical indicating whether or not to exponentiate the the coefficient estimates. This is typical for logistic and multinomial regressions, but a bad idea if there is no log or logit link. Defaults to FALSE.
+#'
+#' @export
+broom_tidy_sided_ci <- function(
+  x,
+  alternatives = 'two.sided',
+  conf.level = 0.95,
+  exponentiate = FALSE
+) {
+  warning('This function is experimental. Use with caution.')
+
+  x %>%
+    broom::tidy(conf.level = conf.level) %>%
+    dplyr::mutate(
+      alternative = alternatives
+    ) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      p.value = dplyr::if_else(alternative %in% c('less', 'greater'), p.value / 2, p.value),
+      conf.low = dplyr::case_when(
+        alternative == 'two.sided' ~ confint(x, level = conf.level)[[term, 1]],
+        alternative == 'less'      ~ -Inf,
+        alternative == 'greater'   ~ -confint(x, level = 1 - 2 * (1 - conf.level))[[term, 2]],
+        TRUE ~ NA_real_
+      ),
+      conf.high = dplyr::case_when(
+        alternative == 'two.sided' ~ confint(x, level = conf.level)[[term, 2]],
+        alternative == 'less'      ~ -confint(x, level = 1 - 2 * (1 - conf.level))[[term, 1]],
+        alternative == 'greater'   ~ Inf,
+        TRUE ~ NA_real_
+      )
+    ) %>%
+    dplyr::ungroup() -> r
+
+  if(exponentiate)
+    dplyr::mutate(r, across(c(estimate, conf.low, conf.high), ~ exp(.))) -> r
+
+  return(r)
+}

@@ -465,3 +465,26 @@ wu_render_estimate <-
       if(!file.remove(input))
         stop("Error deleting skeleton")
   }
+
+#' Insert css code chunk to make consult report document wide
+#'
+#' @param width_main width in pixels of the main container
+#' @param width_tocify width in pixes of the table of contents container
+#'
+#' @export
+css_insert_wide_chunk <- function(width_main = 15000, width_tocify = 400) {
+  fmt_lines <- c(
+    '```{css, echo = FALSE}',
+    'div.main-container {',
+    '  max-width: %ipx;',
+    '}',
+    '',
+    'div.tocify {',
+    '  max-width: %ipx;',
+    '}',
+    '```'
+  )
+  text <- sprintf(paste(fmt_lines, collapse = '\n'), width_main, width_tocify)
+  id <- rstudioapi::getSourceEditorContext()$id
+  invisible(rstudioapi::insertText(text = text, id = id))
+}
