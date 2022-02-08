@@ -4,10 +4,27 @@
 \alias{broom_tidy.glmerMod}
 \title{Tidy a glmerMod object}
 \usage{
-broom_tidy.glmerMod(x, ...)
+broom_tidy.glmerMod(
+  x,
+  conf.int = FALSE,
+  conf.level = 0.95,
+  exponentiate = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{A glmerMod object returned from \code{\link[lme4:glmer]{glmer()}}}
+
+\item{conf.int}{Logical indicating whether or not to include a confidence
+interval in the tidied output. Defaults to FALSE.}
+
+\item{conf.level}{The confidence level to use for the confidence interval if
+conf.int = TRUE. Must be strictly greater than 0 and less than 1. Defaults to
+ 0.95, which corresponds to a 95 percent confidence interval.}
+
+\item{exponentiate}{Logical indicating whether or not to exponentiate the the
+coefficient estimates. This is typical for logistic and multinomial
+regressions, but a bad idea if there is no log or logit link. Defaults to FALSE.}
 
 \item{...}{Additional arguments. Not used. Needed to match generic signature
 only. Cautionary note: Misspelled arguments will be absorbed in ..., where

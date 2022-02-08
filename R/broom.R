@@ -481,6 +481,14 @@ broom_tidy_pairwise_odds_ratio <- function(
 #' Tidy a glmerMod object
 #'
 #' @param x A glmerMod object returned from \code{\link[lme4:glmer]{glmer()}}
+#' @param conf.int Logical indicating whether or not to include a confidence
+#' interval in the tidied output. Defaults to FALSE.
+#' @param conf.level The confidence level to use for the confidence interval if
+#' conf.int = TRUE. Must be strictly greater than 0 and less than 1. Defaults to
+#'  0.95, which corresponds to a 95 percent confidence interval.
+#' @param exponentiate Logical indicating whether or not to exponentiate the the
+#' coefficient estimates. This is typical for logistic and multinomial
+#' regressions, but a bad idea if there is no log or logit link. Defaults to FALSE.
 #' @param ... Additional arguments. Not used. Needed to match generic signature
 #' only. Cautionary note: Misspelled arguments will be absorbed in ..., where
 #' they will be ignored. If the misspelled argument has a default value, the
@@ -492,26 +500,41 @@ broom_tidy_pairwise_odds_ratio <- function(
 #' @examples
 #' m <- lme4::glmer(vs ~ mpg + (1|cyl), mtcars, binomial)
 #' broom_tidy.glmerMod(m)
-broom_tidy.glmerMod <- function(x, ...) {
+broom_tidy.glmerMod <- function(x, conf.int = FALSE, conf.level = 0.95, exponentiate = FALSE, ...) {
   assertthat::assert_that('glmerMod' %in% class(x))
 
   x %>%
     summary() %>%
     coef() %>%
     { dplyr::bind_cols(dplyr::tibble(term = rownames(.)), tibble::as_tibble(.)) } %>%
-    dplyr::mutate(
-      conf.low  = Estimate - 1.96 * `Std. Error`,
-      conf.high = Estimate + 1.96 * `Std. Error`
-    ) %>%
     dplyr::transmute(
       term = term,
-      estimate = exp(Estimate),
+      estimate = Estimate,
       std.error = `Std. Error`,
       statistic = `z value`,
-      p.value = `Pr(>|z|)`,
-      conf.low = exp(conf.low),
-      conf.high = exp(conf.high)
-    )
+      p.value = `Pr(>|z|)`
+    ) -> tdytbl
+
+  if(exponentiate)
+    dplyr::mutate(tdytbl, estimate = exp(estimate)) -> tdytbl
+
+  if(conf.int) {
+    tdytbl %>%
+      dplyr::mutate(
+        conf.low  = estimate - qnorm((1 - conf.level) / 2, lower.tail = FALSE) * std.error,
+        conf.high = estimate + qnorm((1 - conf.level) / 2, lower.tail = FALSE) * std.error
+      ) -> tdytbl
+
+    if(exponentiate) {
+      tdytbl %>%
+        dplyr::mutate(
+          conf.low = exp(conf.low),
+          conf.high = exp(conf.high)
+        ) -> tdytbl
+    }
+  }
+
+  return(tdytbl)
 }
 
 #' Generalized linear mixed-effects models fit to all pairs of group predictor
@@ -525,6 +548,14 @@ broom_tidy.glmerMod <- function(x, ...) {
 #' @param group name of a predictor in formula used to construct data subsets
 #' (each subset defined by a pair of group levels) to which the model will be fit
 #' @param family a GLM family, see \code{\link[stats:glm]{glm}} and \code{\link[stats:family]{family}}.
+#' @param conf.int Logical indicating whether or not to include a confidence
+#' interval in the tidied output. Defaults to FALSE.
+#' @param conf.level The confidence level to use for the confidence interval if
+#' conf.int = TRUE. Must be strictly greater than 0 and less than 1. Defaults to
+#'  0.95, which corresponds to a 95 percent confidence interval.
+#' @param exponentiate Logical indicating whether or not to exponentiate the the
+#' coefficient estimates. This is typical for logistic and multinomial
+#' regressions, but a bad idea if there is no log or logit link. Defaults to FALSE.
 #' @param ... further arguments passed to \code{\link[lme4:glmer]{glmer()}}
 #'
 #' @return a tibble containing all models estimates and associated information
@@ -550,6 +581,9 @@ broom_tidy_pairwise_glmer <- function(
   formula,
   group,
   family = gaussian,
+  conf.int = FALSE,
+  conf.level = 0.95,
+  exponentiate = FALSE,
   ...
 ) {
   group <- rlang::ensym(group)
