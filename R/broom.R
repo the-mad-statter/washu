@@ -424,3 +424,166 @@ broom_tidy_sided_ci <- function(
 
   return(r)
 }
+
+#' Pairwise odds ratios
+#'
+#' @description Computes odds ratios for each pair of exposures from tidy data.
+#'
+#' @param data tidy data containing the response and exposure variables
+#' @param response response variable
+#' @param exposure exposure variable
+#' @param descriptives = logical to add descriptive statistics or not
+#' @param ... additional parameters ultimately passed onto \code{\link[epitools:oddsratio]{oddsratio()}}
+#'
+#' @return a tibble with computed odds ratios and associated information
+#' @export
+broom_tidy_pairwise_odds_ratio <- function(
+  data,
+  response,
+  exposure,
+  descriptives = TRUE,
+  ...
+) {
+  response <- rlang::ensym(response)
+  exposure <- rlang::ensym(exposure)
+
+  data %>%
+    dplyr::pull(!!exposure) %>%
+    factor() %>%
+    levels() -> conditions
+
+  model_n <- 0
+
+  combn(1:length(conditions), 2) %>%
+    split(rep(1:ncol(.), each = nrow(.))) %>%
+    lapply(function(pair) {
+      model_n <<- model_n + 1
+
+      # make subset
+      data %>%
+        dplyr::filter(!!exposure %in% conditions[pair]) -> s
+
+      tryCatch({
+        epitools_oddsratio(s, !!response, !!exposure, na.rm = TRUE, ...) %>%
+          dplyr::rename(exposure.level = exposure) %>%
+          dplyr::mutate(exposure.subset = paste(conditions[pair], collapse = ' vs '))
+      },
+      error = function(e) {
+        dplyr::tibble(exposure.subset = paste(conditions[pair], collapse = ' vs '))
+      }) %>%
+        dplyr::mutate(model = model_n)
+    }) %>%
+    dplyr::bind_rows() %>%
+    dplyr::mutate(exposure = rlang::as_string(exposure)) %>%
+    dplyr::select(model, exposure, exposure.subset, dplyr::everything())
+}
+
+#' Tidy a glmerMod object
+#'
+#' @param x A glmerMod object returned from \code{\link[lme4:glmer]{glmer()}}
+#' @param ... Additional arguments. Not used. Needed to match generic signature
+#' only. Cautionary note: Misspelled arguments will be absorbed in ..., where
+#' they will be ignored. If the misspelled argument has a default value, the
+#' default value will be used.
+#'
+#' @return A \link[tibble]{tibble} with information about fixed model estimates.
+#' @export
+#'
+#' @examples
+#' m <- lme4::glmer(vs ~ mpg + (1|cyl), mtcars, binomial)
+#' broom_tidy.glmerMod(m)
+broom_tidy.glmerMod <- function(x, ...) {
+  assertthat::assert_that('glmerMod' %in% class(x))
+
+  x %>%
+    summary() %>%
+    coef() %>%
+    { dplyr::bind_cols(dplyr::tibble(term = rownames(.)), tibble::as_tibble(.)) } %>%
+    dplyr::mutate(
+      conf.low  = Estimate - 1.96 * `Std. Error`,
+      conf.high = Estimate + 1.96 * `Std. Error`
+    ) %>%
+    dplyr::transmute(
+      term = term,
+      estimate = exp(Estimate),
+      std.error = `Std. Error`,
+      statistic = `z value`,
+      p.value = `Pr(>|z|)`,
+      conf.low = exp(conf.low),
+      conf.high = exp(conf.high)
+    )
+}
+
+#' Generalized linear mixed-effects models fit to all pairs of group predictor
+#'
+#' @param data data frame containing the variables named in formula
+#' @param formula a two-sided linear formula object describing both the
+#' fixed-effects and random-effects part of the model, with the response on the
+#' left of a ~ operator and the terms, separated by + operators, on the right.
+#' Random-effects terms are distinguished by vertical bars ("|") separating
+#' expressions for design matrices from grouping factors.
+#' @param group name of a predictor in formula used to construct data subsets
+#' (each subset defined by a pair of group levels) to which the model will be fit
+#' @param family a GLM family, see \code{\link[stats:glm]{glm}} and \code{\link[stats:family]{family}}.
+#' @param ... further arguments passed to \code{\link[lme4:glmer]{glmer()}}
+#'
+#' @return a tibble containing all models estimates and associated information
+#' @export
+#'
+#' @examples
+#' lme4::cbpp %>%
+#'   tibble::rowid_to_column('obs') %>%
+#'   dplyr::mutate(
+#'     herd = as.numeric(herd),
+#'     herd = dplyr::case_when(
+#'       herd <= 5 ~ '[1,5]',
+#'       herd <= 10 ~ '[6,10]',
+#'       herd <= 15 ~ '[11,15]',
+#'       TRUE ~ NA_character_
+#'     ),
+#'     herd = factor(herd, levels = c('[1,5]', '[6,10]', '[11,15]')),
+#'     period = as.numeric(period)
+#'   ) %>%
+#'   broom_tidy_pairwise_glmer('cbind(incidence, size - incidence) ~ herd + period + herd*period + (1 | obs)', herd, binomial)
+broom_tidy_pairwise_glmer <- function(
+  data,
+  formula,
+  group,
+  family = gaussian,
+  ...
+) {
+  group <- rlang::ensym(group)
+
+  data %>%
+    dplyr::pull(!!group) %>%
+    factor() %>%
+    levels() -> conditions
+
+  model_n <- 0
+
+  combn(1:length(conditions), 2) %>%
+    split(rep(1:ncol(.), each = nrow(.))) %>%
+    lapply(function(pair) {
+      model_n <<- model_n + 1
+
+      data %>%
+        dplyr::filter(!!group %in% conditions[pair]) -> s
+
+      tryCatch({
+        lme4::glmer(as.formula(formula), s, family, ...) %>%
+          broom_tidy.glmerMod() %>%
+          dplyr::mutate(pair = paste(conditions[pair], collapse = ' vs ')) %>%
+          dplyr::select(pair, dplyr::everything())
+      },
+      error = function(e) {
+        dplyr::tibble(pair = paste(conditions[pair], collapse = ' vs '))
+      }) %>%
+        dplyr::mutate(model = model_n)
+    }) %>%
+    dplyr::bind_rows() %>%
+    dplyr::mutate(
+      response = stringr::str_extract(formula, '^.+(?= ~)'),
+      predictor = rlang::as_name(group)
+    ) %>%
+    dplyr::select(model, response, predictor, dplyr::everything())
+}

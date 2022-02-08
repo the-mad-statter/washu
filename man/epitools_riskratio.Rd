@@ -28,7 +28,7 @@ If outcome and exposure are not of type factor, the function will
 convert them to factors with default levels.
 }
 \examples{
-##Selvin 1998, p. 289
+## Selvin 1998, p. 289
 sel <- matrix(c(178, 79, 1411, 1486), 2, 2)
 dimnames(sel) <- list("Behavior type" = c("Type A", "Type B"),
                       "Outcome" = c("CHD", "No CHD")
@@ -47,4 +47,7 @@ bind_rows(
     chd = factor(chd, levels = c("no", "yes"))
   ) \%>\%
   epitools_riskratio(chd, behavior)
+}
+\references{
+Steve Selvin (1998), Modern Applied Biostatistical Methods Using S-Plus, 1st Edition, Oxford University Press
 }
