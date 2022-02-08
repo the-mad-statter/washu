@@ -338,3 +338,19 @@ write_web_link_file <- function(con, url, title = "", ...) {
   )
   writeLines(html, con, ...)
 }
+
+#' Convert a data frame to a csv string
+#'
+#' @param x the object to be written, preferably a matrix or data frame. If not,
+#'  it is attempted to coerce x to a data frame.
+#'
+#' @return a csv character string representation of x
+#' @export
+#'
+#' @examples
+#' as_csv_string(mtcars)
+as_csv_string <- function(x) {
+  f <- tempfile('as_csv_string_', fileext = '.csv')
+  write.csv(x, f, row.names = FALSE)
+  paste(readLines(f), collapse = '\n')
+}
