@@ -354,3 +354,24 @@ as_csv_string <- function(x) {
   write.csv(x, f, row.names = FALSE)
   paste(readLines(f), collapse = '\n')
 }
+
+#' Append a Timestamp to the End of a File Name
+#'
+#' @param x file name to which a time stamp string should be appended.
+#' @param format character string representing how the timestamp should appear
+#' @param delim delimiter between original file name of x and the timestamp
+#'
+#' @return file name with time stamp string appended
+#' @export
+#'
+#' @examples
+#' append_timestamp("my_file.txt")
+append_timestamp <- function(x, format = '%y%m%d%H%M%S', delim = '_') {
+  paste0(
+    tools::file_path_sans_ext(x),
+    delim,
+    base::format(Sys.time(), format),
+    dplyr::if_else(tools::file_ext(x) == '', '', '.'),
+    tools::file_ext(x)
+  )
+}

@@ -2,26 +2,45 @@
 % Please edit documentation in R/redcapr.R
 \name{redcap_delete_records}
 \alias{redcap_delete_records}
-\title{Delete REDCap records}
+\title{Delete Records}
 \usage{
-redcap_delete_records(redcap_uri, token, records)
+redcap_delete_records(
+  redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+  token,
+  records,
+  arm
+)
 }
 \arguments{
-\item{redcap_uri}{The URI (uniform resource identifier) of the REDCap project. Required.}
+\item{redcap_uri}{The URI (uniform resource identifier) of the REDCap
+project.}
 
-\item{token}{The user-specific string that serves as the password for a project. Required.}
+\item{token}{The API token specific to your REDCap project and username (each
+token is unique to each user for each project). See the section on the
+left-hand menu for obtaining a token for a given project.}
 
-\item{records}{Vector of record ids to delete. Required.}
+\item{records}{an array of record names specifying specific records you wish
+to delete}
+
+\item{arm}{the arm number of the arm in which the record(s) should be
+deleted. (This can only be used if the project is longitudinal with more than
+ one arm.) NOTE: If the arm parameter is not provided, the specified records
+ will be deleted from all arms in which they exist. Whereas, if arm is
+ provided, they will only be deleted from the specified arm.}
 }
 \value{
-A \link[httr]{response} object
+httr::response() object containing the number of records deleted.
 }
 \description{
-Delete REDCap records
+Delete Records
 }
 \examples{
 \dontrun{
-creds <- retrieve_credential_local(1234)
-redcap_delete_records(creds$redcap_uri, creds$token, c(1, 5, 7))
+## delete two records from static
+token <- REDCapR::retrieve_credential_local("~/.REDCapR", 7842)$token
+redcap_delete_records(
+  token,
+  records = redcap_array("records", c(16227, 16342))
+)
 }
 }
