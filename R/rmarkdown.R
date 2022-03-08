@@ -161,15 +161,13 @@ letter_of_support_body <-
     body
   }
 
-#' Render letter of support
+#' New letter of support
 #' @param from_name,from_title,from_department_type,from_department_name,from_department_url,from_campus_box,from_phone,from_email attributes of sender
 #' @param to_name,to_address attributes of recipient
 #' @param date,salutation,closing letter customization
 #' @param body body of letter
 #' @param signature path to signature file (empty string for no signature)
-#' @inheritParams rmarkdown::render
-#' @param keep_input keep the input document
-#' @param ... parameters passed to \code{\link[rmarkdown]{render}}
+#' @param output The output RMarkdown file
 #' @export
 #' @examples
 #' \dontrun{
@@ -194,7 +192,7 @@ letter_of_support_body <-
 #'   paste0("\"", Sys.getenv("WU_SIGNATURE"), "\"")
 #' )
 #' }
-wu_render_letter_of_support <-
+wu_new_letter_of_support <-
   function(from_name,
            from_title,
            from_department_type,
@@ -210,9 +208,7 @@ wu_render_letter_of_support <-
            closing,
            body,
            signature = "",
-           input = "LOS.Rmd",
-           keep_input = FALSE,
-           ...) {
+           output = "LOS.Rmd") {
     n_to_address_lines <- length(to_address)
     to_address[2:n_to_address_lines] <-
       paste("    |", to_address[2:n_to_address_lines])
@@ -223,7 +219,7 @@ wu_render_letter_of_support <-
     find_resource("template_skeleton", "letter_of_support") %>%
       file() -> infile
 
-    input %>%
+    output %>%
       file() -> outfile
 
     infile %>%
@@ -243,18 +239,12 @@ wu_render_letter_of_support <-
       tidy_sub("Hi Pooh,", salutation) %>%
       tidy_sub("Your closest friend,", closing) %>%
       tidy_sub("piglet.png", signature) %>%
-      tidy_sub("Thank.+$", "", fixed = FALSE) %>% # remove existing
-      paste0(body) %>% # and append to avoid stripping latex backslashes
+      tidy_sub("Thank.+proposal\\.", "$body$", fixed = FALSE) %>% # replace example body with fixed placeholder
+      tidy_sub('$body$', body) %>%
       writeLines(outfile)
 
     close(infile)
     close(outfile)
-
-    rmarkdown::render(input = input, ...)
-
-    if(!keep_input)
-      if(!file.remove(input))
-        stop("Error deleting skeleton")
   }
 
 #' Consult report document
