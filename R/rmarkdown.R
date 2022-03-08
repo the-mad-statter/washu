@@ -115,7 +115,14 @@ tex_close_letter <- function() {
       "",
       "\\vspace{1\\baselineskip}",
       "",
-      sprintf("\\includegraphics[height=1\\baselineskip]{%s}", gsub("\\\\", "/", yaml$signature)),
+      ifelse(
+        yaml$signature == "",
+        "\\vspace{1\\baselineskip}",
+        sprintf(
+          "\\includegraphics[height=1\\baselineskip]{%s}",
+          gsub("\\\\", "/", yaml$signature)
+        )
+      ),
       "",
       "\\vspace{1\\baselineskip}",
       "",
@@ -167,7 +174,7 @@ letter_of_support_body <-
 #' @param date,salutation,closing letter customization
 #' @param body body of letter
 #' @param signature path to signature file (empty string for no signature)
-#' @param output The output RMarkdown file
+#' @param output RMarkdown output
 #' @export
 #' @examples
 #' \dontrun{

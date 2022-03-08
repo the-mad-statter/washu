@@ -34,7 +34,7 @@ wu_new_letter_of_support(
 
 \item{signature}{path to signature file (empty string for no signature)}
 
-\item{output}{The output RMarkdown file}
+\item{output}{RMarkdown output}
 }
 \description{
 New letter of support
