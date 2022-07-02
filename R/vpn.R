@@ -8,16 +8,14 @@
 #' @param vpn_endpoint vpn endpoint
 #'
 #' @export
-wu_vpn_connect <- function(
-  user = Sys.getenv('WUSTL_KEY_USER'),
-  pass = Sys.getenv('WUSTL_KEY_PASS'),
-  vpn_cli = Sys.getenv('WU_VPN_CLI_PATH'),
-  vpn_endpoint = Sys.getenv('WU_VPN_ENDPOINT')
-) {
+wu_vpn_connect <- function(user = Sys.getenv("WUSTL_KEY_USER"),
+                           pass = Sys.getenv("WUSTL_KEY_PASS"),
+                           vpn_cli = Sys.getenv("WU_VPN_CLI_PATH"),
+                           vpn_endpoint = Sys.getenv("WU_VPN_ENDPOINT")) {
   system2(
     command = vpn_cli,
-    args = sprintf('-s connect %s', vpn_endpoint),
-    input = c(user, pass, 'push', 'y')
+    args = sprintf("-s connect %s", vpn_endpoint),
+    input = c(user, pass, "push", "y")
   )
 }
 
@@ -28,13 +26,11 @@ wu_vpn_connect <- function(
 #' @inheritParams wu_vpn_connect
 #'
 #' @export
-wu_vpn_disconnect <- function(
-  vpn_cli = Sys.getenv('WU_VPN_CLI_PATH')
-) {
+wu_vpn_disconnect <- function(vpn_cli = Sys.getenv("WU_VPN_CLI_PATH")) {
   system2(
     command = vpn_cli,
-    args = '-s disconnect',
-    input = 'quit'
+    args = "-s disconnect",
+    input = "quit"
   )
 }
 
@@ -45,12 +41,10 @@ wu_vpn_disconnect <- function(
 #' @inheritParams wu_vpn_connect
 #'
 #' @export
-wu_vpn_status <- function(
-  vpn_cli = Sys.getenv('WU_VPN_CLI_PATH')
-) {
+wu_vpn_status <- function(vpn_cli = Sys.getenv("WU_VPN_CLI_PATH")) {
   system2(
     command = vpn_cli,
-    args = '-s',
-    input = 'quit'
+    args = "-s",
+    input = "quit"
   )
 }

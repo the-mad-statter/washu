@@ -12,9 +12,10 @@ lr <- function(formula, data, ...) {
 #' @return object of class "dtest"
 #' @export
 deviance_test <- function(x) {
-  robj <- dplyr::tibble(df = x$df.null - x$df.residual,
-                        chisq = x$null.deviance - x$deviance,
-                        p.value = 1 - pchisq(chisq, df)
+  robj <- dplyr::tibble(
+    df = x$df.null - x$df.residual,
+    chisq = x$null.deviance - x$deviance,
+    p.value = 1 - pchisq(chisq, df)
   )
   attr(robj, "class") <- append(attr(robj, "class"), "dtest", 0)
   return(robj)
@@ -29,16 +30,15 @@ deviance_test <- function(x) {
 #' @param digits.p if format is text, p-value decimal digits to print
 #' @param ... additional parameters passed to other functions
 #' @export
-print.dtest <- function(x, 
-                        format = c("tibble", "text"), 
-                        digits = 4, 
-                        digits.df = 0, 
-                        digits.stat = digits, 
-                        digits.p = digits, 
+print.dtest <- function(x,
+                        format = c("tibble", "text"),
+                        digits = 4,
+                        digits.df = 0,
+                        digits.stat = digits,
+                        digits.p = digits,
                         ...) {
   format <- match.arg(format)
-  switch (
-    format,
+  switch(format,
     "tibble" = {
       attr(x, "class") <- attr(x, "class")[-1]
       print(x, ...)
@@ -46,9 +46,9 @@ print.dtest <- function(x,
     "text" = {
       print(
         sprintf(
-          "\u03c7\u00b2(%.*f) = %.*f, p = %s", 
-          digits.df, x$df, 
-          digits.stat, x$chisq, 
+          "\u03c7\u00b2(%.*f) = %.*f, p = %s",
+          digits.df, x$df,
+          digits.stat, x$chisq,
           sub("0.", ".", sprintf("%.*f", digits.p, x$p.value))
         ),
         ...
@@ -66,16 +66,15 @@ print.dtest <- function(x,
 #' @param digits.p if format is text, p-value decimal digits to print
 #' @param ... additional parameters passed to other functions
 #' @export
-print.HLtest <- function(x, 
-                         format = c("default", "tibble", "text"), 
-                         digits = 4, 
-                         digits.df = 0, 
-                         digits.stat = digits, 
-                         digits.p = digits, 
+print.HLtest <- function(x,
+                         format = c("default", "tibble", "text"),
+                         digits = 4,
+                         digits.df = 0,
+                         digits.stat = digits,
+                         digits.p = digits,
                          ...) {
   format <- match.arg(format)
-  switch (
-    format,
+  switch(format,
     "default" = {
       vcdExtra:::print.HLtest(x, ...)
     },
@@ -85,9 +84,9 @@ print.HLtest <- function(x,
     "text" = {
       print(
         sprintf(
-          "\u03c7\u00b2(%.*f) = %.*f, p = %s", 
-          digits.df, x$df, 
-          digits.stat, x$chisq, 
+          "\u03c7\u00b2(%.*f) = %.*f, p = %s",
+          digits.df, x$df,
+          digits.stat, x$chisq,
           sub("0.", ".", sprintf("%.*f", digits.p, x$p.value))
         ),
         ...
@@ -112,13 +111,12 @@ r2 <- function(model, ...) {
 #' @param digits.r2 if format is text, default decimal digits to print
 #' @param ... additional parameters passed to other functions
 #' @export
-print.r_sqr <- function(x, 
-                        format = c("default", "tibble", "text"), 
-                        digits.r2 = 4, 
+print.r_sqr <- function(x,
+                        format = c("default", "tibble", "text"),
+                        digits.r2 = 4,
                         ...) {
   format <- match.arg(format)
-  switch (
-    format,
+  switch(format,
     "default" = {
       attr(x, "class") <- attr(x, "class")[-1]
       print(x, digits = digits.r2, ...)
@@ -128,11 +126,11 @@ print.r_sqr <- function(x,
       print(dplyr::as_tibble(x), ...)
     },
     "text" = {
-      labs <- gsub("([\\w])([\\w]+)_([\\w])([\\w]+)", 
-                   "\\U\\3\\L\\4 \\U\\1\\L\\2", 
-                   names(x), 
-                   perl = TRUE
-              )
+      labs <- gsub("([\\w])([\\w]+)_([\\w])([\\w]+)",
+        "\\U\\3\\L\\4 \\U\\1\\L\\2",
+        names(x),
+        perl = TRUE
+      )
       labs <- sub("R2", "R\u00b2", labs)
       vals <- sub("0.", ".", sprintf("%.*f", digits.r2, x))
       print(paste(labs, vals, sep = " = "), ...)
@@ -146,18 +144,17 @@ print.r_sqr <- function(x,
 #' @param sig.level significance level
 #' @param ... additional parameters passed to other functions
 #' @export
-print.glm <- function(x, 
+print.glm <- function(x,
                       format = c("default", "text"),
-                      sig.level = 0.05, 
+                      sig.level = 0.05,
                       ...) {
   format <- match.arg(format)
-  switch (
-    format,
+  switch(format,
     "default" = {
       stats:::print.glm(x, ...)
     },
     "text" = {
-      if(x$family$family == "binomial") {
+      if (x$family$family == "binomial") {
         sink(tempfile())
         r2_obj <- r2(x)
         r2_str <- print(r2_obj, "text", ...)
@@ -167,12 +164,13 @@ print.glm <- function(x,
         hl_obj <- vcdExtra::HosmerLemeshow(x, g)
         hl_str <- print(hl_obj, "text", ...)
         sink()
-        sprintf("The model %s significantly better than the null model, %s, %s, and a Hosmer-Lemeshow test suggested %s fit, %s.",
-                ifelse(dt_obj$p.value < sig.level, "was", "was not"),
-                r2_str,
-                dt_str,
-                ifelse(hl_obj$p.value < sig.level, "lack of", "adequate"),
-                hl_str
+        sprintf(
+          "The model %s significantly better than the null model, %s, %s, and a Hosmer-Lemeshow test suggested %s fit, %s.",
+          ifelse(dt_obj$p.value < sig.level, "was", "was not"),
+          r2_str,
+          dt_str,
+          ifelse(hl_obj$p.value < sig.level, "lack of", "adequate"),
+          hl_str
         )
       } else {
         sprintf("Do not yet know how to report models of family %s.", x$family$family)

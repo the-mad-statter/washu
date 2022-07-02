@@ -98,6 +98,17 @@ Invisibly returns
    }
 }
 }
+\note{
+The HTML tables can either be saved as file and manually opened (use argument \code{file}) or
+        they can be saved as temporary files and will be displayed in the RStudio Viewer pane (if working with RStudio)
+        or opened with the default web browser. Displaying resp. opening a temporary file is the
+        default behaviour (i.e. \code{file = NULL}).
+        \cr \cr
+        Examples are shown in these three vignettes:
+        \href{https://strengejacke.github.io/sjPlot/articles/tab_model_estimates.html}{Summary of Regression Models as HTML Table},
+        \href{https://strengejacke.github.io/sjPlot/articles/tab_mixed.html}{Summary of Mixed Models as HTML Table} and
+        \href{https://strengejacke.github.io/sjPlot/articles/tab_bayes.html}{Summary of Bayesian Models as HTML Table}.
+}
 \references{
 Hosmer, David W.; Lemeshow, Stanley (2013). Applied Logistic Regression. New York: Wiley.
 }

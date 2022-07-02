@@ -46,7 +46,7 @@ The effect variable is converted to factor in the given order and labels applied
 dplyr::tibble(d = .50,
               y = "learning",
               x = "opportunity",
-              source = "Cohen (1988)") \%>\% 
+              source = "Cohen (1988)") \%>\%
   pp_d(15:45,
        labels = sprintf("\%s \%s", format(round(d, 2), nsmall = 2), source))
 }

@@ -30,7 +30,8 @@ parse_directory_entry <- function(e) {
     fax        = extract_directory_field(v, "Fax:"),
     title      = extract_directory_field(v, "Title:"),
     department = extract_directory_field(v, "Department:"),
-    email      = extract_directory_field(v, "Email:"))
+    email      = extract_directory_field(v, "Email:")
+  )
 }
 
 #' WU directory search
@@ -53,9 +54,12 @@ parse_directory_entry <- function(e) {
 #' wu_directory("schuelke")
 wu_directory <- function(search_name = "", email = "", phone = "") {
   httr::POST("https://wustl.edu/wp-content/themes/wustl_edu/directoryWrapper.php",
-             body = list(search_name = search_name,
-                         email = email,
-                         phone = phone)) %>%
+    body = list(
+      search_name = search_name,
+      email = email,
+      phone = phone
+    )
+  ) %>%
     xml2::read_html() %>%
     rvest::html_nodes(".entry") %>%
     lapply(parse_directory_entry) %>%
@@ -69,16 +73,19 @@ wu_directory <- function(search_name = "", email = "", phone = "") {
 #' @return tibble of results
 #' @export
 icts_directory <- function(query) {
-  httr::GET("https://icts.wustl.edu/wp-json/wp/v2/people", 
-            query = list(per_page = 50,        
-                         order = "asc", 
-                         orderby = "washu_ppi_last",
-                         page = 1,
-                         search = query,
-                         `_fields` = "id,title,meta,featured_image,type,featured_media,people_type,link",
-                         washu_people_type = 9,
-                         `_locale` = "user")) %>% 
-    httr::content() %>% 
+  httr::GET("https://icts.wustl.edu/wp-json/wp/v2/people",
+    query = list(
+      per_page = 50,
+      order = "asc",
+      orderby = "washu_ppi_last",
+      page = 1,
+      search = query,
+      `_fields` = "id,title,meta,featured_image,type,featured_media,people_type,link",
+      washu_people_type = 9,
+      `_locale` = "user"
+    )
+  ) %>%
+    httr::content() %>%
     purrr::map_dfr(~ dplyr::bind_cols(
       dplyr::as_tibble(.x[-which(names(.x) %in% c("title", "meta", "people_type"))]),
       dplyr::tibble(title = .x$title$rendered),

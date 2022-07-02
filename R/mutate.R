@@ -34,23 +34,23 @@ mutate_dicotomize <- function(.data, x, y) {
 #' @export
 #'
 #' @examples
-#' x <- data.frame(id = 1:3, v = paste0('x', 1:3))
-#' y <- data.frame(id = 2:4, v = paste0('y', 2:4))
-#' d <- dplyr::left_join(x, y, by = 'id')
+#' x <- data.frame(id = 1:3, v = paste0("x", 1:3))
+#' y <- data.frame(id = 2:4, v = paste0("y", 2:4))
+#' d <- dplyr::left_join(x, y, by = "id")
 #' mutate_auto_coalesce(d)
 mutate_auto_coalesce <- function(data, suffix = c(".x", ".y")) {
-  message('Check out powerjoin package: https://github.com/moodymudskipper/powerjoin')
+  message("Check out powerjoin package: https://github.com/moodymudskipper/powerjoin")
 
-  assertthat::are_equal(length(suffix),  2)
+  assertthat::are_equal(length(suffix), 2)
 
   data_names <- names(data)
-  suffix_1_names <- data_names[grepl(sprintf('^.+%s$', suffix[1]), data_names)]
-  suffix_2_names <- data_names[grepl(sprintf('^.+%s$', suffix[2]), data_names)]
+  suffix_1_names <- data_names[grepl(sprintf("^.+%s$", suffix[1]), data_names)]
+  suffix_2_names <- data_names[grepl(sprintf("^.+%s$", suffix[2]), data_names)]
 
   assertthat::are_equal(length(suffix_1_names), length(suffix_2_names))
 
-  coalesce_names <- sub(suffix[1], '', suffix_1_names)
-  for(i in seq_along(coalesce_names)) {
+  coalesce_names <- sub(suffix[1], "", suffix_1_names)
+  for (i in seq_along(coalesce_names)) {
     data[[coalesce_names[i]]] <- dplyr::coalesce(data[[suffix_1_names[i]]], data[[suffix_2_names[i]]])
     data[[suffix_1_names[i]]] <- NULL
     data[[suffix_2_names[i]]] <- NULL

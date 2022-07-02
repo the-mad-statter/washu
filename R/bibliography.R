@@ -8,7 +8,7 @@ bib_add_pkg_local <- function(package = "base", bibliography = bib_bibliography(
   add <- utils::capture.output(utils::citation(package, ...))
   add <- add[which(grepl("@Manual", add)):which(grepl("}$", add))]
   add[1] <- sub(",", paste0("r_pkg_", package, ","), add[1])
-  add[length(add)-1] <- sub("},", "}", add[length(add)-1])
+  add[length(add) - 1] <- sub("},", "}", add[length(add) - 1])
   add <- substring(add, 3)
   writeLines(c(old, "", add), bibliography)
 }
@@ -22,8 +22,10 @@ bib_use_csl <- function(csl = c("american-medical-association", "apa"), bib_path
   csl <- match.arg(csl)
 
   file.remove(file.path(bib_path, list.files(bib_path, "csl$")))
-  file.copy(find_resource("template_resource", "consult_report", sprintf("%s.csl", csl)),
-            file.path(bib_path, sprintf("%s.csl", csl)))
+  file.copy(
+    find_resource("template_resource", "consult_report", sprintf("%s.csl", csl)),
+    file.path(bib_path, sprintf("%s.csl", csl))
+  )
 
   source_editor_contents <- rstudioapi::getSourceEditorContext()$contents
   csl_row <- which(grepl("^csl: .+\\.csl$", source_editor_contents))
@@ -34,8 +36,9 @@ bib_use_csl <- function(csl = c("american-medical-association", "apa"), bib_path
   )
   rstudioapi::modifyRange(
     rstudioapi::document_range(csl_start, csl_end),
-    sprintf("csl: %s.csl",
-            ifelse(nchar(bib_path) > 0, file.path(bib_path, csl), csl)
+    sprintf(
+      "csl: %s.csl",
+      ifelse(nchar(bib_path) > 0, file.path(bib_path, csl), csl)
     )
   )
 }
@@ -57,10 +60,11 @@ bib_bibliography <- function(dirname = FALSE) {
   source_editor_contents <- rstudioapi::getSourceEditorContext()$contents
   bib_row <- which(grepl("^bibliography: .+$", source_editor_contents))
   bibliography <- sub("bibliography: ", "", source_editor_contents[bib_row])
-  if(dirname)
+  if (dirname) {
     dirname(bibliography)
-  else
+  } else {
     bibliography
+  }
 }
 
 #' Download Zotero collection
@@ -77,10 +81,13 @@ bib_sync_zotero <- function(download_pdfs = TRUE,
 
   collection_key <- zt_lookup_user_collection_key(
     collection_name = collection_name,
-    ...)
-  zt_get_users_collections_items_top(collection_key = collection_key,
-                                     query = list(format = "bibtex"),
-                                     ...) %>%
+    ...
+  )
+  zt_get_users_collections_items_top(
+    collection_key = collection_key,
+    query = list(format = "bibtex"),
+    ...
+  ) %>%
     httr::content() %>%
     rawToChar() %>%
     c("") %>%
@@ -92,13 +99,15 @@ bib_sync_zotero <- function(download_pdfs = TRUE,
     lapply(function(x) unlist(x)) %>%
     dplyr::bind_rows() -> tbl_pdf
 
-  if(download_pdfs & nrow(tbl_pdf) > 0) {
+  if (download_pdfs & nrow(tbl_pdf) > 0) {
     tbl_pdf %>%
       dplyr::mutate(file_path = file.path(dirname(bibliography), title)) %>%
       dplyr::select(href, file_path) %>%
       purrr::pmap(function(href, file_path) {
-        zt_get(url = href,
-               config = httr::write_disk(path = file_path, overwrite = TRUE))
+        zt_get(
+          url = href,
+          config = httr::write_disk(path = file_path, overwrite = TRUE)
+        )
       })
   }
 }
@@ -108,9 +117,11 @@ bib_sync_zotero <- function(download_pdfs = TRUE,
 bib_add_pkg_zotero <- function(package,
                                collection_name = bib_zotero_collection(),
                                ...) {
-  zt_add_pkg(package = package,
-             collection_name = collection_name,
-             ...)
+  zt_add_pkg(
+    package = package,
+    collection_name = collection_name,
+    ...
+  )
 }
 
 #' @rdname zt_create_collection
@@ -118,7 +129,9 @@ bib_add_pkg_zotero <- function(package,
 bib_use_zotero <- function(collection_name = bib_zotero_collection(),
                            parent_collection_key = NULL,
                            ...) {
-  zt_create_collection(collection_name = collection_name,
-                       parent_collection_key = parent_collection_key,
-                       ...)
+  zt_create_collection(
+    collection_name = collection_name,
+    parent_collection_key = parent_collection_key,
+    ...
+  )
 }

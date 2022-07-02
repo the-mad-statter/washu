@@ -9,30 +9,34 @@
 #'
 #' @examples
 #' \dontrun{
-#' table1(~ ., mtcars, "Table 1. Descriptives.html")
+#' table1(~., mtcars, "Table 1. Descriptives.html")
 #' }
-table1 <- function(
-  x,
-  data,
-  file,
-  css = system.file("table1_defaults_1.0",
-                    "table1_defaults.css",
-                    package = "table1"),
-  ...) {
+table1 <- function(x,
+                   data,
+                   file,
+                   css = system.file("table1_defaults_1.0",
+                     "table1_defaults.css",
+                     package = "table1"
+                   ),
+                   ...) {
   table1::table1(x, data, ...) -> table_1
 
-  html_lines <- c("<html>",
-                  "<style>",
-                  readLines(css),
-                  "</style>",
-                  table_1,
-                  "</html>")
+  html_lines <- c(
+    "<html>",
+    "<style>",
+    readLines(css),
+    "</style>",
+    table_1,
+    "</html>"
+  )
 
-  if(!missing(file))
+  if (!missing(file)) {
     writeLines(html_lines, file)
+  }
 
   structure(html_lines,
-            class = c("washu_table1", class(html_lines)))
+    class = c("washu_table1", class(html_lines))
+  )
 }
 
 #' Print washu_table1 objects
@@ -40,7 +44,7 @@ table1 <- function(
 #' @param x an object of type washu_table1
 #'
 #' @return the argument x, invisibly
-#' 
+#'
 #' @export
 print.washu_table1 <- function(x) {
   tf <- tempfile(fileext = ".html")
@@ -55,5 +59,5 @@ print.washu_table1 <- function(x) {
 #' @importFrom knitr knit_print
 #' @export
 knit_print.washu_table1 <- function(x, ...) {
-    knitr::asis_output(x)
+  knitr::asis_output(x)
 }

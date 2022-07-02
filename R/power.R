@@ -11,13 +11,16 @@
 #' @export
 #' @examples
 #' ## Exercise 9.1 P. 424 from Cohen (1988)
-#' dplyr::tibble(f2 = 0.1/(1-0.1),
-#'               y = "sales",
-#'               x = "demographics",
-#'               source = "Cohen (1988)") %>%
+#' dplyr::tibble(
+#'   f2 = 0.1 / (1 - 0.1),
+#'   y = "sales",
+#'   x = "demographics",
+#'   source = "Cohen (1988)"
+#' ) %>%
 #'   pp_f2(85:105,
-#'         u1 = 5,
-#'         labels = sprintf("%s %s", format(round(f2, 2), nsmall = 2), source))
+#'     u1 = 5,
+#'     labels = sprintf("%s %s", format(round(f2, 2), nsmall = 2), source)
+#'   )
 #' @note The effect variable is converted to factor in the given order and labels applied respectively.
 #' @references Cohen, J. (1988). Statistical power analysis for the behavioral sciences (2nd ed.). Hillsdale,NJ: Lawrence Erlbaum.
 #' @seealso \code{\link[ggplot2]{ggplot}}, \code{\link[pwr]{pwr.f2.test}}
@@ -37,8 +40,9 @@ pp_f2 <- function(data, N, u1 = 1, u2 = 0, sig.level = 0.05, min_pwr = NULL, eff
       sig.level = sig.level,
       power = pwr::pwr.f2.test(.data$u1, .data$v, {{ effect }}, .data$sig.level)$power,
       f2_fct = factor({{ effect }},
-                      unique({{ effect }}),
-                      labels = unique({{ labels }}))
+        unique({{ effect }}),
+        labels = unique({{ labels }})
+      )
     ) %>%
     ggplot2::ggplot(ggplot2::aes(.data$N, .data$power, color = .data$f2_fct, linetype = .data$f2_fct)) +
     ggplot2::geom_line() +
@@ -71,66 +75,71 @@ pp_f2 <- function(data, N, u1 = 1, u2 = 0, sig.level = 0.05, min_pwr = NULL, eff
 #' @export
 #' @examples
 #' ## Exercise 2.1 P. 40 from Cohen (1988)
-#' dplyr::tibble(d = .50,
-#'               y = "learning",
-#'               x = "opportunity",
-#'               source = "Cohen (1988)") %>% 
+#' dplyr::tibble(
+#'   d = .50,
+#'   y = "learning",
+#'   x = "opportunity",
+#'   source = "Cohen (1988)"
+#' ) %>%
 #'   pp_d(15:45,
-#'        labels = sprintf("%s %s", format(round(d, 2), nsmall = 2), source))
+#'     labels = sprintf("%s %s", format(round(d, 2), nsmall = 2), source)
+#'   )
 #' @note The effect variable is converted to factor in the given order and labels applied respectively.
 #' @references Cohen, J. (1988). Statistical power analysis for the behavioral sciences (2nd ed.). Hillsdale,NJ: Lawrence Erlbaum.
 #' @seealso \code{\link[ggplot2]{ggplot}}, \code{\link[pwr]{pwr.t.test}}
-pp_d <- function (
-  data,
-  n,
-  type = c("two.sample", "one.sample", "paired"), 
-  alternative = c("two.sided", "less", "greater"), 
-  sig.level = 0.05,
-  min_pwr = NULL,
-  effect = .data$d,
-  labels = .data$d
-) {
+pp_d <- function(data,
+                 n,
+                 type = c("two.sample", "one.sample", "paired"),
+                 alternative = c("two.sided", "less", "greater"),
+                 sig.level = 0.05,
+                 min_pwr = NULL,
+                 effect = .data$d,
+                 labels = .data$d) {
   type <- match.arg(type)
   alternative <- match.arg(alternative)
-  
+
   guide_label <- ifelse(type == "paired", "Cohen's dz", "Cohen's d")
-  
+
   grid <- expand.grid(i = 1:nrow(data), n = n)
   grid <- cbind(data[grid$i, ], grid)
-  
+
   grid %>%
     dplyr::select(-.data$i) %>%
     dplyr::mutate(
       type = type,
-      alternative = alternative, 
+      alternative = alternative,
       sig.level = sig.level,
       d_fct = factor({{ effect }},
-                     unique({{ effect }}),
-                     labels = unique({{ labels }}))
-    ) %>% 
-    dplyr::rowwise() %>% 
+        unique({{ effect }}),
+        labels = unique({{ labels }})
+      )
+    ) %>%
+    dplyr::rowwise() %>%
     dplyr::mutate(
       power = pwr::pwr.t.test(
-        n = .data$n, 
-        d = {{ effect }}, 
-        sig.level = .data$sig.level, 
-        power = NULL, 
-        type = .data$type, 
-        alternative = .data$alternative)$power
-    ) %>% 
-    dplyr::ungroup() %>% 
-    ggplot2::ggplot(ggplot2::aes(x = .data$n, 
-                                 y = .data$power, 
-                                 color = .data$d_fct, 
-                                 linetype = .data$d_fct)) +
+        n = .data$n,
+        d = {{ effect }},
+        sig.level = .data$sig.level,
+        power = NULL,
+        type = .data$type,
+        alternative = .data$alternative
+      )$power
+    ) %>%
+    dplyr::ungroup() %>%
+    ggplot2::ggplot(ggplot2::aes(
+      x = .data$n,
+      y = .data$power,
+      color = .data$d_fct,
+      linetype = .data$d_fct
+    )) +
     ggplot2::geom_line() +
     ggplot2::labs(
-      x = "Number of observations (per sample)", 
+      x = "Number of observations (per sample)",
       y = "Power",
-      color = guide_label, 
+      color = guide_label,
       linetype = guide_label
     ) -> pp
-  
+
   if (!is.null(min_pwr)) {
     pp <- pp + ggplot2::geom_hline(
       yintercept = min_pwr,
@@ -138,7 +147,7 @@ pp_d <- function (
       linetype = "dashed"
     )
   }
-  
+
   return(pp)
 }
 
@@ -190,107 +199,109 @@ pp_d <- function (
 es_map <- function(size, type = c("r", "R^2", "d", "or", "f", "f^2", "eta^2", "omega^2", "cl")) {
   type <- match.arg(type)
 
-  if (type == "r"){
-    r         <- size
-    `R^2`     <- r^2
-    d         <- r * 2 / sqrt(1 - r^2)
-    or        <- exp(d * pi / sqrt(3))
-    f         <- d / 2
-    `f^2`     <- `R^2` / (1 - `R^2`)
-    `eta^2`   <- `f^2` / (1 + `f^2`)
+  if (type == "r") {
+    r <- size
+    `R^2` <- r^2
+    d <- r * 2 / sqrt(1 - r^2)
+    or <- exp(d * pi / sqrt(3))
+    f <- d / 2
+    `f^2` <- `R^2` / (1 - `R^2`)
+    `eta^2` <- `f^2` / (1 + `f^2`)
     `omega^2` <- `f^2` / (1 + `f^2`)
-    cl        <- stats::pnorm(d / sqrt(2))
+    cl <- stats::pnorm(d / sqrt(2))
   } else if (type == "R^2") {
-    `R^2`     <- size
-    r         <- sqrt(`R^2`)
-    d         <- r * 2 / sqrt(1 - r^2)
-    or        <- exp(d * pi / sqrt(3))
-    f         <- d / 2
-    `f^2`     <- `R^2` / (1 - `R^2`)
-    `eta^2`   <- `f^2` / (1 + `f^2`)
+    `R^2` <- size
+    r <- sqrt(`R^2`)
+    d <- r * 2 / sqrt(1 - r^2)
+    or <- exp(d * pi / sqrt(3))
+    f <- d / 2
+    `f^2` <- `R^2` / (1 - `R^2`)
+    `eta^2` <- `f^2` / (1 + `f^2`)
     `omega^2` <- `f^2` / (1 + `f^2`)
-    cl        <- stats::pnorm(d/sqrt(2))
-  } else if (type == "d"){
-    d         <- size
-    r         <- sqrt(d^2 / (d^2 + 4))
-    `R^2`     <- r^2
-    or        <- exp(d * pi / sqrt(3))
-    f         <- d/2
-    `f^2`     <- `R^2` / (1 - `R^2`)
-    `eta^2`   <- `f^2` / (1 + `f^2`)
+    cl <- stats::pnorm(d / sqrt(2))
+  } else if (type == "d") {
+    d <- size
+    r <- sqrt(d^2 / (d^2 + 4))
+    `R^2` <- r^2
+    or <- exp(d * pi / sqrt(3))
+    f <- d / 2
+    `f^2` <- `R^2` / (1 - `R^2`)
+    `eta^2` <- `f^2` / (1 + `f^2`)
     `omega^2` <- `f^2` / (1 + `f^2`)
-    cl        <- stats::pnorm(d / sqrt(2))
+    cl <- stats::pnorm(d / sqrt(2))
   } else if (type == "or") {
-    or        <- size
-    d         <- log(or) * (sqrt(3) / pi)
-    r         <- sqrt(d^2 / (d^2 + 4))
-    `R^2`     <- r^2
-    f         <- d/2
-    `f^2`     <- `R^2` / (1 - `R^2`)
-    `eta^2`   <- `f^2` / (1 + `f^2`)
+    or <- size
+    d <- log(or) * (sqrt(3) / pi)
+    r <- sqrt(d^2 / (d^2 + 4))
+    `R^2` <- r^2
+    f <- d / 2
+    `f^2` <- `R^2` / (1 - `R^2`)
+    `eta^2` <- `f^2` / (1 + `f^2`)
     `omega^2` <- `f^2` / (1 + `f^2`)
-    cl        <- stats::pnorm(d / sqrt(2))
+    cl <- stats::pnorm(d / sqrt(2))
   } else if (type == "f") {
-    f         <- size
-    d         <- f * 2
-    r         <- sqrt(d^2 / (d^2 + 4))
-    `R^2`     <- r^2
-    or        <- exp(d * pi / sqrt(3))
-    `f^2`     <- `R^2` / (1 - `R^2`)
-    `eta^2`   <- `f^2` / (1 + `f^2`)
+    f <- size
+    d <- f * 2
+    r <- sqrt(d^2 / (d^2 + 4))
+    `R^2` <- r^2
+    or <- exp(d * pi / sqrt(3))
+    `f^2` <- `R^2` / (1 - `R^2`)
+    `eta^2` <- `f^2` / (1 + `f^2`)
     `omega^2` <- `f^2` / (1 + `f^2`)
-    cl        <- stats::pnorm(d / sqrt(2))
-  } else if(type == "f^2") {
-    `f^2`     <- size
-    `R^2`     <- `f^2` / (1 + `f^2`)
-    r         <- sqrt(`R^2`)
-    d         <- r * 2 / sqrt(1 - r^2)
-    or        <- exp(d * pi / sqrt(3))
-    f         <- d / 2
-    `eta^2`   <- `f^2` / (1 + `f^2`)
+    cl <- stats::pnorm(d / sqrt(2))
+  } else if (type == "f^2") {
+    `f^2` <- size
+    `R^2` <- `f^2` / (1 + `f^2`)
+    r <- sqrt(`R^2`)
+    d <- r * 2 / sqrt(1 - r^2)
+    or <- exp(d * pi / sqrt(3))
+    f <- d / 2
+    `eta^2` <- `f^2` / (1 + `f^2`)
     `omega^2` <- `f^2` / (1 + `f^2`)
-    cl        <- stats::pnorm(d / sqrt(2))
-  } else if(type == "eta^2") {
-    `eta^2`   <- size
-    f         <- sqrt(`eta^2` / (1 - `eta^2`))
-    d         <- f * 2
-    r         <- sqrt(d^2 / (d^2 + 4))
-    `R^2`     <- r^2
-    `f^2`     <- `R^2` / (1 - `R^2`)
-    or        <- exp(d * pi / sqrt(3))
+    cl <- stats::pnorm(d / sqrt(2))
+  } else if (type == "eta^2") {
+    `eta^2` <- size
+    f <- sqrt(`eta^2` / (1 - `eta^2`))
+    d <- f * 2
+    r <- sqrt(d^2 / (d^2 + 4))
+    `R^2` <- r^2
+    `f^2` <- `R^2` / (1 - `R^2`)
+    or <- exp(d * pi / sqrt(3))
     `omega^2` <- `f^2` / (1 + `f^2`)
-    cl        <- stats::pnorm(d / sqrt(2))
+    cl <- stats::pnorm(d / sqrt(2))
   } else if (type == "omega^2") {
     `omega^2` <- size
-    `f^2`     <- `omega^2` / (1 - `omega^2`)
-    `R^2`     <- `f^2` / (1 + `f^2`)
-    r         <- sqrt(`R^2`)
-    d         <- r * 2 / sqrt(1 - r^2)
-    or        <- exp(d * pi / sqrt(3))
-    f         <- d / 2
-    `eta^2`   <- `f^2` / (1 + `f^2`)
-    cl        <- stats::pnorm(d / sqrt(2))
-  } else if(type == "cl"){
-    cl        <- size
-    d         <- sqrt(2) * stats::qnorm(cl)
-    r         <- sqrt(d^2 / (d^2 + 4))
-    `R^2`     <- r^2
-    or        <- exp(d * pi / sqrt(3))
-    f         <- d / 2
-    `f^2`     <- `R^2` / (1 - `R^2`)
-    `eta^2`   <- `f^2` / (1 + `f^2`)
+    `f^2` <- `omega^2` / (1 - `omega^2`)
+    `R^2` <- `f^2` / (1 + `f^2`)
+    r <- sqrt(`R^2`)
+    d <- r * 2 / sqrt(1 - r^2)
+    or <- exp(d * pi / sqrt(3))
+    f <- d / 2
+    `eta^2` <- `f^2` / (1 + `f^2`)
+    cl <- stats::pnorm(d / sqrt(2))
+  } else if (type == "cl") {
+    cl <- size
+    d <- sqrt(2) * stats::qnorm(cl)
+    r <- sqrt(d^2 / (d^2 + 4))
+    `R^2` <- r^2
+    or <- exp(d * pi / sqrt(3))
+    f <- d / 2
+    `f^2` <- `R^2` / (1 - `R^2`)
+    `eta^2` <- `f^2` / (1 + `f^2`)
     `omega^2` <- `f^2` / (1 + `f^2`)
   }
 
-  return(list("r"       = r,
-              "R^2"     = `R^2`,
-              "d"       = d,
-              "or"      = or,
-              "f"       = f,
-              "f^2"     = `f^2`,
-              "eta^2"   = `eta^2`,
-              "omega^2" = `omega^2`,
-              "cl"      = cl))
+  return(list(
+    "r" = r,
+    "R^2" = `R^2`,
+    "d" = d,
+    "or" = or,
+    "f" = f,
+    "f^2" = `f^2`,
+    "eta^2" = `eta^2`,
+    "omega^2" = `omega^2`,
+    "cl" = cl
+  ))
 }
 
 #' Cohen's d
@@ -302,16 +313,16 @@ es_map <- function(size, type = c("r", "R^2", "d", "or", "f", "f^2", "eta^2", "o
 #'
 #' @return Cohen's d
 #' @export
-#' 
+#'
 #' @examples
-#' mtcars %>% 
-#'   group_by(vs) %>% 
-#'   summarize(m = mean(mpg), s = sd(mpg)) %>% 
-#'   tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) %>% 
-#'   rowwise() %>% 
+#' mtcars %>%
+#'   group_by(vs) %>%
+#'   summarize(m = mean(mpg), s = sd(mpg)) %>%
+#'   tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) %>%
+#'   rowwise() %>%
 #'   mutate(cohens_d = es_cohens_d(m_0, m_1, s_0, s_1))
-#' 
-#' @references 
+#'
+#' @references
 #' Cohen, J. (1988). Statistical power analysis for the behavioral sciences. Routledge.
 es_cohens_d <- function(m_0, m_1, s_0, s_1) {
   (m_1 - m_0) / sqrt((s_0^2 + s_1^2) / 2)
@@ -325,16 +336,16 @@ es_cohens_d <- function(m_0, m_1, s_0, s_1) {
 #'
 #' @return Glass' delta
 #' @export
-#' 
+#'
 #' @examples
-#' mtcars %>% 
-#'   group_by(vs) %>% 
-#'   summarize(m = mean(mpg), s = sd(mpg)) %>% 
-#'   tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) %>% 
-#'   rowwise() %>% 
+#' mtcars %>%
+#'   group_by(vs) %>%
+#'   summarize(m = mean(mpg), s = sd(mpg)) %>%
+#'   tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) %>%
+#'   rowwise() %>%
 #'   mutate(glass_delta = es_glass_delta(m_0, m_1, s_0))
-#' 
-#' @references 
+#'
+#' @references
 #' Hedges, L. V. & Olkin, I. (1985). Statistical methods for meta-analysis. Academic Press.
 es_glass_delta <- function(m_0, m_1, s) {
   (m_1 - m_0) / s
@@ -349,18 +360,18 @@ es_glass_delta <- function(m_0, m_1, s) {
 #' @param s_0 standard deviation of group 0
 #' @param s_1 standard deviation of group 1
 #'
-#' @examples 
-#' mtcars %>% 
-#'   group_by(vs) %>% 
-#'   summarize(n = n(), m = mean(mpg), s = sd(mpg)) %>% 
-#'   tidyr::pivot_wider(names_from = vs, values_from = c(n, m, s)) %>% 
-#'   rowwise() %>% 
+#' @examples
+#' mtcars %>%
+#'   group_by(vs) %>%
+#'   summarize(n = n(), m = mean(mpg), s = sd(mpg)) %>%
+#'   tidyr::pivot_wider(names_from = vs, values_from = c(n, m, s)) %>%
+#'   rowwise() %>%
 #'   mutate(hedges_g = es_hedges_g(n_0, n_1, m_0, m_1, s_0, s_1))
-#' 
-#' @return
+#'
+#' @return double representation of g
 #' @export
-#' 
-#' @references 
+#'
+#' @references
 #' Hedges, L. V. (1981). Distribution theory for Glass' estimator of effect size and related estimators. Journal of Educational Statistics, 6(2), 107-128. https://doi.org/10.3102/10769986006002107
 es_hedges_g <- function(n_0, n_1, m_0, m_1, s_0, s_1) {
   (m_1 - m_0) / sqrt(((n_0 - 1) * s_0^2 + (n_1 - 1) * s_1^2) / (n_0 + n_1 - 2))

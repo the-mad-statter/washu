@@ -16,9 +16,11 @@
 saturn_connect <- function(user = Sys.getenv("WUSTL_KEY_USER"),
                            passwd = Sys.getenv("WUSTL_KEY_PASS"),
                            verbose = FALSE) {
-  ssh::ssh_connect(host = sprintf("%s@saturn.biostat.lan", user),
-                   passwd = passwd,
-                   verbose = verbose)
+  ssh::ssh_connect(
+    host = sprintf("%s@saturn.biostat.lan", user),
+    passwd = passwd,
+    verbose = verbose
+  )
 }
 
 #' Saturn Execute
@@ -172,48 +174,69 @@ saturn_job_init <- function(job_name,
   dir.create(job_name)
   setwd(job_name)
   remote_path <- ifelse(spath == ".",
-                        file.path("/home", user, job_name),
-                        file.path("/home", user, spath, job_name))
+    file.path("/home", user, job_name),
+    file.path("/home", user, spath, job_name)
+  )
 
   # .sjob
-  .sjob <- list(name = job_name,
-                user = user,
-                spath = spath,
-                id = NULL)
+  .sjob <- list(
+    name = job_name,
+    user = user,
+    spath = spath,
+    id = NULL
+  )
   save(.sjob, file = ".sjob")
 
   # pbs script
   pbs_script_name <- sprintf("%s.pbs", job_name)
   pbs_script <- file(pbs_script_name, "wb")
-  write(c(sprintf("#PBS -N %s", job_name),
-          sprintf("#PBS -q %s", queue),
-          sprintf("#PBS -l nodes=%s:ppn=%s%s", nodes, ppn, property),
-          sprintf("#PBS -d %s", remote_path), # PBS_O_INITDIR
-          sprintf("#PBS -o %s.out", file.path(remote_path, job_name)),
-          sprintf("#PBS -e %s.err", file.path(remote_path, job_name))),
-        pbs_script)
+  write(
+    c(
+      sprintf("#PBS -N %s", job_name),
+      sprintf("#PBS -q %s", queue),
+      sprintf("#PBS -l nodes=%s:ppn=%s%s", nodes, ppn, property),
+      sprintf("#PBS -d %s", remote_path), # PBS_O_INITDIR
+      sprintf("#PBS -o %s.out", file.path(remote_path, job_name)),
+      sprintf("#PBS -e %s.err", file.path(remote_path, job_name))
+    ),
+    pbs_script
+  )
 
-  if(walltime != "00:00:00")
+  if (walltime != "00:00:00") {
     write(sprintf("#PBS -l walltime=%s", walltime),
-          pbs_script, append = TRUE)
+      pbs_script,
+      append = TRUE
+    )
+  }
 
-  if(!missing(M))
-    write(c(sprintf("#PBS -M %s", M),
-            sprintf("#PBS -m %s", m)),
-          pbs_script, append = TRUE)
+  if (!missing(M)) {
+    write(c(
+      sprintf("#PBS -M %s", M),
+      sprintf("#PBS -m %s", m)
+    ),
+    pbs_script,
+    append = TRUE
+    )
+  }
 
-  write(sprintf("/usr/lib64/R/bin/Rscript %s/%s.r",
-                remote_path, job_name), pbs_script, append = TRUE)
+  write(sprintf(
+    "/usr/lib64/R/bin/Rscript %s/%s.r",
+    remote_path, job_name
+  ), pbs_script, append = TRUE)
   close(pbs_script)
 
   # cron file
-  if(add_cron) {
+  if (add_cron) {
     cron_file_name <- sprintf("%s.cron", job_name)
     cron_file <- file(cron_file_name, "wb")
-    write(sprintf("%s qsub %s",
-                  cron_schedule,
-                  file.path(remote_path, pbs_script_name)),
-          cron_file)
+    write(
+      sprintf(
+        "%s qsub %s",
+        cron_schedule,
+        file.path(remote_path, pbs_script_name)
+      ),
+      cron_file
+    )
     close(cron_file)
   }
 
@@ -222,8 +245,9 @@ saturn_job_init <- function(job_name,
   source_file <- file(source_file_name, "wb")
   write(sprintf("setwd(\"%s\")", remote_path), source_file)
   close(source_file)
-  if(edit_script)
+  if (edit_script) {
     rstudioapi::navigateToFile(source_file_name)
+  }
 
   # clean up
   setwd("..")
@@ -251,11 +275,12 @@ saturn_job_upload <- function(session, job_name, mk_spath = FALSE, ...) {
 
   # if spath does not exist, either make it or stop
   r <- saturn_execute(session, sprintf("if test -d %s; then echo \"exist\"; fi", .sjob$spath), ...)
-  if(length(r$stdout) == 0) {
-    if(mk_spath)
+  if (length(r$stdout) == 0) {
+    if (mk_spath) {
       saturn_execute(session, sprintf("mkdir -p %s", .sjob$spath))
-    else
+    } else {
       stop(sprintf("The remote directory /home/%s/%s does not exist.", .sjob$user, .sjob$spath))
+    }
   }
 
   r <- saturn_upload(session, job_name, .sjob$spath, ...)
@@ -279,11 +304,15 @@ saturn_job_upload <- function(session, job_name, mk_spath = FALSE, ...) {
 #' }
 saturn_job_submit <- function(session, job_name, ...) {
   load(file.path(job_name, ".sjob"))
-  response <- saturn_execute(session,
-                             c(sprintf("cd %s", .sjob$spath),
-                               sprintf("cd %s", .sjob$name),
-                               sprintf("qsub %s.pbs", .sjob$name)),
-                             ...)
+  response <- saturn_execute(
+    session,
+    c(
+      sprintf("cd %s", .sjob$spath),
+      sprintf("cd %s", .sjob$name),
+      sprintf("qsub %s.pbs", .sjob$name)
+    ),
+    ...
+  )
   .sjob$id <- sub("\\..+$", "", rawToChar(response$stdout))
   save(.sjob, file = file.path(job_name, ".sjob"))
   r <- saturn_upload(session, file.path(job_name, ".sjob"), file.path(.sjob$spath, .sjob$name), ...)
@@ -319,26 +348,36 @@ saturn_job_schedule <- function(session, job_name, ...) {
   load(file.path(job_name, ".sjob"))
 
   remote_path <- ifelse(.sjob$spath == ".",
-                        file.path("/home", .sjob$user, .sjob$name),
-                        file.path("/home", .sjob$user, .sjob$spath, .sjob$name))
+    file.path("/home", .sjob$user, .sjob$name),
+    file.path("/home", .sjob$user, .sjob$spath, .sjob$name)
+  )
   cron_file <- sprintf("%s/%s.cron", remote_path, .sjob$name)
 
   # check if cron file exists
-  r <- saturn_execute(session,
-                      c(sprintf("cd %s", .sjob$spath),
-                        sprintf("cd %s", .sjob$name),
-                        sprintf("if test -f %s.cron; then echo \"exist\"; fi", .sjob$name)),
-                      ...)
+  r <- saturn_execute(
+    session,
+    c(
+      sprintf("cd %s", .sjob$spath),
+      sprintf("cd %s", .sjob$name),
+      sprintf("if test -f %s.cron; then echo \"exist\"; fi", .sjob$name)
+    ),
+    ...
+  )
 
-  if(length(r$stdout) == 0)
+  if (length(r$stdout) == 0) {
     stop(sprintf("The remote cron file %s not found.", cron_file))
+  }
 
   # add cron to crontab
-  r <- saturn_execute(session,
-                      c(sprintf("cd %s", .sjob$spath),
-                        sprintf("cd %s", .sjob$name),
-                        sprintf("crontab %s.cron", .sjob$name)),
-                      ...)
+  r <- saturn_execute(
+    session,
+    c(
+      sprintf("cd %s", .sjob$spath),
+      sprintf("cd %s", .sjob$name),
+      sprintf("crontab %s.cron", .sjob$name)
+    ),
+    ...
+  )
 }
 
 #' Saturn Job Running
@@ -415,7 +454,7 @@ saturn_job_download <- function(session, job_name, ...) {
 saturn_job_remove <- function(session, job_name, location = c("remote", "local"), ...) {
   .sjob <- NULL
   location <- match.arg(location)
-  if(location == "remote") {
+  if (location == "remote") {
     load(file.path(job_name, ".sjob"))
     r <- saturn_execute(session, sprintf("rm -rf %s", file.path(.sjob$spath, job_name)), ...)
   } else {

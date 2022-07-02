@@ -6,7 +6,7 @@
 #'
 #' @return an object of the same type as .data
 #' @export
-#' 
+#'
 #' @examples
 #' ## select columns with at least a 95% completion rate
 #' select_via_complete_rate(airquality, 0.95)
@@ -23,7 +23,7 @@ select_via_complete_rate <- function(.data, rate, greater = TRUE) {
 #'
 #' @return an object of the same type as .data
 #' @export
-#' 
+#'
 #' @examples
 #' ## select columns with a maximum missing rate of 5%
 #' select_via_missing_rate(airquality, 0.05)
@@ -44,10 +44,10 @@ select_via_missing_rate <- function(.data, rate, greater = TRUE) {
 #' @examples
 #' ## select factor columns
 #' select_via_class(iris, "factor")
-#' 
+#'
 #' ## select everything but factor columns
 #' select_via_class(iris, "factor", FALSE)
-#' 
+#'
 #' ## select numeric
 #' select_via_class(iris, "numeric")
 select_via_class <- function(.data, class, keep = TRUE) {

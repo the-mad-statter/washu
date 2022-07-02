@@ -3,13 +3,21 @@
 #' @param project_name proposed project name to check
 #' @param version flag to check for version number
 valid_project_name <- function(project_name, version = FALSE) {
-  if(version)
+  if (version) {
     matches_pattern <- grepl("^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])\\-\\d+\\-v\\d+$", project_name)
-  else
+  } else {
     matches_pattern <- grepl("^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])\\-\\d+$", project_name)
+  }
   date_portion <- substr(project_name, 1, 10)
-  parsable_date <-   tryCatch(expr = { tmp <- as.Date(date_portion); TRUE },
-                              error = function(e) { FALSE })
+  parsable_date <- tryCatch(
+    expr = {
+      tmp <- as.Date(date_portion)
+      TRUE
+    },
+    error = function(e) {
+      FALSE
+    }
+  )
   matches_pattern & parsable_date
 }
 
@@ -21,27 +29,32 @@ wu_consult_project <- function(path, ...) {
   project_name <- basename(path)
 
   # test project name
-  if(!valid_project_name(project_name))
+  if (!valid_project_name(project_name)) {
     stop("Project name must be in YYYY-MM-DD-N format.")
+  }
 
   # test project exists
   project_exists <- c(
     file = file.exists(path),
     data = cdb_consult_exists(project_name)
   )
-  if(all(unname(project_exists)))
+  if (all(unname(project_exists))) {
     stop(sprintf("Consult %s already exists in both the filebase and database.", project_name))
-  if(project_exists[["file"]])
+  }
+  if (project_exists[["file"]]) {
     stop(sprintf("Consult %s already exists in the filebase.", project_name))
-  if(project_exists[["data"]])
+  }
+  if (project_exists[["data"]]) {
     stop(sprintf("Consult %s already exists in the database.", project_name))
+  }
 
   # edit database
   print(cdb_edit_app(project_name, new = TRUE))
 
   # make sure consult was written to database
-  if(!cdb_consult_exists(project_name))
+  if (!cdb_consult_exists(project_name)) {
     stop(sprintf("Consult %s not in the database.", project_name))
+  }
 
   # retrieve pi information to place in rmd
   tbl_pi <- cdb_get_principal_investigator(project_name)

@@ -300,7 +300,9 @@ dteditmod <- function(input, output, session,
                       useairDatepicker = FALSE,
                       datatable.options = list(pageLength = defaultPageLength),
                       datatable.rownames = FALSE,
-                      datatable.call = function(...) {DT::datatable(...)},
+                      datatable.call = function(...) {
+                        DT::datatable(...)
+                      },
                       ...) {
   if (!missing(session) && is.environment(session)) {
     # the function has been called as a module
@@ -312,7 +314,9 @@ dteditmod <- function(input, output, session,
     # and 'session' is a character string,
     # then 'session' is the 'name' of the output
     name <- session
-    ns <- function(x) return(x)
+    ns <- function(x) {
+      return(x)
+    }
     # 'ns' becomes a 'change nothing' function
     moduleMode <- FALSE # not in 'module' mode
   }
@@ -360,19 +364,19 @@ dteditmod <- function(input, output, session,
   )
   inputTypes <- sapply(thedataCopy[, edit.cols], FUN = function(x) {
     switch(class(x)[[1]],
-           list = "selectInputMultiple",
-           character = "textInput",
-           Date = "dateInput",
-           POSIXct = "datetimeInput",
-           factor = "selectInput",
-           integer = "numericInput",
-           numeric = "numericInput",
-           blob = "fileInput"
+      list = "selectInputMultiple",
+      character = "textInput",
+      Date = "dateInput",
+      POSIXct = "datetimeInput",
+      factor = "selectInput",
+      integer = "numericInput",
+      numeric = "numericInput",
+      blob = "fileInput"
     )
   })
   if ("datetimeInput" %in% inputTypes && !useairDatepicker) {
     # standard dateInput does not have a time picker
-    stop (
+    stop(
       "'datetimeInput', or POSIXct types, are not available if 'useairDatepicker' is set to false."
     )
   }
@@ -490,23 +494,24 @@ dteditmod <- function(input, output, session,
   # was "thedata[,view.cols]", but requires drop=FALSE
   # to prevent return of vector (instead of dataframe)
   # if only one column in view.cols
-  output[[DataTableName]] <- DT::renderDataTable({
-    datatable.call(
-      data = thedataWithButtons$data,
-      options = datatable.options,
-      rownames = datatable.rownames,
-      escape = which(
-        !names(thedataWithButtons$data) %in% thedataWithButtons$button.colNames
-      ),
-      # 'escaped' columns are those without HTML buttons etc.
-      # escape the 'data' columns
-      # but do not escape the columns which
-      #  have been created by addActionButtons()
-      selection = "single"
-    )
-  },
-  server = TRUE,
-  ...
+  output[[DataTableName]] <- DT::renderDataTable(
+    {
+      datatable.call(
+        data = thedataWithButtons$data,
+        options = datatable.options,
+        rownames = datatable.rownames,
+        escape = which(
+          !names(thedataWithButtons$data) %in% thedataWithButtons$button.colNames
+        ),
+        # 'escaped' columns are those without HTML buttons etc.
+        # escape the 'data' columns
+        # but do not escape the columns which
+        #  have been created by addActionButtons()
+        selection = "single"
+      )
+    },
+    server = TRUE,
+    ...
   )
   outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
   # without turning off suspendWhenHidden, changes are
@@ -516,9 +521,11 @@ dteditmod <- function(input, output, session,
   # then set result$rows_selected to that row
   # this will be returned to the caller
   shiny::observeEvent(
-    input[[paste0(DataTableName, "_rows_selected")]], {
+    input[[paste0(DataTableName, "_rows_selected")]],
+    {
       result$rows_selected <- input[[paste0(DataTableName, "_rows_selected")]]
-    })
+    }
+  )
 
   getFields <- function(typeName, values) {
     # creates input fields when adding or editing a row
@@ -533,8 +540,8 @@ dteditmod <- function(input, output, session,
     for (i in seq_along(edit.cols)) {
       if (inputTypes[i] == "dateInput") {
         value <- ifelse(missing(values),
-                        as.character(Sys.Date()),
-                        as.character(values[, edit.cols[i]])
+          as.character(Sys.Date()),
+          as.character(values[, edit.cols[i]])
         )
         if (!useairDatepicker) {
           fields[[i]] <- shiny::dateInput(
@@ -556,8 +563,8 @@ dteditmod <- function(input, output, session,
       } else if (inputTypes[i] == "datetimeInput") {
         # note that this uses shinyWidgets::airDatepickerInput
         value <- ifelse(missing(values),
-                        as.character(Sys.time()),
-                        as.character(values[, edit.cols[i]])
+          as.character(Sys.time()),
+          as.character(values[, edit.cols[i]])
         )
         fields[[i]] <- shinyWidgets::airDatepickerInput(
           ns(paste0(name, typeName, edit.cols[i])),
@@ -574,7 +581,7 @@ dteditmod <- function(input, output, session,
         }
         choices <- ""
         if (!is.null(input.choices) &&
-            edit.cols[i] %in% names(input.choices)) {
+          edit.cols[i] %in% names(input.choices)) {
           choices <- input.choices[[edit.cols[i]]]
         } else if (nrow(result$thedata) > 0) {
           choices <- unique(unlist(result$thedata[, edit.cols[i]]))
@@ -614,7 +621,7 @@ dteditmod <- function(input, output, session,
         }
         choices <- ""
         if (!is.null(input.choices) &&
-            edit.cols[i] %in% names(input.choices)) {
+          edit.cols[i] %in% names(input.choices)) {
           choices <- input.choices[[edit.cols[i]]]
         } else if (is.factor(result$thedata[, edit.cols[i]])) {
           choices <- levels(result$thedata[, edit.cols[i]])
@@ -780,28 +787,30 @@ dteditmod <- function(input, output, session,
   }
 
   populate_search_results <- function(email, typeName) {
-    tryCatch({
-      ldap_results <- washu::wu_ldap_query("mail", email)
-      if(nrow(ldap_results == 1)) {
-        for(i in seq_along(names(ldap_results))) {
-          shiny::updateTextInput(inputId = paste0(name, typeName, names(ldap_results[i])), value = ldap_results[[1, i]])
+    tryCatch(
+      {
+        ldap_results <- washu::wu_ldap_query("mail", email)
+        if (nrow(ldap_results == 1)) {
+          for (i in seq_along(names(ldap_results))) {
+            shiny::updateTextInput(inputId = paste0(name, typeName, names(ldap_results[i])), value = ldap_results[[1, i]])
+          }
+        } else {
+          error(sprintf("No LDAP record found for %s.", email))
         }
-      } else {
-        error(sprintf("No LDAP record found for %s.", email))
+      },
+      error = function(e) {
+        shinyalert::shinyalert("LDAP Query Failed...", e$message, "warning")
       }
-    },
-    error = function(e) {
-      shinyalert::shinyalert("LDAP Query Failed...", e$message, "warning")
-    })
+    )
 
-    #ldap_results <- washu::wu_ldap_query("mail", email)
-    #if(nrow(ldap_results == 1)) {
+    # ldap_results <- washu::wu_ldap_query("mail", email)
+    # if(nrow(ldap_results == 1)) {
     #  for(i in seq_along(names(ldap_results))) {
     #    shiny::updateTextInput(inputId = paste0(name, typeName, names(ldap_results[i])), value = ldap_results[[1, i]])
     #  }
-    #} else {
+    # } else {
     #  shinyalert::shinyalert("LDAP Query Failed...", sprintf("No LDAP record found for %s.", email), "warning")
-    #}
+    # }
 
     icts_results <- washu::icts_directory(email)
     icts_member_selected <- ifelse(nrow(icts_results) == 1, "Yes", "No")
@@ -811,7 +820,7 @@ dteditmod <- function(input, output, session,
   search_row <- function(typeName = c("add", "edit")) {
     typeName <- match.arg(typeName)
 
-    if(show.search) {
+    if (show.search) {
       shiny::fluidRow(
         shiny::column(width = 10, textInput(sprintf("%s_search_email", name), NULL, placeholder = "someone@wustl.edu")),
         shiny::column(width = 2, actionButton(sprintf("%s_%s_search", name, typeName), "Search"))
@@ -859,7 +868,9 @@ dteditmod <- function(input, output, session,
     )
   }
 
-  shiny::observeEvent(input[[sprintf("%s_add_search", name)]], { populate_search_results(input[[sprintf("%s_search_email", name)]], "_add_") })
+  shiny::observeEvent(input[[sprintf("%s_add_search", name)]], {
+    populate_search_results(input[[sprintf("%s_search_email", name)]], "_add_")
+  })
 
   insert.click <- NA # click timer (to avoid overly fast double-click)
 
@@ -869,8 +880,11 @@ dteditmod <- function(input, output, session,
       lastclick <- as.numeric(Sys.time() - insert.click, units = "secs")
       if (lastclick < click.time.threshold) {
         warning(
-          paste0("Double click detected. Ignoring insert call for ",
-                 name, "."))
+          paste0(
+            "Double click detected. Ignoring insert call for ",
+            name, "."
+          )
+        )
         return()
       }
     }
@@ -886,8 +900,7 @@ dteditmod <- function(input, output, session,
     #  'raw(1)' can be changed to as.blob(raw(0))
     #  but as.blob can't be used to create a NULL blob object!
     for (i in seq_len(ncol(newdata))) {
-      new_row[[i]] <- switch(
-        class(newdata[, i])[[1]],
+      new_row[[i]] <- switch(class(newdata[, i])[[1]],
         "factor" = as.factor(NA),
         "Date" = as.Date(NA, origin = "1970-01-01"),
         "raw" = list(blob::as.blob(raw(1))),
@@ -896,14 +909,15 @@ dteditmod <- function(input, output, session,
         "numeric" = as.numeric(NA),
         "POSIXct" = as.POSIXct(NA),
         "AsIs" = as.list(NA), # for lists
-        methods::as(NA, class(newdata[, i])[[1]]))
+        methods::as(NA, class(newdata[, i])[[1]])
+      )
     }
     newdata[row, ] <- data.frame(new_row, stringsAsFactors = FALSE)
     # create a new empty row, compatible with blob columns
     # the new row is ready for filling
     for (i in edit.cols) {
       if (inputTypes[i] %in%
-          c("selectInputMultiple", "selectInputMultipleReactive")) {
+        c("selectInputMultiple", "selectInputMultipleReactive")) {
         newdata[[i]][row] <- list(input[[paste0(name, "_add_", i)]])
       } else if (inputTypes[i] == "fileInput") { # file read into binary blob
         datapath <- input[[paste0(name, "_add_", i)]]$datapath
@@ -920,27 +934,30 @@ dteditmod <- function(input, output, session,
         newdata[row, i] <- input[[paste0(name, "_add_", i)]]
       }
     }
-    tryCatch({
-      callback.data <- callback.insert(data = newdata, row = row)
-      if (!is.null(callback.data) && is.data.frame(callback.data)) {
-        result$thedata <- callback.data
-      } else {
-        result$thedata <- newdata
+    tryCatch(
+      {
+        callback.data <- callback.insert(data = newdata, row = row)
+        if (!is.null(callback.data) && is.data.frame(callback.data)) {
+          result$thedata <- callback.data
+        } else {
+          result$thedata <- newdata
+        }
+        updateData(dt.proxy,
+          result$thedata[, view.cols, drop = FALSE],
+          # was "result$thedata[,view.cols]",
+          # but that returns vector if view.cols is a single column
+          rownames = datatable.rownames
+        )
+        result$edit.count <- result$edit.count + 1
+        shiny::removeModal()
+        return(TRUE)
+      },
+      error = function(e) {
+        output[[paste0(name, "_message")]] <<-
+          shiny::renderUI(shiny::HTML(geterrmessage()))
+        return(FALSE)
       }
-      updateData(dt.proxy,
-                 result$thedata[, view.cols, drop = FALSE],
-                 # was "result$thedata[,view.cols]",
-                 # but that returns vector if view.cols is a single column
-                 rownames = datatable.rownames
-      )
-      result$edit.count <- result$edit.count + 1
-      shiny::removeModal()
-      return(TRUE)
-    }, error = function(e) {
-      output[[paste0(name, "_message")]] <<-
-        shiny::renderUI(shiny::HTML(geterrmessage()))
-      return(FALSE)
-    })
+    )
   })
 
   ##### Copy functions #######################################################
@@ -978,13 +995,16 @@ dteditmod <- function(input, output, session,
       title = title.edit,
       shiny::fluidPage(
         shiny::div(
-          if (datatable.rownames) # rownames are being displayed
+          if (datatable.rownames) { # rownames are being displayed
             shiny::h4(rownames(thedata)[row])
+          }
         ),
         shiny::div(
           shiny::htmlOutput(
-            ns(paste0(name, "_message"))),
-          style = "color:red"),
+            ns(paste0(name, "_message"))
+          ),
+          style = "color:red"
+        ),
         search_row("edit"),
         fields
       ),
@@ -997,7 +1017,9 @@ dteditmod <- function(input, output, session,
     )
   }
 
-  shiny::observeEvent(input[[sprintf("%s_edit_search", name)]], { populate_search_results(input[[sprintf("%s_search_email", name)]], "_edit_") })
+  shiny::observeEvent(input[[sprintf("%s_edit_search", name)]], {
+    populate_search_results(input[[sprintf("%s_search_email", name)]], "_edit_")
+  })
 
   update.click <- NA # a timer to avoid 'double-clicks'
 
@@ -1007,8 +1029,10 @@ dteditmod <- function(input, output, session,
     if (!is.na(update.click)) {
       lastclick <- as.numeric(Sys.time() - update.click, units = "secs")
       if (lastclick < click.time.threshold) {
-        warning(paste0("Double click detected. Ignoring update call for ",
-                       name, "."))
+        warning(paste0(
+          "Double click detected. Ignoring update call for ",
+          name, "."
+        ))
         return()
       }
     }
@@ -1018,8 +1042,10 @@ dteditmod <- function(input, output, session,
     if (!is.null(row) && row > 0) {
       newdata <- result$thedata
       for (i in edit.cols) {
-        if (inputTypes[i] %in% c("selectInputMultiple",
-                                 "selectInputMultipleReactive")) {
+        if (inputTypes[i] %in% c(
+          "selectInputMultiple",
+          "selectInputMultipleReactive"
+        )) {
           newdata[[i]][row] <- list(input[[paste0(name, "_edit_", i)]])
         } else if (inputTypes[i] == "fileInput") {
           datapath <- input[[paste0(name, "_edit_", i)]]$datapath
@@ -1037,32 +1063,35 @@ dteditmod <- function(input, output, session,
           newdata[row, i] <- input[[paste0(name, "_edit_", i)]]
         }
       }
-      tryCatch({
-        callback.data <- callback.update(
-          data = newdata,
-          olddata = result$thedata,
-          row = row
-        )
-        if (!is.null(callback.data) && is.data.frame(callback.data)) {
-          result$thedata <- callback.data
-        } else {
-          result$thedata <- newdata
+      tryCatch(
+        {
+          callback.data <- callback.update(
+            data = newdata,
+            olddata = result$thedata,
+            row = row
+          )
+          if (!is.null(callback.data) && is.data.frame(callback.data)) {
+            result$thedata <- callback.data
+          } else {
+            result$thedata <- newdata
+          }
+          updateData(dt.proxy,
+            result$thedata[, view.cols, drop = FALSE],
+            # was "result$thedata[,view.cols]",
+            # but that returns vector (not dataframe) if
+            # view.cols is only a single column
+            rownames = datatable.rownames
+          )
+          result$edit.count <- result$edit.count + 1
+          shiny::removeModal()
+          return(TRUE)
+        },
+        error = function(e) {
+          output[[paste0(name, "_message")]] <<-
+            shiny::renderUI(shiny::HTML(geterrmessage()))
+          return(FALSE)
         }
-        updateData(dt.proxy,
-                   result$thedata[, view.cols, drop = FALSE],
-                   # was "result$thedata[,view.cols]",
-                   # but that returns vector (not dataframe) if
-                   # view.cols is only a single column
-                   rownames = datatable.rownames
-        )
-        result$edit.count <- result$edit.count + 1
-        shiny::removeModal()
-        return(TRUE)
-      }, error = function(e) {
-        output[[paste0(name, "_message")]] <<-
-          shiny::renderUI(shiny::HTML(geterrmessage()))
-        return(FALSE)
-      })
+      )
     }
     return(FALSE)
   })
@@ -1086,29 +1115,34 @@ dteditmod <- function(input, output, session,
     # can also be closed if the '_delete' event is observed
     fields <- list()
     for (i in seq_along(delete.info.cols)) {
-      fields[[i]] <- div(paste0(delete.info.label.cols[i], " = ",
-                                result$thedata[row, delete.info.cols[i]]))
+      fields[[i]] <- div(paste0(
+        delete.info.label.cols[i], " = ",
+        result$thedata[row, delete.info.cols[i]]
+      ))
     }
     output[[paste0(name, "_message")]] <- shiny::renderUI("")
     shiny::modalDialog(
       title = title.delete,
       shiny::fluidPage(
         shiny::div(
-          if (datatable.rownames) # rownames are being displayed
+          if (datatable.rownames) { # rownames are being displayed
             shiny::h4(rownames(thedata)[row])
+          }
         ),
         shiny::div(
           shiny::htmlOutput(
-            ns(paste0(name, "_message"))), style = "color:red"
+            ns(paste0(name, "_message"))
+          ),
+          style = "color:red"
         ),
         shiny::p(text.delete.modal),
         fields
       ),
       footer = shiny::column(modalButton(label.cancel),
-                             shiny::actionButton(
-                               ns(paste0(name, "_delete")), label.delete
-                             ),
-                             width = 12
+        shiny::actionButton(
+          ns(paste0(name, "_delete")), label.delete
+        ),
+        width = 12
       ),
       size = modal.size
     )
@@ -1119,31 +1153,32 @@ dteditmod <- function(input, output, session,
 
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
-      tryCatch({
-        callback.data <- callback.delete(data = result$thedata, row = row)
-        if (!is.null(callback.data) && is.data.frame(callback.data)) {
-          result$thedata <- callback.data
-        } else {
-          result$thedata <- result$thedata[-row, , drop = FALSE]
-          # 'drop=FALSE' prevents the dataframe being reduced to a vector
-          # especially if only a single column
+      tryCatch(
+        {
+          callback.data <- callback.delete(data = result$thedata, row = row)
+          if (!is.null(callback.data) && is.data.frame(callback.data)) {
+            result$thedata <- callback.data
+          } else {
+            result$thedata <- result$thedata[-row, , drop = FALSE]
+            # 'drop=FALSE' prevents the dataframe being reduced to a vector
+            # especially if only a single column
+          }
+          updateData(dt.proxy,
+            result$thedata[, view.cols, drop = FALSE],
+            # was "result$thedata[,view.cols]",
+            # but that only returns a vector (instead of dataframe)
+            # if view.cols is single column
+            rownames = datatable.rownames
+          )
+          result$edit.count <- result$edit.count + 1
+          shiny::removeModal()
+          return(TRUE)
+        },
+        error = function(e) {
+          output[[paste0(name, "_message")]] <<-
+            shiny::renderUI(shiny::HTML(geterrmessage()))
+          return(FALSE)
         }
-        updateData(dt.proxy,
-                   result$thedata[, view.cols, drop = FALSE],
-                   # was "result$thedata[,view.cols]",
-                   # but that only returns a vector (instead of dataframe)
-                   # if view.cols is single column
-                   rownames = datatable.rownames
-        )
-        result$edit.count <- result$edit.count + 1
-        shiny::removeModal()
-        return(TRUE)
-      },
-      error = function(e) {
-        output[[paste0(name, "_message")]] <<-
-          shiny::renderUI(shiny::HTML(geterrmessage()))
-        return(FALSE)
-      }
       )
     }
     return(FALSE)
@@ -1162,35 +1197,36 @@ dteditmod <- function(input, output, session,
     selectedRow <- as.numeric(x[length(x)])
 
     newdata <- result$thedata
-    tryCatch({
-      callback.data <- callback.actionButton(
-        data = result$thedata,
-        row = selectedRow,
-        buttonID = input$select_button
-      )
-      if (!is.null(callback.data) && is.data.frame(callback.data)) {
-        result$thedata <- callback.data
-      } else {
-        result$thedata <- newdata
-        # 'drop=FALSE' prevents the dataframe being reduced to a vector
-        # especially if only a single column
+    tryCatch(
+      {
+        callback.data <- callback.actionButton(
+          data = result$thedata,
+          row = selectedRow,
+          buttonID = input$select_button
+        )
+        if (!is.null(callback.data) && is.data.frame(callback.data)) {
+          result$thedata <- callback.data
+        } else {
+          result$thedata <- newdata
+          # 'drop=FALSE' prevents the dataframe being reduced to a vector
+          # especially if only a single column
+        }
+        updateData(dt.proxy,
+          result$thedata[, view.cols, drop = FALSE],
+          # was "result$thedata[,view.cols]",
+          # but that only returns a vector (instead of dataframe)
+          # if view.cols is single column
+          rownames = datatable.rownames
+        )
+        result$edit.count <- result$edit.count + 1
+        shiny::removeModal()
+        return(TRUE)
+      },
+      error = function(e) {
+        output[[paste0(name, "_message")]] <<-
+          shiny::renderUI(shiny::HTML(geterrmessage()))
+        return(FALSE)
       }
-      updateData(dt.proxy,
-                 result$thedata[, view.cols, drop = FALSE],
-                 # was "result$thedata[,view.cols]",
-                 # but that only returns a vector (instead of dataframe)
-                 # if view.cols is single column
-                 rownames = datatable.rownames
-      )
-      result$edit.count <- result$edit.count + 1
-      shiny::removeModal()
-      return(TRUE)
-    },
-    error = function(e) {
-      output[[paste0(name, "_message")]] <<-
-        shiny::renderUI(shiny::HTML(geterrmessage()))
-      return(FALSE)
-    }
     )
   })
 
@@ -1200,11 +1236,11 @@ dteditmod <- function(input, output, session,
     observeEvent(thedata(), {
       result$thedata <- as.data.frame(shiny::isolate(thedata()))
       updateData(dt.proxy,
-                 result$thedata[, view.cols, drop = FALSE],
-                 # was "result$thedata[,view.cols]",
-                 # but that returns vector (not dataframe)
-                 # if view.cols is only a single column
-                 rownames = datatable.rownames
+        result$thedata[, view.cols, drop = FALSE],
+        # was "result$thedata[,view.cols]",
+        # but that returns vector (not dataframe)
+        # if view.cols is only a single column
+        rownames = datatable.rownames
       )
     })
   }
@@ -1215,22 +1251,26 @@ dteditmod <- function(input, output, session,
     shiny::div(
       if (show.insert) {
         shiny::actionButton(
-          ns(paste0(name, "_add")), label.add, icon = icon.add
+          ns(paste0(name, "_add")), label.add,
+          icon = icon.add
         )
       },
       if (show.update) {
         shiny::actionButton(
-          ns(paste0(name, "_edit")), label.edit, icon = icon.edit
+          ns(paste0(name, "_edit")), label.edit,
+          icon = icon.edit
         )
       },
       if (show.delete) {
         shiny::actionButton(
-          ns(paste0(name, "_remove")), label.delete, icon = icon.delete
+          ns(paste0(name, "_remove")), label.delete,
+          icon = icon.delete
         )
       },
       if (show.copy) {
         shiny::actionButton(
-          ns(paste0(name, "_copy")), label.copy, icon = icon.copy
+          ns(paste0(name, "_copy")), label.copy,
+          icon = icon.copy
         )
       },
       shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))

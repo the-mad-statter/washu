@@ -3,6 +3,7 @@ is_attached <- function(x) {
 }
 
 .onAttach <- function(...) {
-  if(!is_attached('dplyr'))
+  if (!is_attached("dplyr")) {
     library(dplyr)
+  }
 }

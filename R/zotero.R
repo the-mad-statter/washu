@@ -7,9 +7,11 @@
 zt_get <- function(url = "https://api.zotero.org",
                    api_key = Sys.getenv("ZOTERO_API_KEY"),
                    ...) {
-  httr::GET(url = url,
-            httr::add_headers("Zotero-API-Key" = api_key),
-            ...)
+  httr::GET(
+    url = url,
+    httr::add_headers("Zotero-API-Key" = api_key),
+    ...
+  )
 }
 
 #' Zotero GET /users/<api_user>
@@ -41,8 +43,10 @@ zt_get_users_collections <- function(path = "", ...) {
 #'
 #' @return \link[httr]{response} object
 zt_get_users_collections_items <- function(collection_key, path = "", ...) {
-  zt_get_users_collections(path = sprintf("%s/items/%s", collection_key, path),
-                           ...)
+  zt_get_users_collections(
+    path = sprintf("%s/items/%s", collection_key, path),
+    ...
+  )
 }
 
 #' Zotero GET /users/<api_user>/collections/<collection_key>/items/top
@@ -51,9 +55,11 @@ zt_get_users_collections_items <- function(collection_key, path = "", ...) {
 #'
 #' @return \link[httr]{response} object
 zt_get_users_collections_items_top <- function(collection_key, ...) {
-  zt_get_users_collections_items(collection_key = collection_key,
-                                 path = "top",
-                                 ...)
+  zt_get_users_collections_items(
+    collection_key = collection_key,
+    path = "top",
+    ...
+  )
 }
 
 #' Zotero POST
@@ -65,9 +71,11 @@ zt_get_users_collections_items_top <- function(collection_key, ...) {
 zt_post <- function(url = "https://api.zotero.org",
                     api_key = Sys.getenv("ZOTERO_API_KEY"),
                     ...) {
-  httr::POST(url = url,
-             httr::add_headers("Zotero-API-Key" = api_key),
-             ...)
+  httr::POST(
+    url = url,
+    httr::add_headers("Zotero-API-Key" = api_key),
+    ...
+  )
 }
 
 #' Zotero POST /users/<api_user>
@@ -141,16 +149,17 @@ zt_add_pkg <- function(package,
 
   r_pkg_citation_author_given <- r_pkg_citation$author$given
   r_pkg_citation_author_family <- r_pkg_citation$author$family
-  if(is.null(r_pkg_citation_author_family)) {
+  if (is.null(r_pkg_citation_author_family)) {
     r_pkg_citation_author_family <- r_pkg_citation_author_given
     r_pkg_citation_author_given <- ""
   }
 
   zt_template$title <- r_pkg_citation$title
   zt_template$creators <- list(
-    list("creatorType" = "author",
-         "firstName" = r_pkg_citation_author_given,
-         "lastName" = r_pkg_citation_author_family
+    list(
+      "creatorType" = "author",
+      "firstName" = r_pkg_citation_author_given,
+      "lastName" = r_pkg_citation_author_family
     )
   )
   zt_template$publisher <- match_arg(r_pkg_citation$organization, "")
@@ -160,9 +169,11 @@ zt_add_pkg <- function(package,
   zt_template$collections <-
     list(zt_lookup_user_collection_key(collection_name = collection_name, ...))
 
-  zt_post_users_items(body = rjson::toJSON(list(zt_template)),
-                      encode = "json",
-                      ...)
+  zt_post_users_items(
+    body = rjson::toJSON(list(zt_template)),
+    encode = "json",
+    ...
+  )
 }
 
 #' Zotero create collection

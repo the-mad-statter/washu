@@ -24,12 +24,13 @@ sjPlot_tab_model <- function(...,
                              file = NULL,
                              use.viewer = TRUE,
                              print = TRUE) {
-  # because models can be passed as separate objects in ... or as a single list, 
+  # because models can be passed as separate objects in ... or as a single list,
   # capture them in a models object, and if we accidentally listed a list, unbox
   # this makes it easier to count and manipulate the models in later code
   models <- list(...)
-  if(length(class(models[[1]])) == 1 && class(models[[1]]) == "list") 
+  if (length(class(models[[1]])) == 1 && class(models[[1]]) == "list") {
     models <- lapply(models[[1]], function(x) x)
+  }
 
   # build base table
   ## invisible(capture.output()) to suppress cat'd profiling message
@@ -53,80 +54,88 @@ sjPlot_tab_model <- function(...,
   new_html <- character(0)
 
   # 1. row for if omnibus f
-  if(show.omnibus.f) {
+  if (show.omnibus.f) {
     new_html <- c(new_html, "  <tr>")
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">Omnibus F</td>")
     summary_test_obj <- lapply(models, summary)
-    summary_test_htm <- vapply(summary_test_obj, function(x) {
-      numdf <- x$fstatistic[["numdf"]]
-      dendf <- x$fstatistic[["dendf"]]
-      fstat <- x$fstatistic[["value"]]
-      pvalu <- pf(fstat, numdf, dendf, lower.tail = FALSE)
-      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">F(%s, %s) = %.*f, p = %s</td>",
-              ncols_per_model,
-              numdf, dendf,
-              digits, fstat,
-              sub("0.", ".", sprintf("%.*f", digits.p, pvalu))
-      )
-    },
-    character(1)
+    summary_test_htm <- vapply(
+      summary_test_obj, function(x) {
+        numdf <- x$fstatistic[["numdf"]]
+        dendf <- x$fstatistic[["dendf"]]
+        fstat <- x$fstatistic[["value"]]
+        pvalu <- pf(fstat, numdf, dendf, lower.tail = FALSE)
+        sprintf(
+          "    <td class=\"tdata summary summarydata\" colspan=\"%s\">F(%s, %s) = %.*f, p = %s</td>",
+          ncols_per_model,
+          numdf, dendf,
+          digits, fstat,
+          sub("0.", ".", sprintf("%.*f", digits.p, pvalu))
+        )
+      },
+      character(1)
     )
     new_html <- c(new_html, summary_test_htm)
     new_html <- c(new_html, "  </tr>")
   }
 
   # 2. row for if auc
-  if(show.auc) {
+  if (show.auc) {
     new_html <- c(new_html, "  <tr>")
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">AUC</td>")
     auc_num <- vapply(models, function(mdl) modEvA::AUC(mdl, plot = FALSE)$AUC, numeric(1))
-    auc_htm <- sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">%.*f</td>",
-                       ncols_per_model,
-                       digits, auc_num)
+    auc_htm <- sprintf(
+      "    <td class=\"tdata summary summarydata\" colspan=\"%s\">%.*f</td>",
+      ncols_per_model,
+      digits, auc_num
+    )
     new_html <- c(new_html, auc_htm)
     new_html <- c(new_html, "  </tr>")
   }
 
   # 3. row for if hosmer lemeshow
-  if(show.hosmer_lemeshow) {
+  if (show.hosmer_lemeshow) {
     new_html <- c(new_html, "  <tr>")
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">Hosmer Lemeshow</td>")
     hosmer_lemeshow_test_obj <- lapply(models, function(mdl) vcdExtra::HosmerLemeshow(mdl))
-    hosmer_lemeshow_test_htm <- vapply(hosmer_lemeshow_test_obj, function(x) {
-      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %.*f, p = %s</td>",
-              ncols_per_model,
-              x$df,
-              digits, x$chisq,
-              sub("0.", ".", sprintf("%.*f", digits.p, x$p.value))
-      )
-    },
-    character(1)
+    hosmer_lemeshow_test_htm <- vapply(
+      hosmer_lemeshow_test_obj, function(x) {
+        sprintf(
+          "    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %.*f, p = %s</td>",
+          ncols_per_model,
+          x$df,
+          digits, x$chisq,
+          sub("0.", ".", sprintf("%.*f", digits.p, x$p.value))
+        )
+      },
+      character(1)
     )
     new_html <- c(new_html, hosmer_lemeshow_test_htm)
     new_html <- c(new_html, "  </tr>")
   }
 
   # 4. row for is deviance test
-  if(show.deviance_test) {
+  if (show.deviance_test) {
     new_html <- c(new_html, "  <tr>")
     new_html <- c(new_html, "    <td class=\"tdata leftalign summary\">Deviance</td>")
     deviance_test_obj <- lapply(models, function(mdl) washu::deviance_test(mdl))
-    deviance_test_htm <- vapply(deviance_test_obj, function(x) {
-      sprintf("    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %.*f, p = %s</td>",
-              ncols_per_model,
-              x$df,
-              digits, x$chisq,
-              sub("0.", ".", sprintf("%.*f", digits.p, x$p.value))
-      )
-    },
-    character(1)
+    deviance_test_htm <- vapply(
+      deviance_test_obj, function(x) {
+        sprintf(
+          "    <td class=\"tdata summary summarydata\" colspan=\"%s\">&#120536;&sup2;(%s) = %.*f, p = %s</td>",
+          ncols_per_model,
+          x$df,
+          digits, x$chisq,
+          sub("0.", ".", sprintf("%.*f", digits.p, x$p.value))
+        )
+      },
+      character(1)
     )
     new_html <- c(new_html, deviance_test_htm)
     new_html <- c(new_html, "  </tr>")
   }
 
   # 5. footnote
-  if(!is.null(footnote)) {
+  if (!is.null(footnote)) {
     new_html <- c(
       new_html,
       c(
@@ -147,15 +156,16 @@ sjPlot_tab_model <- function(...,
   page_complete <- sub("</table>", paste(c(new_html, "</table>"), collapse = "\n"), sjTable$page.complete)
 
   # write the table out if and where specified
-  if(is.null(file))
+  if (is.null(file)) {
     file <- tempfile(fileext = ".html")
+  }
   conn <- file(file)
   writeLines(page_complete, conn)
   close(conn)
 
   # view output
-  if(interactive()) {
-    if(use.viewer) {
+  if (interactive()) {
+    if (use.viewer) {
       # need to ensure viewer file is temp file for viewer to show
       # also needs .html extension to be rendered as html
       file <- tempfile(fileext = ".html")
@@ -168,8 +178,9 @@ sjPlot_tab_model <- function(...,
       browseURL(file)
     }
   } else {
-    if(print)
+    if (print) {
       htmltools::includeHTML(file)
+    }
   }
 }
 
@@ -218,7 +229,7 @@ tab_anova <- function(mdl,
     ) %>%
     dplyr::select(predictor, sum_sq, dplyr::everything(), -c(pr_f, p_flag)) -> tbl
 
-  if(!is.null(pred.labels)) {
+  if (!is.null(pred.labels)) {
     tbl %>%
       mutate(predictor = dplyr::all_of(pred.labels)) -> tbl
   }

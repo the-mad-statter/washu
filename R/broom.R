@@ -7,11 +7,13 @@
 #' @export
 add_significance_flag <- function(data, p_val_col) {
   data %>%
-    dplyr::mutate(p_flag = dplyr::case_when({{ p_val_col }} < .001 ~ "***",
-                                            {{ p_val_col }} < .010 ~ "**",
-                                            {{ p_val_col }} < .050 ~ "*",
-                                            {{ p_val_col }} < .100 ~ ".",
-                                            TRUE ~ ""))
+    dplyr::mutate(p_flag = dplyr::case_when(
+      {{ p_val_col }} < .001 ~ "***",
+      {{ p_val_col }} < .010 ~ "**",
+      {{ p_val_col }} < .050 ~ "*",
+      {{ p_val_col }} < .100 ~ ".",
+      TRUE ~ ""
+    ))
 }
 
 #' Pairwise t tests
@@ -273,7 +275,7 @@ select_via_cor_sig <- function(.data, x, p.value, ...) {
     dplyr::bind_rows() -> tbl_tidy_cor_test
 
   tbl_tidy_cor_test %>%
-    dplyr::filter(p.value < {{p.value}}) %>%
+    dplyr::filter(p.value < {{ p.value }}) %>%
     dplyr::pull(v2) %>%
     c(rlang::as_string(x), .) -> keepers
 
@@ -311,13 +313,11 @@ broom_augment.lmerModLmerTest <- function(x, data, ...) {
 #'
 #' @return a tibble with information about the model components; one model per row
 #' @export
-broom_tidy_pairwise_wilcox_test_two_sample <- function(
-  data,
-  response,
-  group,
-  descriptives = TRUE,
-  ...
-) {
+broom_tidy_pairwise_wilcox_test_two_sample <- function(data,
+                                                       response,
+                                                       group,
+                                                       descriptives = TRUE,
+                                                       ...) {
   response <- rlang::ensym(response)
   group <- rlang::ensym(group)
 
@@ -388,13 +388,11 @@ broom_tidy_pairwise_wilcox_test_two_sample <- function(
 #' @param exponentiate Logical indicating whether or not to exponentiate the the coefficient estimates. This is typical for logistic and multinomial regressions, but a bad idea if there is no log or logit link. Defaults to FALSE.
 #'
 #' @export
-broom_tidy_sided_ci <- function(
-  x,
-  alternatives = 'two.sided',
-  conf.level = 0.95,
-  exponentiate = FALSE
-) {
-  warning('This function is experimental. Use with caution.')
+broom_tidy_sided_ci <- function(x,
+                                alternatives = "two.sided",
+                                conf.level = 0.95,
+                                exponentiate = FALSE) {
+  warning("This function is experimental. Use with caution.")
 
   x %>%
     broom::tidy(conf.level = conf.level) %>%
@@ -403,24 +401,25 @@ broom_tidy_sided_ci <- function(
     ) %>%
     dplyr::rowwise() %>%
     dplyr::mutate(
-      p.value = dplyr::if_else(alternative %in% c('less', 'greater'), p.value / 2, p.value),
+      p.value = dplyr::if_else(alternative %in% c("less", "greater"), p.value / 2, p.value),
       conf.low = dplyr::case_when(
-        alternative == 'two.sided' ~ confint(x, level = conf.level)[[term, 1]],
-        alternative == 'less'      ~ -Inf,
-        alternative == 'greater'   ~ -confint(x, level = 1 - 2 * (1 - conf.level))[[term, 2]],
+        alternative == "two.sided" ~ confint(x, level = conf.level)[[term, 1]],
+        alternative == "less" ~ -Inf,
+        alternative == "greater" ~ -confint(x, level = 1 - 2 * (1 - conf.level))[[term, 2]],
         TRUE ~ NA_real_
       ),
       conf.high = dplyr::case_when(
-        alternative == 'two.sided' ~ confint(x, level = conf.level)[[term, 2]],
-        alternative == 'less'      ~ -confint(x, level = 1 - 2 * (1 - conf.level))[[term, 1]],
-        alternative == 'greater'   ~ Inf,
+        alternative == "two.sided" ~ confint(x, level = conf.level)[[term, 2]],
+        alternative == "less" ~ -confint(x, level = 1 - 2 * (1 - conf.level))[[term, 1]],
+        alternative == "greater" ~ Inf,
         TRUE ~ NA_real_
       )
     ) %>%
     dplyr::ungroup() -> r
 
-  if(exponentiate)
+  if (exponentiate) {
     dplyr::mutate(r, across(c(estimate, conf.low, conf.high), ~ exp(.))) -> r
+  }
 
   return(r)
 }
@@ -437,13 +436,11 @@ broom_tidy_sided_ci <- function(
 #'
 #' @return a tibble with computed odds ratios and associated information
 #' @export
-broom_tidy_pairwise_odds_ratio <- function(
-  data,
-  response,
-  exposure,
-  descriptives = TRUE,
-  ...
-) {
+broom_tidy_pairwise_odds_ratio <- function(data,
+                                           response,
+                                           exposure,
+                                           descriptives = TRUE,
+                                           ...) {
   response <- rlang::ensym(response)
   exposure <- rlang::ensym(exposure)
 
@@ -463,14 +460,16 @@ broom_tidy_pairwise_odds_ratio <- function(
       data %>%
         dplyr::filter(!!exposure %in% conditions[pair]) -> s
 
-      tryCatch({
-        epitools_oddsratio(s, !!response, !!exposure, na.rm = TRUE, ...) %>%
-          dplyr::rename(exposure.level = exposure) %>%
-          dplyr::mutate(exposure.subset = paste(conditions[pair], collapse = ' vs '))
-      },
-      error = function(e) {
-        dplyr::tibble(exposure.subset = paste(conditions[pair], collapse = ' vs '))
-      }) %>%
+      tryCatch(
+        {
+          epitools_oddsratio(s, !!response, !!exposure, na.rm = TRUE, ...) %>%
+            dplyr::rename(exposure.level = exposure) %>%
+            dplyr::mutate(exposure.subset = paste(conditions[pair], collapse = " vs "))
+        },
+        error = function(e) {
+          dplyr::tibble(exposure.subset = paste(conditions[pair], collapse = " vs "))
+        }
+      ) %>%
         dplyr::mutate(model = model_n)
     }) %>%
     dplyr::bind_rows() %>%
@@ -498,15 +497,17 @@ broom_tidy_pairwise_odds_ratio <- function(
 #' @export
 #'
 #' @examples
-#' m <- lme4::glmer(vs ~ mpg + (1|cyl), mtcars, binomial)
+#' m <- lme4::glmer(vs ~ mpg + (1 | cyl), mtcars, binomial)
 #' broom_tidy.glmerMod(m)
 broom_tidy.glmerMod <- function(x, conf.int = FALSE, conf.level = 0.95, exponentiate = FALSE, ...) {
-  assertthat::assert_that('glmerMod' %in% class(x))
+  assertthat::assert_that("glmerMod" %in% class(x))
 
   x %>%
     summary() %>%
     coef() %>%
-    { dplyr::bind_cols(dplyr::tibble(term = rownames(.)), tibble::as_tibble(.)) } %>%
+    {
+      dplyr::bind_cols(dplyr::tibble(term = rownames(.)), tibble::as_tibble(.))
+    } %>%
     dplyr::transmute(
       term = term,
       estimate = Estimate,
@@ -515,17 +516,18 @@ broom_tidy.glmerMod <- function(x, conf.int = FALSE, conf.level = 0.95, exponent
       p.value = `Pr(>|z|)`
     ) -> tdytbl
 
-  if(exponentiate)
+  if (exponentiate) {
     dplyr::mutate(tdytbl, estimate = exp(estimate)) -> tdytbl
+  }
 
-  if(conf.int) {
+  if (conf.int) {
     tdytbl %>%
       dplyr::mutate(
         conf.low  = estimate - qnorm((1 - conf.level) / 2, lower.tail = FALSE) * std.error,
         conf.high = estimate + qnorm((1 - conf.level) / 2, lower.tail = FALSE) * std.error
       ) -> tdytbl
 
-    if(exponentiate) {
+    if (exponentiate) {
       tdytbl %>%
         dplyr::mutate(
           conf.low = exp(conf.low),
@@ -563,29 +565,27 @@ broom_tidy.glmerMod <- function(x, conf.int = FALSE, conf.level = 0.95, exponent
 #'
 #' @examples
 #' lme4::cbpp %>%
-#'   tibble::rowid_to_column('obs') %>%
+#'   tibble::rowid_to_column("obs") %>%
 #'   dplyr::mutate(
 #'     herd = as.numeric(herd),
 #'     herd = dplyr::case_when(
-#'       herd <= 5 ~ '[1,5]',
-#'       herd <= 10 ~ '[6,10]',
-#'       herd <= 15 ~ '[11,15]',
+#'       herd <= 5 ~ "[1,5]",
+#'       herd <= 10 ~ "[6,10]",
+#'       herd <= 15 ~ "[11,15]",
 #'       TRUE ~ NA_character_
 #'     ),
-#'     herd = factor(herd, levels = c('[1,5]', '[6,10]', '[11,15]')),
+#'     herd = factor(herd, levels = c("[1,5]", "[6,10]", "[11,15]")),
 #'     period = as.numeric(period)
 #'   ) %>%
-#'   broom_tidy_pairwise_glmer('cbind(incidence, size - incidence) ~ herd + period + herd*period + (1 | obs)', herd, binomial)
-broom_tidy_pairwise_glmer <- function(
-  data,
-  formula,
-  group,
-  family = gaussian,
-  conf.int = FALSE,
-  conf.level = 0.95,
-  exponentiate = FALSE,
-  ...
-) {
+#'   broom_tidy_pairwise_glmer("cbind(incidence, size - incidence) ~ herd + period + herd*period + (1 | obs)", herd, binomial)
+broom_tidy_pairwise_glmer <- function(data,
+                                      formula,
+                                      group,
+                                      family = gaussian,
+                                      conf.int = FALSE,
+                                      conf.level = 0.95,
+                                      exponentiate = FALSE,
+                                      ...) {
   group <- rlang::ensym(group)
 
   data %>%
@@ -603,20 +603,22 @@ broom_tidy_pairwise_glmer <- function(
       data %>%
         dplyr::filter(!!group %in% conditions[pair]) -> s
 
-      tryCatch({
-        lme4::glmer(as.formula(formula), s, family, ...) %>%
-          broom_tidy.glmerMod() %>%
-          dplyr::mutate(pair = paste(conditions[pair], collapse = ' vs ')) %>%
-          dplyr::select(pair, dplyr::everything())
-      },
-      error = function(e) {
-        dplyr::tibble(pair = paste(conditions[pair], collapse = ' vs '))
-      }) %>%
+      tryCatch(
+        {
+          lme4::glmer(as.formula(formula), s, family, ...) %>%
+            broom_tidy.glmerMod() %>%
+            dplyr::mutate(pair = paste(conditions[pair], collapse = " vs ")) %>%
+            dplyr::select(pair, dplyr::everything())
+        },
+        error = function(e) {
+          dplyr::tibble(pair = paste(conditions[pair], collapse = " vs "))
+        }
+      ) %>%
         dplyr::mutate(model = model_n)
     }) %>%
     dplyr::bind_rows() %>%
     dplyr::mutate(
-      response = stringr::str_extract(formula, '^.+(?= ~)'),
+      response = stringr::str_extract(formula, "^.+(?= ~)"),
       predictor = rlang::as_name(group)
     ) %>%
     dplyr::select(model, response, predictor, dplyr::everything())

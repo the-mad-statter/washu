@@ -22,11 +22,11 @@ Cohen's d
 Cohen's d
 }
 \examples{
-mtcars \%>\% 
-  group_by(vs) \%>\% 
-  summarize(m = mean(mpg), s = sd(mpg)) \%>\% 
-  tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) \%>\% 
-  rowwise() \%>\% 
+mtcars \%>\%
+  group_by(vs) \%>\%
+  summarize(m = mean(mpg), s = sd(mpg)) \%>\%
+  tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) \%>\%
+  rowwise() \%>\%
   mutate(cohens_d = es_cohens_d(m_0, m_1, s_0, s_1))
 
 }

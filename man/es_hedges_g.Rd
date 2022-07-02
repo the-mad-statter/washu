@@ -20,17 +20,17 @@ es_hedges_g(n_0, n_1, m_0, m_1, s_0, s_1)
 \item{s_1}{standard deviation of group 1}
 }
 \value{
-
+double representation of g
 }
 \description{
 Hedges g
 }
 \examples{
-mtcars \%>\% 
-  group_by(vs) \%>\% 
-  summarize(n = n(), m = mean(mpg), s = sd(mpg)) \%>\% 
-  tidyr::pivot_wider(names_from = vs, values_from = c(n, m, s)) \%>\% 
-  rowwise() \%>\% 
+mtcars \%>\%
+  group_by(vs) \%>\%
+  summarize(n = n(), m = mean(mpg), s = sd(mpg)) \%>\%
+  tidyr::pivot_wider(names_from = vs, values_from = c(n, m, s)) \%>\%
+  rowwise() \%>\%
   mutate(hedges_g = es_hedges_g(n_0, n_1, m_0, m_1, s_0, s_1))
 
 }

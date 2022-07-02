@@ -20,11 +20,11 @@ Glass' delta
 Glass' Delta
 }
 \examples{
-mtcars \%>\% 
-  group_by(vs) \%>\% 
-  summarize(m = mean(mpg), s = sd(mpg)) \%>\% 
-  tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) \%>\% 
-  rowwise() \%>\% 
+mtcars \%>\%
+  group_by(vs) \%>\%
+  summarize(m = mean(mpg), s = sd(mpg)) \%>\%
+  tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) \%>\%
+  rowwise() \%>\%
   mutate(glass_delta = es_glass_delta(m_0, m_1, s_0))
 
 }

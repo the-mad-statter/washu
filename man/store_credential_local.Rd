@@ -5,19 +5,19 @@
 \title{Store a token and other credentials in a file}
 \usage{
 store_credential_local(
-  token,
   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+  token,
   path_credential = "~/.REDCapR",
   username = Sys.getenv("WU_REDCAP_USER")
 )
 }
 \arguments{
+\item{redcap_uri}{The URI (uniform resource identifier) of the REDCap
+project.}
+
 \item{token}{The API token specific to your REDCap project and username (each
 token is unique to each user for each project). See the section on the
 left-hand menu for obtaining a token for a given project.}
-
-\item{redcap_uri}{The URI (uniform resource identifier) of the REDCap
-project.}
 
 \item{path_credential}{The file path to the CSV containing the credentials. Required.}
 

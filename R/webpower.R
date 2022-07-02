@@ -31,9 +31,10 @@
 #'
 #' WebPower_bind_webpower(x, y)
 WebPower_bind_webpower <- function(x, y) {
-  for(n in names(x)) {
-    if(washu::`%notin%`(n, c("note", "method", "url")))
+  for (n in names(x)) {
+    if (washu::`%notin%`(n, c("note", "method", "url"))) {
       x[[n]] <- c(x[[n]], y[[n]])
+    }
   }
   return(x)
 }

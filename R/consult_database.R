@@ -103,9 +103,10 @@ cdb_sheet_upsert <- function(x, sheetName = c("consult", "personnel", "consult_p
   sheetName <- match.arg(sheetName)
 
   by <- switch(sheetName,
-               "consult" = "c_id",
-               "personnel" = "mail",
-               "consult_personnel" = c("c_id", "mail"))
+    "consult" = "c_id",
+    "personnel" = "mail",
+    "consult_personnel" = c("c_id", "mail")
+  )
 
   readxl::read_xlsx(cdb_file(), sheetName) %>%
     dplyr::mutate(dplyr::across(dplyr::everything(), as.character)) -> x_0
@@ -147,10 +148,11 @@ cdb_current_consult <- function() {
   source_file_abs <- rstudioapi::getSourceEditorContext()$path
   source_file <- basename(source_file_abs)
   source_file_sans_ext <- tools::file_path_sans_ext(source_file)
-  if(valid_project_name(source_file_sans_ext, FALSE) || valid_project_name(source_file_sans_ext, TRUE))
+  if (valid_project_name(source_file_sans_ext, FALSE) || valid_project_name(source_file_sans_ext, TRUE)) {
     sub("-v\\d+$", "", source_file_sans_ext)
-  else
+  } else {
     stop("Current source document does not appear to be a consult document.")
+  }
 }
 
 #' Open the Current Consult Directory
@@ -176,14 +178,15 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
         Shiny.addCustomMessageHandler('close-window', function(x) {
           window.open('', '_self', '').close();
         });
-    ")),
+    ")
+    ),
     shinyalert::useShinyalert(),
     shiny::titlePanel("Edit Consult Database"),
     shiny::navlistPanel(
       well = FALSE,
       widths = c(1, 11),
       shiny::tabPanel("Consult", shiny::uiOutput("dte_consult")),
-      shiny::tabPanel("Personnel", shiny::uiOutput('dte_personnel'))
+      shiny::tabPanel("Personnel", shiny::uiOutput("dte_personnel"))
     ),
     shiny::actionButton("update_consult_database", "Submit")
   )
@@ -193,8 +196,8 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
       shiny::stopApp()
     })
 
-    df_consult <- if(new) {
-       cdb_template_consult(k)
+    df_consult <- if (new) {
+      cdb_template_consult(k)
     } else {
       readxl::read_xlsx(cdb_file(), "consult") %>%
         dplyr::filter(c_id == k) %>%
@@ -211,7 +214,7 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
     consult.insert.callback <- function(data, row) {
       # 'data' contains the dataframe *after* the row has been inserted/added
       # 'row' is the row number where data has been inserted
-      df_consult <<- rbind(df_consult, data[row,])
+      df_consult <<- rbind(df_consult, data[row, ])
       return(df_consult)
     }
 
@@ -219,20 +222,20 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
       # 'data' contains the dataframe *after* the row has been updated
       # 'row' is the row number where data has been updated
       # 'olddata' is the previous version of the data
-      df_consult[row,] <<- data[row,]
+      df_consult[row, ] <<- data[row, ]
       return(df_consult)
     }
 
     consult.delete.callback <- function(data, row) {
       # 'data' contains the dataframe *before* the row has been deleted
       # 'row' is the row number where data is to be deleted
-      df_consult <<- df_consult[-row,]
+      df_consult <<- df_consult[-row, ]
       return(df_consult)
     }
 
     dtedit(
       input, output,
-      name = 'dte_consult',
+      name = "dte_consult",
       thedata = df_consult,
       edit.cols = names(df_consult)[-1],
       edit.label.cols = cdb_template_consult_column_labels()[-1],
@@ -247,13 +250,15 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
       ),
       input.choices = list(
         c_src = c("BERD", "Ortho", "Other"),
-        c_type = c("Proposal",
-                   "Undergrad",
-                   "Graduate",
-                   "Publication",
-                   "Funded",
-                   "Quality Improvement",
-                   "Other"),
+        c_type = c(
+          "Proposal",
+          "Undergrad",
+          "Graduate",
+          "Publication",
+          "Funded",
+          "Quality Improvement",
+          "Other"
+        ),
         c_cmplt = c("No", "Yes")
       ),
       show.delete = FALSE,
@@ -262,10 +267,12 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
       callback.delete = consult.delete.callback,
       callback.update = consult.update.callback,
       callback.insert = consult.insert.callback,
-      datatable.call = function(...) {DT::datatable(..., colnames = cdb_template_consult_column_labels())}
+      datatable.call = function(...) {
+        DT::datatable(..., colnames = cdb_template_consult_column_labels())
+      }
     )
 
-    df_personnel <- if(new) {
+    df_personnel <- if (new) {
       cdb_template_personnel()
     } else {
       readxl::read_xlsx(cdb_file(), "personnel") %>%
@@ -285,7 +292,7 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
       data[row, "mail"] <- tolower(data[row, "mail"])
       # 'data' contains the dataframe *after* the row has been inserted/added
       # 'row' is the row number where data has been inserted
-      df_personnel <<- rbind(df_personnel, data[row,])
+      df_personnel <<- rbind(df_personnel, data[row, ])
       # in this case, 'mydata' should just be the same as 'data'
       return(df_personnel)
     }
@@ -295,7 +302,7 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
       # 'data' contains the dataframe *after* the row has been updated
       # 'row' is the row number where data has been updated
       # 'olddata' is the previous version of the data
-      df_personnel[row,] <<- data[row,]
+      df_personnel[row, ] <<- data[row, ]
       # in this case, 'mydata' should just be the same as 'data'
       return(df_personnel)
     }
@@ -303,14 +310,14 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
     personnel.delete.callback <- function(data, row) {
       # 'data' contains the dataframe *before* the row has been deleted
       # 'row' is the row number where data is to be deleted
-      df_personnel <<- df_personnel[-row,]
+      df_personnel <<- df_personnel[-row, ]
       # in this case, 'mydata' should just be the same as data[-c(row),]
       return(df_personnel)
     }
 
     dtedit(
       input, output,
-      name = 'dte_personnel',
+      name = "dte_personnel",
       thedata = df_personnel,
       edit.label.cols = cdb_template_personnel_column_labels(),
       input.types = c(
@@ -319,18 +326,22 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
       ),
       input.choices = list(
         icts_member = c("No", "Yes"),
-        role = c("Principal investigator",
-                 "Co-investigator",
-                 "Graduate",
-                 "Undergraduate",
-                 "Coordinator",
-                 "Consultant")
+        role = c(
+          "Principal investigator",
+          "Co-investigator",
+          "Graduate",
+          "Undergraduate",
+          "Coordinator",
+          "Consultant"
+        )
       ),
       show.search = TRUE,
       callback.delete = personnel.delete.callback,
       callback.update = personnel.update.callback,
       callback.insert = personnel.insert.callback,
-      datatable.call = function(...) {DT::datatable(..., colnames = cdb_template_personnel_column_labels())}
+      datatable.call = function(...) {
+        DT::datatable(..., colnames = cdb_template_personnel_column_labels())
+      }
     )
 
     shiny::observeEvent(input$update_consult_database, {
@@ -338,9 +349,9 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
         dplyr::filter(role == "Principal investigator") %>%
         nrow() == 1 -> has_pi
 
-      if(!has_pi) {
+      if (!has_pi) {
         shinyalert::shinyalert("Principal Investigator Required", "Please list one principal investigator.", "warning")
-      } else if(any(df_personnel$mail == "")) {
+      } else if (any(df_personnel$mail == "")) {
         shinyalert::shinyalert("Personnel mail Required", "Please ensure all personnel have a value for mail.", "warning")
       } else {
         # 1/3 (consult)
@@ -363,7 +374,7 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
 
         # Step 4
         session$sendCustomMessage("close-window", "")
-        #shiny::stopApp()
+        # shiny::stopApp()
       }
     })
   }
@@ -381,8 +392,9 @@ cdb_edit_app <- function(k = cdb_current_consult(), new = FALSE) {
 cdb_search_app <- function() {
   # internal function to make onclick method for consult id links
   mk_c_id_link_onclick <- function(k) {
-    sprintf('Shiny.setInputValue("c_id_link", "%s", {priority: "event"});',
-            file.path(gsub("\\\\", "/", Sys.getenv("WU_CONSULT_DIR")), k)
+    sprintf(
+      'Shiny.setInputValue("c_id_link", "%s", {priority: "event"});',
+      file.path(gsub("\\\\", "/", Sys.getenv("WU_CONSULT_DIR")), k)
     )
   }
 
@@ -396,7 +408,7 @@ cdb_search_app <- function() {
   # internal function to make email links
   mk_mailto_link <- function(mail, subject = "", body = "") {
     subject <- utils::URLencode(htmltools::htmlEscape(subject))
-    body <-  utils::URLencode(htmltools::htmlEscape(body))
+    body <- utils::URLencode(htmltools::htmlEscape(body))
     href <- sprintf("mailto:%s?subject=%s&body=%s", mail, subject, body)
     htmltools::doRenderTags(shiny::tags$a(mail, href = href))
   }
@@ -405,7 +417,9 @@ cdb_search_app <- function() {
     shiny::titlePanel("Search Consult Database"),
     miniUI::miniContentPanel(
       DT::dataTableOutput("consult_database"),
-      padding = 0))
+      padding = 0
+    )
+  )
 
   server <- function(input, output, session) {
     session$onSessionEnded(function() {
@@ -416,35 +430,39 @@ cdb_search_app <- function() {
       dir.open(input$c_id_link)
     })
 
-    output$consult_database <- DT::renderDataTable({
-      sheet_names <- c("consult_personnel", "consult", "personnel")
-      names(sheet_names) <- sheet_names
-      purrr::map(sheet_names, ~ {
-        readxl::read_xlsx(cdb_file(), .) %>%
-          dplyr::mutate(dplyr::across(dplyr::everything(), as.character))
-      }) -> tbls
+    output$consult_database <- DT::renderDataTable(
+      {
+        sheet_names <- c("consult_personnel", "consult", "personnel")
+        names(sheet_names) <- sheet_names
+        purrr::map(sheet_names, ~ {
+          readxl::read_xlsx(cdb_file(), .) %>%
+            dplyr::mutate(dplyr::across(dplyr::everything(), as.character))
+        }) -> tbls
 
-      tbls$consult_personnel %>%
-        dplyr::left_join(tbls$consult, "c_id") %>%
-        dplyr::left_join(tbls$personnel, "mail") %>%
-        dplyr::mutate(
-          c_id = purrr::map_chr(.data$c_id, mk_c_id_link),
-          mail = purrr::pmap_chr(.,
-            function(mail, c_src, c_src_ref, c_title, personalTitle, sn, ...) {
-              mk_mailto_link(
-                mail = mail,
-                subject = sprintf("%s #%s - %s", c_src, c_src_ref, c_title),
-                body = sprintf("Hi %s %s,\n\n\n", personalTitle, sn)
-              )
-          })
-        ) %>%
-        dplyr::select(dplyr::starts_with("c_"), dplyr::everything())
-    },
-    colnames = c(
-      cdb_template_consult_column_labels(),
-      cdb_template_personnel_column_labels()[c(7, 9, 1:6, 8)]
-    ),
-    escape = FALSE)
+        tbls$consult_personnel %>%
+          dplyr::left_join(tbls$consult, "c_id") %>%
+          dplyr::left_join(tbls$personnel, "mail") %>%
+          dplyr::mutate(
+            c_id = purrr::map_chr(.data$c_id, mk_c_id_link),
+            mail = purrr::pmap_chr(
+              .,
+              function(mail, c_src, c_src_ref, c_title, personalTitle, sn, ...) {
+                mk_mailto_link(
+                  mail = mail,
+                  subject = sprintf("%s #%s - %s", c_src, c_src_ref, c_title),
+                  body = sprintf("Hi %s %s,\n\n\n", personalTitle, sn)
+                )
+              }
+            )
+          ) %>%
+          dplyr::select(dplyr::starts_with("c_"), dplyr::everything())
+      },
+      colnames = c(
+        cdb_template_consult_column_labels(),
+        cdb_template_personnel_column_labels()[c(7, 9, 1:6, 8)]
+      ),
+      escape = FALSE
+    )
   }
 
   shiny::runGadget(ui, server, viewer = shiny::browserViewer())

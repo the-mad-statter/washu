@@ -12,10 +12,18 @@ dteditmod(
   output,
   session,
   thedata,
-  view.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
-    else {     thedata })),
-  edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
-    else {     thedata })),
+  view.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {
+     thedata()
+ }
+    else {
+     thedata
+ })),
+  edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {
+     thedata()
+ }
+    else {
+     thedata
+ })),
   edit.label.cols = edit.cols,
   delete.info.cols = view.cols,
   delete.info.label.cols = delete.info.cols,
@@ -53,15 +61,21 @@ dteditmod(
   show.insert = TRUE,
   show.copy = TRUE,
   show.search = FALSE,
-  callback.delete = function(data, row) { },
-  callback.update = function(data, olddata, row) { },
-  callback.insert = function(data, row) { },
-  callback.actionButton = function(data, row, buttonID) { },
+  callback.delete = function(data, row) {
+ },
+  callback.update = function(data, olddata, row) {
+ },
+  callback.insert = function(data, row) {
+ },
+  callback.actionButton = function(data, row, buttonID) {
+ },
   click.time.threshold = 3,
   useairDatepicker = FALSE,
   datatable.options = list(pageLength = defaultPageLength),
   datatable.rownames = FALSE,
-  datatable.call = function(...) {     DT::datatable(...) },
+  datatable.call = function(...) {
+     DT::datatable(...)
+ },
   ...
 )
 }

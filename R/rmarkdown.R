@@ -3,10 +3,12 @@
 #' @param fork specify which subdirectory to search in the overall type path
 #' @param file file to locate
 #' @return absolute path to the resource
-find_resource <- function(type = c("template_resource",
-                                   "template_skeleton",
-                                   "global_resource",
-                                   "global_font_path"),
+find_resource <- function(type = c(
+                            "template_resource",
+                            "template_skeleton",
+                            "global_resource",
+                            "global_font_path"
+                          ),
                           fork,
                           file) {
   type <- match.arg(type)
@@ -19,12 +21,14 @@ find_resource <- function(type = c("template_resource",
     "global_resource" =
       file.path("resources", fork, file),
     "global_font_path" =
-      file.path("resources", "fonts"))
+      file.path("resources", "fonts")
+  )
 
   absolute_path <- system.file(relative_path, package = "washu")
 
-  if (absolute_path == "")
+  if (absolute_path == "") {
     stop("Couldn't find resource ", relative_path, call. = FALSE)
+  }
 
   absolute_path
 }
@@ -34,31 +38,43 @@ find_resource <- function(type = c("template_resource",
 #' @param ext font extention
 #' @return character vector of TeX code
 tex_setmainfont <- function(font = "LibreBaskerville", ext = "ttf") {
-  c("\\usepackage{fontspec}",
-    sprintf("\\setmainfont{%s}[",
-            font),
-    sprintf("  Path = %s%s ,",
-            find_resource("global_font_path"),
-            .Platform$file.sep),
-    sprintf("  Extension = .%s,",
-            ext),
+  c(
+    "\\usepackage{fontspec}",
+    sprintf(
+      "\\setmainfont{%s}[",
+      font
+    ),
+    sprintf(
+      "  Path = %s%s ,",
+      find_resource("global_font_path"),
+      .Platform$file.sep
+    ),
+    sprintf(
+      "  Extension = .%s,",
+      ext
+    ),
     "  UprightFont = *-Regular,",
     "  ItalicFont = *-Italic,",
-    "  BoldFont = *-Bold]")
+    "  BoldFont = *-Bold]"
+  )
 }
 
 #' TeX new washulogo command
 #' @return character vector of TeX code
 tex_washusomlogo <- function() {
-  sprintf("\\newcommand{\\washusomlogo}{%s}",
-          find_resource("global_resource", "img", "washu_som_logo.eps"))
+  sprintf(
+    "\\newcommand{\\washusomlogo}{%s}",
+    find_resource("global_resource", "img", "washu_som_logo.eps")
+  )
 }
 
 #' TeX new pigletsignature command
 #' @return character vector of TeX code
 tex_pigletsignature <- function() {
-  sprintf("\\newcommand{\\pigletsignature}{%s}",
-          find_resource("template_resource", "letter", "piglet.png"))
+  sprintf(
+    "\\newcommand{\\pigletsignature}{%s}",
+    find_resource("template_resource", "letter", "piglet.png")
+  )
 }
 
 #' TeX runtime header additions
@@ -79,27 +95,36 @@ tex_runtime_in_header <- function(x) {
 #' @inheritParams rmarkdown::pdf_document
 #' @param ... Arguments to \code{\link[rmarkdown]{pdf_document}}
 #' @export
-letter_document <- function(template = find_resource("template_resource",
-                                                     "letter",
-                                                     "template.tex"),
+letter_document <- function(template = find_resource(
+                              "template_resource",
+                              "letter",
+                              "template.tex"
+                            ),
                             latex_engine = "xelatex",
                             includes,
                             ...) {
-  runtime_in_header <- tex_runtime_in_header(c(tex_setmainfont(),
-                                               tex_washusomlogo(),
-                                               tex_pigletsignature()))
+  runtime_in_header <- tex_runtime_in_header(c(
+    tex_setmainfont(),
+    tex_washusomlogo(),
+    tex_pigletsignature()
+  ))
 
-  if(missing(includes))
+  if (missing(includes)) {
     includes <- rmarkdown::includes(runtime_in_header)
-  else
+  } else {
     includes$in_header <- append(includes$in_header, runtime_in_header)
+  }
 
-  rmarkdown::pdf_document(template = find_resource("template_resource",
-                                                   "letter",
-                                                   "template.tex"),
-                          latex_engine = "xelatex",
-                          includes = includes,
-                          ...)
+  rmarkdown::pdf_document(
+    template = find_resource(
+      "template_resource",
+      "letter",
+      "template.tex"
+    ),
+    latex_engine = "xelatex",
+    includes = includes,
+    ...
+  )
 }
 
 #' TeX Close Letter
@@ -135,13 +160,14 @@ tex_close_letter <- function() {
 
 #' @inherit knitr::current_input
 knitr_current_input <- function(dir = FALSE) {
-  if(interactive()) {
+  if (interactive()) {
     context <- rstudioapi::getSourceEditorContext()
     path <- context$path
-    if(!is.null(path))
+    if (!is.null(path)) {
       ifelse(dir, path, basename(path))
-    else
+    } else {
       NULL
+    }
   } else {
     knitr::current_input(dir)
   }
@@ -247,7 +273,7 @@ wu_new_letter_of_support <-
       tidy_sub("Your closest friend,", closing) %>%
       tidy_sub("piglet.png", signature) %>%
       tidy_sub("Thank.+proposal\\.", "$body$", fixed = FALSE) %>% # replace example body with fixed placeholder
-      tidy_sub('$body$', body) %>%
+      tidy_sub("$body$", body) %>%
       writeLines(outfile)
 
     close(infile)
@@ -270,19 +296,24 @@ consult_report_document <- function(toc = TRUE,
                                     pandoc_args,
                                     ...) {
   # css
-  new_css <- find_resource("template_resource",
-                           "consult_report",
-                           "edu.wustl.biostatistics.css")
+  new_css <- find_resource(
+    "template_resource",
+    "consult_report",
+    "edu.wustl.biostatistics.css"
+  )
   css <- ifelse(missing(css), new_css, append(css, new_css))
 
   # includes
-  before_body_addition <- find_resource("template_resource",
-                                        "consult_report",
-                                        "before_body.htm")
-  if (missing(includes))
+  before_body_addition <- find_resource(
+    "template_resource",
+    "consult_report",
+    "before_body.htm"
+  )
+  if (missing(includes)) {
     includes <- rmarkdown::includes(before_body = before_body_addition)
-  else
+  } else {
     includes$before_body <- append(includes$before_body, before_body_addition)
+  }
 
   # pandoc_args
   # allows get rockwell font on themadstatter.com due to pandoc distrust in sectigo as root ca
@@ -308,26 +339,35 @@ consult_report_document <- function(toc = TRUE,
 #' @inheritParams rmarkdown::pdf_document
 #' @param ... Arguments to \code{\link[rmarkdown]{pdf_document}}
 #' @export
-estimate_document <- function(template = find_resource("template_resource",
-                                                       "estimate",
-                                                       "template.tex"),
+estimate_document <- function(template = find_resource(
+                                "template_resource",
+                                "estimate",
+                                "template.tex"
+                              ),
                               latex_engine = "xelatex",
                               includes,
                               ...) {
-  runtime_in_header <- tex_runtime_in_header(c(tex_setmainfont(),
-                                               tex_washusomlogo()))
+  runtime_in_header <- tex_runtime_in_header(c(
+    tex_setmainfont(),
+    tex_washusomlogo()
+  ))
 
-  if(missing(includes))
+  if (missing(includes)) {
     includes <- rmarkdown::includes(runtime_in_header)
-  else
+  } else {
     includes$in_header <- append(includes$in_header, runtime_in_header)
+  }
 
-  rmarkdown::pdf_document(template = find_resource("template_resource",
-                                                   "estimate",
-                                                   "template.tex"),
-                          latex_engine = "xelatex",
-                          includes = includes,
-                          ...)
+  rmarkdown::pdf_document(
+    template = find_resource(
+      "template_resource",
+      "estimate",
+      "template.tex"
+    ),
+    latex_engine = "xelatex",
+    includes = includes,
+    ...
+  )
 }
 
 #' Estimate items
@@ -341,14 +381,15 @@ estimate_items <- function(data, service, hours, rate, .protect = TRUE) {
   est_exprs <- list(
     service = rlang::enquo(service) %missing% NA_character_,
     hours = rlang::enquo(hours) %missing% NA_character_,
-    rate = rlang::enquo(rate) %missing% NA_character_)
+    rate = rlang::enquo(rate) %missing% NA_character_
+  )
 
   out <- dplyr::as_tibble(purrr::map(est_exprs, rlang::eval_tidy, data = data))
 
   structure(out,
-            preserve = names(est_exprs),
-            protect = .protect,
-            class = c("washu_estimate_items", class(data))
+    preserve = names(est_exprs),
+    protect = .protect,
+    class = c("washu_estimate_items", class(data))
   )
 }
 
@@ -360,21 +401,23 @@ estimate_items <- function(data, service, hours, rate, .protect = TRUE) {
 knit_print.washu_estimate_items <- function(x, ...) {
   x[is.na(x)] <- ""
 
-  if(!(rlang::`%@%`(x, "protect"))) {
+  if (!(rlang::`%@%`(x, "protect"))) {
     protect_tex_input <- identity
   }
 
-  out <- paste0("    ",
-                "\\estimateitem{<<protect_tex_input(service)>>}",
-                "{<<protect_tex_input(hours)>>}",
-                "{<<protect_tex_input(rate)>>}")
+  out <- paste0(
+    "    ",
+    "\\estimateitem{<<protect_tex_input(service)>>}",
+    "{<<protect_tex_input(hours)>>}",
+    "{<<protect_tex_input(rate)>>}"
+  )
   out <- glue::glue_data(x, out, .open = "<<", .close = ">>")
 
   knitr::asis_output(
     glue::glue_collapse(
       c("\\begin{estimate}",
         "  \\begin{estimatetable}",
-             out,
+        out,
         "  \\end{estimatetable}",
         "\\end{estimate}",
         sep = "\n"
@@ -447,10 +490,12 @@ wu_render_estimate <-
       tidy_sub("1968", from_campus_box) %>%
       tidy_sub("piglet@wustl.edu", from_email) %>%
       tidy_sub("\n```\\{r\\}\n.+$", "", fixed = FALSE) %>%
-      append(paste(c("```{r, message=FALSE}",
-               sprintf("read_csv(\"%s\") %%>%%", data),
-               "  estimate_items(service, hours, rate)",
-               "```"), collapse = "\n")) %>%
+      append(paste(c(
+        "```{r, message=FALSE}",
+        sprintf("read_csv(\"%s\") %%>%%", data),
+        "  estimate_items(service, hours, rate)",
+        "```"
+      ), collapse = "\n")) %>%
       writeLines(outfile)
 
     close(infile)
@@ -458,9 +503,11 @@ wu_render_estimate <-
 
     rmarkdown::render(input = input, ...)
 
-    if(!keep_input)
-      if(!file.remove(input))
+    if (!keep_input) {
+      if (!file.remove(input)) {
         stop("Error deleting skeleton")
+      }
+    }
   }
 
 #' Insert css code chunk to make consult report document wide
@@ -471,17 +518,17 @@ wu_render_estimate <-
 #' @export
 css_insert_wide_chunk <- function(width_main = 15000, width_tocify = 400) {
   fmt_lines <- c(
-    '```{css, echo = FALSE}',
-    'div.main-container {',
-    '  max-width: %ipx;',
-    '}',
-    '',
-    'div.tocify {',
-    '  max-width: %ipx;',
-    '}',
-    '```'
+    "```{css, echo = FALSE}",
+    "div.main-container {",
+    "  max-width: %ipx;",
+    "}",
+    "",
+    "div.tocify {",
+    "  max-width: %ipx;",
+    "}",
+    "```"
   )
-  text <- sprintf(paste(fmt_lines, collapse = '\n'), width_main, width_tocify)
+  text <- sprintf(paste(fmt_lines, collapse = "\n"), width_main, width_tocify)
   id <- rstudioapi::getSourceEditorContext()$id
   invisible(rstudioapi::insertText(text = text, id = id))
 }

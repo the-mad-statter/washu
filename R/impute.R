@@ -11,8 +11,8 @@
 #' @examples
 #' impute_bootstrap(airquality, Ozone)
 impute_bootstrap <- function(.data, x) {
-  orig <- .data %>% pull({{x}})
+  orig <- .data %>% pull({{ x }})
   boot <- sample(na.omit(orig), length(orig), TRUE)
   impt <- if_else(is.na(orig), boot, orig)
-  .data %>% mutate({{x}} := impt)
+  .data %>% mutate({{ x }} := impt)
 }

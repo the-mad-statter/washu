@@ -57,6 +57,14 @@ and https://ouhscbbmc.github.io/REDCapR/reference/retrieve_credential.html
 \item Double-check the file is secured and not accessible by other users.
 }
 }
+\note{
+Although we strongly encourage storing all the tokens on a central server
+(\emph{e.g.}, see the \code{retrieve_credential_mssql()} function and the
+"SecurityDatabase" vignette), there are times when this approach is not
+feasible and the token must be stored locally.  Please contact us
+if your institution is using something other than SQL Server, and
+would like help adapting this approach to your infrastructure.
+}
 \examples{
 # ---- Local File Example ----------------------------
 path <- system.file("misc/example.credentials", package = "REDCapR")

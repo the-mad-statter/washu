@@ -18,16 +18,17 @@
 #' @examples
 #' ## Selvin 1998, p. 289
 #' sel <- matrix(c(178, 79, 1411, 1486), 2, 2)
-#' dimnames(sel) <- list("Behavior type" = c("Type A", "Type B"),
-#'                       "Outcome" = c("CHD", "No CHD")
+#' dimnames(sel) <- list(
+#'   "Behavior type" = c("Type A", "Type B"),
+#'   "Outcome" = c("CHD", "No CHD")
 #' )
 #' epitools::riskratio.boot(sel, rev = "b")
 #'
 #' bind_rows(
-#'   tibble(behavior = "Type B", chd =  "no", n = 1486),
-#'   tibble(behavior = "Type A", chd =  "no", n = 1411),
-#'   tibble(behavior = "Type B", chd = "yes", n =   79),
-#'   tibble(behavior = "Type A", chd = "yes", n =  178)
+#'   tibble(behavior = "Type B", chd = "no", n = 1486),
+#'   tibble(behavior = "Type A", chd = "no", n = 1411),
+#'   tibble(behavior = "Type B", chd = "yes", n = 79),
+#'   tibble(behavior = "Type A", chd = "yes", n = 178)
 #' ) %>%
 #'   tidyr::uncount() %>%
 #'   mutate(
@@ -39,18 +40,20 @@ epitools_riskratio <- function(.data, outcome, exposure, na.rm = FALSE, ...) {
   outcome <- rlang::ensym(outcome)
   exposure <- rlang::ensym(exposure)
 
-  if(!is.factor(dplyr::select(.data, !!outcome)))
+  if (!is.factor(dplyr::select(.data, !!outcome))) {
     .data <- mutate(.data, !!outcome := factor(!!outcome))
+  }
 
-  if(!is.factor(dplyr::select(.data, !!exposure)))
+  if (!is.factor(dplyr::select(.data, !!exposure))) {
     .data <- mutate(.data, !!exposure := factor(!!exposure))
+  }
 
   dplyr::count(.data, !!outcome, !!exposure) -> m
 
-  if(na.rm)
+  if (na.rm) {
     tidyr::drop_na(m) -> m
-  else {
-    if(!all(complete.cases(m)))
+  } else {
+    if (!all(complete.cases(m))) {
       stop(
         sprintf(
           "Counting by %s and %s resulted in NAs.",
@@ -60,6 +63,7 @@ epitools_riskratio <- function(.data, outcome, exposure, na.rm = FALSE, ...) {
         " ",
         "Check the data or set `na.rm = TRUE`."
       )
+    }
   }
 
   dplyr::pull(m, n) %>% matrix(ncol = 2) -> m
@@ -75,7 +79,7 @@ epitools_riskratio <- function(.data, outcome, exposure, na.rm = FALSE, ...) {
       exposure = rownames(rr$measure),
       outcome = rlang::as_string(outcome)
     ),
-    tibble::as_tibble(rr$data)[-dim(rr$data)[1], - dim(rr$data)[2]],
+    tibble::as_tibble(rr$data)[-dim(rr$data)[1], -dim(rr$data)[2]],
     tibble::as_tibble(rr$measure),
     tibble::as_tibble(rr$p.value),
     tibble::tibble(
@@ -110,35 +114,37 @@ epitools_riskratio <- function(.data, outcome, exposure, na.rm = FALSE, ...) {
 #'
 #' tribble(
 #'   ~tapw, ~outc, ~n,
-#'   'lowest', 'case', 2,
-#'   'lowest', 'control', 29,
-#'   'intermediate', 'case', 35,
-#'   'intermediate', 'control', 64,
-#'   'highest', 'case', 12,
-#'   'highest', 'control', 6
+#'   "lowest", "case", 2,
+#'   "lowest", "control", 29,
+#'   "intermediate", "case", 35,
+#'   "intermediate", "control", 64,
+#'   "highest", "case", 12,
+#'   "highest", "control", 6
 #' ) %>%
 #'   tidyr::uncount() %>%
 #'   mutate(
-#'     tapw = factor(tapw, levels = c('lowest', 'intermediate', 'highest')),
-#'     outc = factor(outc, levels = c('control', 'case'))
+#'     tapw = factor(tapw, levels = c("lowest", "intermediate", "highest")),
+#'     outc = factor(outc, levels = c("control", "case"))
 #'   ) %>%
 #'   epitools_oddsratio(outc, tapw)
 epitools_oddsratio <- function(data, outcome, exposure, na.rm = FALSE, ...) {
   outcome <- rlang::ensym(outcome)
   exposure <- rlang::ensym(exposure)
 
-  if(!is.factor(dplyr::select(data, !!outcome)))
+  if (!is.factor(dplyr::select(data, !!outcome))) {
     data <- dplyr::mutate(data, !!outcome := factor(!!outcome))
+  }
 
-  if(!is.factor(dplyr::select(data, !!exposure)))
+  if (!is.factor(dplyr::select(data, !!exposure))) {
     data <- dplyr::mutate(data, !!exposure := factor(!!exposure))
+  }
 
   dplyr::count(data, !!outcome, !!exposure) -> m
 
-  if(na.rm)
+  if (na.rm) {
     tidyr::drop_na(m) -> m
-  else {
-    if(!all(complete.cases(m)))
+  } else {
+    if (!all(complete.cases(m))) {
       stop(
         sprintf(
           "Counting by %s and %s resulted in NAs.",
@@ -148,6 +154,7 @@ epitools_oddsratio <- function(data, outcome, exposure, na.rm = FALSE, ...) {
         " ",
         "Check the data or set `na.rm = TRUE`."
       )
+    }
   }
 
   dplyr::pull(m, n) %>% matrix(ncol = 2) -> m
@@ -163,7 +170,7 @@ epitools_oddsratio <- function(data, outcome, exposure, na.rm = FALSE, ...) {
       exposure = rownames(or$measure),
       outcome = rlang::as_string(outcome)
     ),
-    tibble::as_tibble(or$data)[-dim(or$data)[1], - dim(or$data)[2]],
+    tibble::as_tibble(or$data)[-dim(or$data)[1], -dim(or$data)[2]],
     tibble::as_tibble(or$measure),
     tibble::as_tibble(or$p.value),
     tibble::tibble(

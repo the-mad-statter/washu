@@ -15,10 +15,14 @@ coef.glmnet <- function(object, s = NULL, exact = FALSE, nonzero = TRUE, ...) {
     as.matrix(dgCMatrix) %>%
     as.data.frame() %>%
     tibble::rownames_to_column() %>%
-    { colnames(.) <- c("term", "estimate"); . } -> tbl
+    {
+      colnames(.) <- c("term", "estimate")
+      .
+    } -> tbl
 
-  if(nonzero)
+  if (nonzero) {
     filter(tbl, estimate != 0) -> tbl
+  }
 
   return(tbl)
 }

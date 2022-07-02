@@ -48,13 +48,12 @@ protect_tex_input <- function(x, ...) {
     x <- gsub("'([^ ']*)'", "`\\1'", x, useBytes = TRUE)
     x <- gsub("\"([^\"]*)\"", "``\\1''", x, useBytes = TRUE)
     x <- gsub("\\", "\\textbackslash ", x,
-              fixed = TRUE,
-              useBytes = TRUE
+      fixed = TRUE,
+      useBytes = TRUE
     )
     x <- gsub("([{}&$#_^%])", "\\\\\\1", x, useBytes = TRUE)
     x
-  }
-  else {
+  } else {
     x
   }
 }
@@ -141,10 +140,12 @@ match_arg <- function(x, default) {
 #' @examples
 #' \dontrun{
 #' ## Retrieve Mailgun domain name and API key from .Renviron file
-#' send_mailgun(to = "robin@wustl.edu",
-#'              from = "Robin",
-#'              subject = "Robin Says Hi!",
-#'              html = "<p>Hi Robin,</p><p>Robin</p>")
+#' send_mailgun(
+#'   to = "robin@wustl.edu",
+#'   from = "Robin",
+#'   subject = "Robin Says Hi!",
+#'   html = "<p>Hi Robin,</p><p>Robin</p>"
+#' )
 #' }
 #' @export
 #' @seealso \code{\link[httr]{POST}}, \code{\link[httr]{set_config}}
@@ -170,7 +171,8 @@ send_mailgun <- function(to = "robin@wustl.edu",
       html = html,
       text = text
     ),
-    encode = "multipart") %>%
+    encode = "multipart"
+  ) %>%
     httr::stop_for_status()
 
   return(TRUE)
@@ -180,10 +182,11 @@ send_mailgun <- function(to = "robin@wustl.edu",
 #' @param dir directory to open
 #' @export
 dir.open <- function(dir = getwd()) {
-  if (.Platform['OS.type'] == "windows")
+  if (.Platform["OS.type"] == "windows") {
     shell.exec(dir)
-  else
+  } else {
     system(paste(Sys.getenv("R_BROWSER"), dir))
+  }
 }
 
 #' Build and check a package, cleaning up automatically on success.
@@ -195,7 +198,7 @@ dir.open <- function(dir = getwd()) {
 check <- function(document = FALSE,
                   env_vars = c("_R_CHECK_SYSTEM_CLOCK_" = FALSE),
                   ...) {
-    devtools::check(document = document, env_vars = env_vars, ...)
+  devtools::check(document = document, env_vars = env_vars, ...)
 }
 
 #' NIH grant numbers reference pdf
@@ -220,34 +223,43 @@ nih_grant_numbers <- function() {
 recover_data_viewer_cache_objects <- function() {
   active_project <- rstudioapi::getActiveProject()
 
-  if(is.null(active_project)) {
-    if(.Platform$OS.type == "windows")
-      viewer_cache_files <- Sys.glob(file.path(Sys.getenv("localappdata"),
-                                               "RStudio-Desktop",
-                                               "viewer-cache",
-                                               "*.Rdata"))
-    else
-      viewer_cache_files <- Sys.glob(file.path("~",
-                                               ".rstudio-desktop",
-                                               "viewer-cache",
-                                               "*.Rdata"))
+  if (is.null(active_project)) {
+    if (.Platform$OS.type == "windows") {
+      viewer_cache_files <- Sys.glob(file.path(
+        Sys.getenv("localappdata"),
+        "RStudio-Desktop",
+        "viewer-cache",
+        "*.Rdata"
+      ))
+    } else {
+      viewer_cache_files <- Sys.glob(file.path(
+        "~",
+        ".rstudio-desktop",
+        "viewer-cache",
+        "*.Rdata"
+      ))
+    }
   } else {
-    viewer_cache_files <- Sys.glob(file.path(active_project,
-                                             ".Rproj.user",
-                                             "*",
-                                             "viewer-cache",
-                                             "*.Rdata"))
+    viewer_cache_files <- Sys.glob(file.path(
+      active_project,
+      ".Rproj.user",
+      "*",
+      "viewer-cache",
+      "*.Rdata"
+    ))
   }
 
   # record environment, load cached objects, return environment diff
   # (apply family does not work with base::load() or base::get())
   ls_0 <- ls()
-  for(o in viewer_cache_files)
+  for (o in viewer_cache_files) {
     load(o)
+  }
   new_objects <- setdiff(ls(), c(ls_0, "ls_0", "o"))
   recovered_objects <- list()
-  for(o in seq_along(new_objects))
+  for (o in seq_along(new_objects)) {
     recovered_objects[[new_objects[o]]] <- get(new_objects[o])
+  }
 
   recovered_objects
 }
@@ -262,9 +274,11 @@ recover_data_viewer_cache_objects <- function() {
 #' @return logical indicating match
 #' @export
 `%==%` <- function(lhs, rhs) {
-  dplyr::case_when(!is.na(lhs) & !is.na(rhs) ~ lhs == rhs,
-                   is.na(lhs) & is.na(rhs) ~ TRUE,
-                   TRUE ~ FALSE)
+  dplyr::case_when(
+    !is.na(lhs) & !is.na(rhs) ~ lhs == rhs,
+    is.na(lhs) & is.na(rhs) ~ TRUE,
+    TRUE ~ FALSE
+  )
 }
 
 #' Assign a Value to a Name
@@ -280,13 +294,16 @@ recover_data_viewer_cache_objects <- function() {
 #'
 #' @examples
 #' ## print and assign copy of mtcars
-#' mtcars %>% print() %>% assign_in_global("mtcars2")
+#' mtcars %>%
+#'   print() %>%
+#'   assign_in_global("mtcars2")
 #'
 #' ## same as above but using print argument
 #' mtcars %>% assign_in_global("mtcars2", TRUE)
 assign_in_global <- function(value, x, print = FALSE, envir = .GlobalEnv, ...) {
-  if(print)
+  if (print) {
     print(value)
+  }
 
   base::assign(x, value, envir = envir, ...)
 }
@@ -303,10 +320,11 @@ assign_in_global <- function(value, x, print = FALSE, envir = .GlobalEnv, ...) {
 #' @examples
 #' wu_emph("I will be bold red text.")
 wu_emph <- function(x, color = wu_colors$red, bold = TRUE) {
-  if(bold)
+  if (bold) {
     sprintf('<span style="color:%s; font-weight:bold;">%s</span>', color, x)
-  else
+  } else {
     sprintf('<span style="color:%s;">%s</span>', color, x)
+  }
 }
 
 #' Create Names for Temporary HTML File
@@ -327,14 +345,14 @@ tempfile_html <- function(pattern = "file", tmpdir = tempdir()) {
 write_web_link_file <- function(con, url, title = "", ...) {
   html <- c(
     '<html xmlns="http://www.w3.org/1999/xhtml">',
-    '  <head>',
-    sprintf('  <title>%s</title>', title),
+    "  <head>",
+    sprintf("  <title>%s</title>", title),
     sprintf('  <meta http-equiv="refresh" content="0;URL=\'%s\'" />', url),
-    '  </head>',
-    '  <body>',
+    "  </head>",
+    "  <body>",
     sprintf('  <p>This page has moved to a <a href="%s">%s</a>.</p>', url, url),
-    '  </body>',
-    '</html>'
+    "  </body>",
+    "</html>"
   )
   writeLines(html, con, ...)
 }
@@ -350,9 +368,9 @@ write_web_link_file <- function(con, url, title = "", ...) {
 #' @examples
 #' as_csv_string(mtcars)
 as_csv_string <- function(x) {
-  f <- tempfile('as_csv_string_', fileext = '.csv')
+  f <- tempfile("as_csv_string_", fileext = ".csv")
   write.csv(x, f, row.names = FALSE)
-  paste(readLines(f), collapse = '\n')
+  paste(readLines(f), collapse = "\n")
 }
 
 #' Append a Timestamp to the End of a File Name
@@ -366,12 +384,12 @@ as_csv_string <- function(x) {
 #'
 #' @examples
 #' append_timestamp("my_file.txt")
-append_timestamp <- function(x, format = '%y%m%d%H%M%S', delim = '_') {
+append_timestamp <- function(x, format = "%y%m%d%H%M%S", delim = "_") {
   paste0(
     tools::file_path_sans_ext(x),
     delim,
     base::format(Sys.time(), format),
-    dplyr::if_else(tools::file_ext(x) == '', '', '.'),
+    dplyr::if_else(tools::file_ext(x) == "", "", "."),
     tools::file_ext(x)
   )
 }

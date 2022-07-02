@@ -21,7 +21,8 @@ wu_colors <- list(
   gray          = "#d8d2c5",
   orange        = "#d15f27",
   yellow        = "#f8be15",
-  light_purple  = "#622466")
+  light_purple  = "#622466"
+)
 
 #' RGB value pad
 #'
@@ -66,38 +67,56 @@ print_rgb <- function(col) {
 #' @examples
 #' wu_colors_plot()
 wu_colors_plot <- function() {
-  .data <- data.frame(x1 = rep(1, length(wu_colors)),
-                      x2 = rep(2, length(wu_colors)),
-                      y1 = length(wu_colors):1,
-                      y2 = (length(wu_colors)+1):2,
-                      fil = letters[1:length(wu_colors)],
-                      col = names(wu_colors),
-                      hex = unlist(wu_colors, use.names = FALSE),
-                      rgb = sapply(wu_colors, print_rgb, USE.NAMES = FALSE))
+  .data <- data.frame(
+    x1 = rep(1, length(wu_colors)),
+    x2 = rep(2, length(wu_colors)),
+    y1 = length(wu_colors):1,
+    y2 = (length(wu_colors) + 1):2,
+    fil = letters[1:length(wu_colors)],
+    col = names(wu_colors),
+    hex = unlist(wu_colors, use.names = FALSE),
+    rgb = sapply(wu_colors, print_rgb, USE.NAMES = FALSE)
+  )
 
   ggplot2::ggplot() +
-    ggplot2::geom_rect(data = .data,
-                       mapping = ggplot2::aes(xmin = .data$x1,
-                                              xmax = .data$x2,
-                                              ymin = .data$y1,
-                                              ymax = .data$y2,
-                                              fill = .data$fil),
-                       color = "black") +
-    ggplot2::geom_text(data = .data,
-                       mapping = ggplot2::aes(x = .data$x1 + 1 * (.data$x2 - .data$x1) / 4,
-                                              y = .data$y1 + (.data$y2 - .data$y1) / 2,
-                                              label = .data$col),
-                       size = 4) +
-    ggplot2::geom_text(data = .data,
-                       mapping = ggplot2::aes(x = .data$x1 + 2 * (.data$x2 - .data$x1) / 4,
-                                              y = .data$y1 + (.data$y2 - .data$y1) / 2,
-                                              label = .data$hex),
-                       size = 4) +
-    ggplot2::geom_text(data = .data,
-                       mapping = ggplot2::aes(x = .data$x1 + 3 * (.data$x2 - .data$x1) / 4,
-                                              y = .data$y1 + (.data$y2 - .data$y1) / 2,
-                                              label = .data$rgb),
-                       size = 4) +
+    ggplot2::geom_rect(
+      data = .data,
+      mapping = ggplot2::aes(
+        xmin = .data$x1,
+        xmax = .data$x2,
+        ymin = .data$y1,
+        ymax = .data$y2,
+        fill = .data$fil
+      ),
+      color = "black"
+    ) +
+    ggplot2::geom_text(
+      data = .data,
+      mapping = ggplot2::aes(
+        x = .data$x1 + 1 * (.data$x2 - .data$x1) / 4,
+        y = .data$y1 + (.data$y2 - .data$y1) / 2,
+        label = .data$col
+      ),
+      size = 4
+    ) +
+    ggplot2::geom_text(
+      data = .data,
+      mapping = ggplot2::aes(
+        x = .data$x1 + 2 * (.data$x2 - .data$x1) / 4,
+        y = .data$y1 + (.data$y2 - .data$y1) / 2,
+        label = .data$hex
+      ),
+      size = 4
+    ) +
+    ggplot2::geom_text(
+      data = .data,
+      mapping = ggplot2::aes(
+        x = .data$x1 + 3 * (.data$x2 - .data$x1) / 4,
+        y = .data$y1 + (.data$y2 - .data$y1) / 2,
+        label = .data$rgb
+      ),
+      size = 4
+    ) +
     ggplot2::scale_fill_manual(values = .data$hex) +
     ggplot2::theme_void() +
     ggplot2::guides(fill = FALSE)

@@ -17,40 +17,46 @@
 #' @references <https://stackoverflow.com/questions/46490452/handling-empty-data-frame-with-write-xlsx>.
 #' @export
 xlsx_write.xlsx <- function(x, file, sheetName = "Sheet1", col.names = TRUE, row.names = FALSE, append = FALSE, showNA = FALSE, forceAppend = FALSE) {
-  if (forceAppend)
+  if (forceAppend) {
     append <- TRUE
+  }
 
-  if (!all(class(x) == "data.frame"))
-    x <- data.frame(x)    # just because the error message is too ugly
+  if (!all(class(x) == "data.frame")) {
+    x <- data.frame(x)
+  } # just because the error message is too ugly
 
   iOffset <- jOffset <- 0
-  if (col.names)
+  if (col.names) {
     iOffset <- 1
-  if (row.names)
+  }
+  if (row.names) {
     jOffset <- 1
+  }
 
-  if (append && file.exists(file)){
+  if (append && file.exists(file)) {
     wb <- xlsx::loadWorkbook(file)
-    if (forceAppend && sheetName %in% names(xlsx::getSheets(wb)))
+    if (forceAppend && sheetName %in% names(xlsx::getSheets(wb))) {
       xlsx::removeSheet(wb, sheetName)
+    }
   } else {
     ext <- gsub(".*\\.(.*)$", "\\1", basename(file))
-    wb  <- xlsx::createWorkbook(type=ext)
+    wb <- xlsx::createWorkbook(type = ext)
   }
 
   sheet <- xlsx::createSheet(wb, sheetName)
 
   noRows <- nrow(x) + iOffset
   noCols <- ncol(x) + jOffset
-  if (col.names){
-    rows  <- xlsx::createRow(sheet, 1)                  # create top row
-    cells <- xlsx::createCell(rows, colIndex=1:noCols)  # create cells
-    mapply(xlsx::setCellValue, cells[1,(1+jOffset):noCols], colnames(x))
+  if (col.names) {
+    rows <- xlsx::createRow(sheet, 1) # create top row
+    cells <- xlsx::createCell(rows, colIndex = 1:noCols) # create cells
+    mapply(xlsx::setCellValue, cells[1, (1 + jOffset):noCols], colnames(x))
   }
-  if (row.names)             # add rownames to data x
-    x <- cbind(rownames=rownames(x), x)
+  if (row.names) { # add rownames to data x
+    x <- cbind(rownames = rownames(x), x)
+  }
 
-  if(nrow(x) > 0) {
+  if (nrow(x) > 0) {
     colIndex <- seq_len(ncol(x))
     rowIndex <- seq_len(nrow(x)) + iOffset
 

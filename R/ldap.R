@@ -8,7 +8,7 @@
 #'
 #' @seealso \code{\link{ldap_content}}, \code{\link[base:rawConversion]{rawToChar}}, \code{\link[curl]{curl_fetch}}
 rm_raw_nul <- function(data) {
-  data[!data=='00']
+  data[!data == "00"]
 }
 
 #' LDAP content
@@ -62,22 +62,29 @@ ldap_as_tibble <- function(ldap_content) {
 ldap_clean_tibble <- function(ldap_tibble) {
   column_names <- names(ldap_tibble)
 
-  if("DN" %in% column_names) {
+  if ("DN" %in% column_names) {
     ldap_tibble %>%
       dplyr::mutate(
-        objectClass = stringr::str_extract(.data$DN,
-                                           stringr::regex("(?<=objectClass: ).+$", dotall = TRUE)),
-        objectClass = stringr::str_replace_all(.data$objectClass,
-                                               stringr::regex("\n\tobjectClass: ", dotall = TRUE),
-                                               "\t"),
-        DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$", dotall = TRUE))) -> ldap_tibble
+        objectClass = stringr::str_extract(
+          .data$DN,
+          stringr::regex("(?<=objectClass: ).+$", dotall = TRUE)
+        ),
+        objectClass = stringr::str_replace_all(
+          .data$objectClass,
+          stringr::regex("\n\tobjectClass: ", dotall = TRUE),
+          "\t"
+        ),
+        DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$", dotall = TRUE))
+      ) -> ldap_tibble
   }
 
-  if("memberOf" %in% column_names) {
+  if ("memberOf" %in% column_names) {
     ldap_tibble %>%
       dplyr::mutate(
-        memberOf = stringr::str_replace_all(.data$memberOf,
-                                            stringr::regex("\n\tmemberOf: ", dotall = TRUE), "\t")
+        memberOf = stringr::str_replace_all(
+          .data$memberOf,
+          stringr::regex("\n\tmemberOf: ", dotall = TRUE), "\t"
+        )
       ) -> ldap_tibble
   }
 
@@ -85,15 +92,15 @@ ldap_clean_tibble <- function(ldap_tibble) {
 
   return(ldap_tibble)
 
-    #dplyr::mutate(
-    #  objectClass = stringr::str_extract(.data$DN,
-    #                                     stringr::regex("(?<=objectClass: ).+$", dotall = TRUE)),
-    #  objectClass = stringr::str_replace_all(.data$objectClass,
-    #                                         stringr::regex("\n\tobjectClass: ", dotall = TRUE),
-    #                                         "\t"),
-    #  DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$", dotall = TRUE)),
-    #  memberOf = stringr::str_replace_all(.data$memberOf,
-    #                                      stringr::regex("\n\tmemberOf: ", dotall = TRUE), "\t"))
+  # dplyr::mutate(
+  #  objectClass = stringr::str_extract(.data$DN,
+  #                                     stringr::regex("(?<=objectClass: ).+$", dotall = TRUE)),
+  #  objectClass = stringr::str_replace_all(.data$objectClass,
+  #                                         stringr::regex("\n\tobjectClass: ", dotall = TRUE),
+  #                                         "\t"),
+  #  DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$", dotall = TRUE)),
+  #  memberOf = stringr::str_replace_all(.data$memberOf,
+  #                                      stringr::regex("\n\tmemberOf: ", dotall = TRUE), "\t"))
 }
 
 #' Generic LDAP query
@@ -126,13 +133,15 @@ ldap_clean_tibble <- function(ldap_tibble) {
 #' wustl_key_to_find <- "pooh"
 #' user <- "piglet@wustl.edu"
 #' pass <- "*****"
-#' ldap_query(hostname = "accounts.ad.wustl.edu",
-#'            base_dn = "OU=Current,OU=People,DC=accounts,DC=ad,DC=wustl,DC=edu",
-#'            scope = "sub",
-#'            filter = sprintf("(sAMAccountName=%s)", wustl_key_to_find),
-#'            user = user,
-#'            pass = pass,
-#'            protocol = "ldap")
+#' ldap_query(
+#'   hostname = "accounts.ad.wustl.edu",
+#'   base_dn = "OU=Current,OU=People,DC=accounts,DC=ad,DC=wustl,DC=edu",
+#'   scope = "sub",
+#'   filter = sprintf("(sAMAccountName=%s)", wustl_key_to_find),
+#'   user = user,
+#'   pass = pass,
+#'   protocol = "ldap"
+#' )
 #' }
 ldap_query <- function(hostname,
                        base_dn = "",
@@ -148,18 +157,21 @@ ldap_query <- function(hostname,
   attributes <- paste(attributes, collapse = ",")
   scope <- match.arg(scope)
 
-  url = sprintf("%s://%s%s/%s?%s?%s?%s",
-                 protocol,
-                 hostname,
-                 port,
-                 base_dn,
-                 attributes,
-                 scope,
-                 filter)
+  url <- sprintf(
+    "%s://%s%s/%s?%s?%s?%s",
+    protocol,
+    hostname,
+    port,
+    base_dn,
+    attributes,
+    scope,
+    filter
+  )
 
   h <- curl::new_handle()
-  if(!missing(user) & !missing(pass))
+  if (!missing(user) & !missing(pass)) {
     h <- curl::handle_setopt(h, userpwd = sprintf("%s:%s", user, pass))
+  }
 
   curl::curl_fetch_memory(url, h)
 }
@@ -192,13 +204,14 @@ wu_ldap_query_default <- function(hostname = "accounts.ad.wustl.edu",
                                   user = sprintf("%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
                                   pass = Sys.getenv("WUSTL_KEY_PASS")) {
   ldap_query(hostname,
-             base_dn,
-             attributes,
-             scope,
-             filter,
-             user,
-             pass,
-             protocol = "ldap")
+    base_dn,
+    attributes,
+    scope,
+    filter,
+    user,
+    pass,
+    protocol = "ldap"
+  )
 }
 
 #' WU LDAP query for sAMAccountName
@@ -214,7 +227,8 @@ wu_ldap_query_sAMAccountName <- function(sAMAccountName, user, pass) {
   wu_ldap_query_default(
     filter = sprintf("(sAMAccountName=%s)", sAMAccountName),
     user = user,
-    pass = pass) %>%
+    pass = pass
+  ) %>%
     ldap_content() %>%
     ldap_as_tibble() %>%
     ldap_clean_tibble()
@@ -233,7 +247,8 @@ wu_ldap_query_mail <- function(mail, user, pass) {
   wu_ldap_query_default(
     filter = sprintf("(mail=%s)", mail),
     user = user,
-    pass = pass) %>%
+    pass = pass
+  ) %>%
     ldap_content() %>%
     ldap_as_tibble() %>%
     ldap_clean_tibble()
@@ -252,7 +267,8 @@ wu_ldap_query_userPrincipalName <- function(userPrincipalName, user, pass) {
   wu_ldap_query_default(
     filter = sprintf("(userPrincipalName=%s)", userPrincipalName),
     user = user,
-    pass = pass) %>%
+    pass = pass
+  ) %>%
     ldap_content() %>%
     ldap_as_tibble() %>%
     ldap_clean_tibble()
@@ -280,26 +296,31 @@ wu_ldap_query_userPrincipalName <- function(userPrincipalName, user, pass) {
 #' wu_ldap_query("mail", "pooh@wustl.edu", "piglet@wustl.edu", "*****")
 #'
 #' ## custom search for all Research Statisticians
-#' wu_ldap_query(type = "custom",
-#'               user = "piglet@wustl.edu",
-#'               pass = "*****",
-#'               attributes = "mail",
-#'               filter = sprintf("(title=%s)", "Research Statistician")) %>%
+#' wu_ldap_query(
+#'   type = "custom",
+#'   user = "piglet@wustl.edu",
+#'   pass = "*****",
+#'   attributes = "mail",
+#'   filter = sprintf("(title=%s)", "Research Statistician")
+#' ) %>%
 #'   ldap_content("\n\n") %>%
 #'   gsub("^.+\n\tmail: ", "", .)
 #' }
-wu_ldap_query <- function(type = c("sAMAccountName",
-                                   "userPrincipalName",
-                                   "mail",
-                                   "custom"),
+wu_ldap_query <- function(type = c(
+                            "sAMAccountName",
+                            "userPrincipalName",
+                            "mail",
+                            "custom"
+                          ),
                           value,
                           user = sprintf("%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
                           pass = Sys.getenv("WUSTL_KEY_PASS"),
                           ...) {
   type <- match.arg(type)
   switch(type,
-         "sAMAccountName"    = wu_ldap_query_sAMAccountName(value, user, pass),
-         "userPrincipalName" = wu_ldap_query_userPrincipalName(value, user, pass),
-         "mail"              = wu_ldap_query_mail(value, user, pass),
-         "custom"            = wu_ldap_query_default(user = user, pass = pass, ...))
+    "sAMAccountName"    = wu_ldap_query_sAMAccountName(value, user, pass),
+    "userPrincipalName" = wu_ldap_query_userPrincipalName(value, user, pass),
+    "mail"              = wu_ldap_query_mail(value, user, pass),
+    "custom"            = wu_ldap_query_default(user = user, pass = pass, ...)
+  )
 }
