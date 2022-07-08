@@ -50,17 +50,17 @@ Generalized linear mixed-effects models fit to all pairs of group predictor
 }
 \examples{
 lme4::cbpp \%>\%
-  tibble::rowid_to_column('obs') \%>\%
+  tibble::rowid_to_column("obs") \%>\%
   dplyr::mutate(
     herd = as.numeric(herd),
     herd = dplyr::case_when(
-      herd <= 5 ~ '[1,5]',
-      herd <= 10 ~ '[6,10]',
-      herd <= 15 ~ '[11,15]',
+      herd <= 5 ~ "[1,5]",
+      herd <= 10 ~ "[6,10]",
+      herd <= 15 ~ "[11,15]",
       TRUE ~ NA_character_
     ),
-    herd = factor(herd, levels = c('[1,5]', '[6,10]', '[11,15]')),
+    herd = factor(herd, levels = c("[1,5]", "[6,10]", "[11,15]")),
     period = as.numeric(period)
   ) \%>\%
-  broom_tidy_pairwise_glmer('cbind(incidence, size - incidence) ~ herd + period + herd*period + (1 | obs)', herd, binomial)
+  broom_tidy_pairwise_glmer("cbind(incidence, size - incidence) ~ herd + period + herd*period + (1 | obs)", herd, binomial)
 }

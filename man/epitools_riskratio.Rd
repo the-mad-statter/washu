@@ -30,16 +30,17 @@ convert them to factors with default levels.
 \examples{
 ## Selvin 1998, p. 289
 sel <- matrix(c(178, 79, 1411, 1486), 2, 2)
-dimnames(sel) <- list("Behavior type" = c("Type A", "Type B"),
-                      "Outcome" = c("CHD", "No CHD")
+dimnames(sel) <- list(
+  "Behavior type" = c("Type A", "Type B"),
+  "Outcome" = c("CHD", "No CHD")
 )
 epitools::riskratio.boot(sel, rev = "b")
 
 bind_rows(
-  tibble(behavior = "Type B", chd =  "no", n = 1486),
-  tibble(behavior = "Type A", chd =  "no", n = 1411),
-  tibble(behavior = "Type B", chd = "yes", n =   79),
-  tibble(behavior = "Type A", chd = "yes", n =  178)
+  tibble(behavior = "Type B", chd = "no", n = 1486),
+  tibble(behavior = "Type A", chd = "no", n = 1411),
+  tibble(behavior = "Type B", chd = "yes", n = 79),
+  tibble(behavior = "Type A", chd = "yes", n = 178)
 ) \%>\%
   tidyr::uncount() \%>\%
   mutate(

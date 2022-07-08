@@ -32,6 +32,6 @@ Generate an HTML table of descriptive statistics
 }
 \examples{
 \dontrun{
-table1(~ ., mtcars, "Table 1. Descriptives.html")
+table1(~., mtcars, "Table 1. Descriptives.html")
 }
 }

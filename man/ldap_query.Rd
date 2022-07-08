@@ -55,12 +55,14 @@ ldap_query("ldap.example.com")
 wustl_key_to_find <- "pooh"
 user <- "piglet@wustl.edu"
 pass <- "*****"
-ldap_query(hostname = "accounts.ad.wustl.edu",
-           base_dn = "OU=Current,OU=People,DC=accounts,DC=ad,DC=wustl,DC=edu",
-           scope = "sub",
-           filter = sprintf("(sAMAccountName=\%s)", wustl_key_to_find),
-           user = user,
-           pass = pass,
-           protocol = "ldap")
+ldap_query(
+  hostname = "accounts.ad.wustl.edu",
+  base_dn = "OU=Current,OU=People,DC=accounts,DC=ad,DC=wustl,DC=edu",
+  scope = "sub",
+  filter = sprintf("(sAMAccountName=\%s)", wustl_key_to_find),
+  user = user,
+  pass = pass,
+  protocol = "ldap"
+)
 }
 }

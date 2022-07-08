@@ -38,6 +38,6 @@ A \link[tibble]{tibble} with information about fixed model estimates.
 Tidy a glmerMod object
 }
 \examples{
-m <- lme4::glmer(vs ~ mpg + (1|cyl), mtcars, binomial)
+m <- lme4::glmer(vs ~ mpg + (1 | cyl), mtcars, binomial)
 broom_tidy.glmerMod(m)
 }

@@ -26,6 +26,6 @@ library(washu)
 tribble(~service, ~hours, ~rate,
         "Data Management", 4, 70,
         "Analysis", 3, 70,
-        "Communicate", 2, 70) %>% 
+        "Communicate", 2, 70) %>%
   estimate_items(service, hours, rate)
 ```

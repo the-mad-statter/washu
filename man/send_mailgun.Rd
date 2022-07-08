@@ -41,10 +41,12 @@ Send an email message via the Mailgun API
 \examples{
 \dontrun{
 ## Retrieve Mailgun domain name and API key from .Renviron file
-send_mailgun(to = "robin@wustl.edu",
-             from = "Robin",
-             subject = "Robin Says Hi!",
-             html = "<p>Hi Robin,</p><p>Robin</p>")
+send_mailgun(
+  to = "robin@wustl.edu",
+  from = "Robin",
+  subject = "Robin Says Hi!",
+  html = "<p>Hi Robin,</p><p>Robin</p>"
+)
 }
 }
 \references{

@@ -38,11 +38,13 @@ type = "custom" allows for custom searches, but requires post-processing.
 wu_ldap_query("mail", "pooh@wustl.edu", "piglet@wustl.edu", "*****")
 
 ## custom search for all Research Statisticians
-wu_ldap_query(type = "custom",
-              user = "piglet@wustl.edu",
-              pass = "*****",
-              attributes = "mail",
-              filter = sprintf("(title=\%s)", "Research Statistician")) \%>\%
+wu_ldap_query(
+  type = "custom",
+  user = "piglet@wustl.edu",
+  pass = "*****",
+  attributes = "mail",
+  filter = sprintf("(title=\%s)", "Research Statistician")
+) \%>\%
   ldap_content("\n\n") \%>\%
   gsub("^.+\n\tmail: ", "", .)
 }

@@ -38,17 +38,17 @@ epitools::oddsratio(dat, rev = "c")
 
 tribble(
   ~tapw, ~outc, ~n,
-  'lowest', 'case', 2,
-  'lowest', 'control', 29,
-  'intermediate', 'case', 35,
-  'intermediate', 'control', 64,
-  'highest', 'case', 12,
-  'highest', 'control', 6
+  "lowest", "case", 2,
+  "lowest", "control", 29,
+  "intermediate", "case", 35,
+  "intermediate", "control", 64,
+  "highest", "case", 12,
+  "highest", "control", 6
 ) \%>\%
   tidyr::uncount() \%>\%
   mutate(
-    tapw = factor(tapw, levels = c('lowest', 'intermediate', 'highest')),
-    outc = factor(outc, levels = c('control', 'case'))
+    tapw = factor(tapw, levels = c("lowest", "intermediate", "highest")),
+    outc = factor(outc, levels = c("control", "case"))
   ) \%>\%
   epitools_oddsratio(outc, tapw)
 }

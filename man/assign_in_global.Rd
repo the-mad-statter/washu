@@ -27,7 +27,9 @@ Assign a Value to a Name
 }
 \examples{
 ## print and assign copy of mtcars
-mtcars \%>\% print() \%>\% assign_in_global("mtcars2")
+mtcars \%>\%
+  print() \%>\%
+  assign_in_global("mtcars2")
 
 ## same as above but using print argument
 mtcars \%>\% assign_in_global("mtcars2", TRUE)

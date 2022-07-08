@@ -43,12 +43,15 @@ The effect variable is converted to factor in the given order and labels applied
 }
 \examples{
 ## Exercise 2.1 P. 40 from Cohen (1988)
-dplyr::tibble(d = .50,
-              y = "learning",
-              x = "opportunity",
-              source = "Cohen (1988)") \%>\%
+dplyr::tibble(
+  d = .50,
+  y = "learning",
+  x = "opportunity",
+  source = "Cohen (1988)"
+) \%>\%
   pp_d(15:45,
-       labels = sprintf("\%s \%s", format(round(d, 2), nsmall = 2), source))
+    labels = sprintf("\%s \%s", format(round(d, 2), nsmall = 2), source)
+  )
 }
 \references{
 Cohen, J. (1988). Statistical power analysis for the behavioral sciences (2nd ed.). Hillsdale,NJ: Lawrence Erlbaum.

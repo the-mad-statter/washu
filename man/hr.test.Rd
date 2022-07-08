@@ -43,19 +43,20 @@ Currently only performs a directional test
 \examples{
 set.seed(12345)
 age <- as.numeric(rnorm(100, 50, 10) >= 50)
-size <- as.numeric(rexp(100,1) > 1)
+size <- as.numeric(rexp(100, 1) > 1)
 stime <- rexp(100)
-cens <- runif(100,.5,2)
+cens <- runif(100, .5, 2)
 sevent <- as.numeric(stime <= cens)
 stime <- pmin(stime, cens)
 coxm1 <- survival::coxph(survival::Surv(stime, sevent) ~ age)
 coxm2 <- survival::coxph(survival::Surv(stime, sevent) ~ size)
-hr.test(coxm1$coefficients, 
-        drop(sqrt(coxm1$var)), 
-        coxm2$coefficients, 
-        drop(sqrt(coxm2$var)), 
-        cor(age, size), 
-        100
+hr.test(
+  coxm1$coefficients,
+  drop(sqrt(coxm1$var)),
+  coxm2$coefficients,
+  drop(sqrt(coxm2$var)),
+  cor(age, size),
+  100
 )
 }
 \seealso{

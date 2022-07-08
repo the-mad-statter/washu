@@ -21,8 +21,8 @@ names after a join, coalesces them into the base name, and drops the
 suffixed versions.
 }
 \examples{
-x <- data.frame(id = 1:3, v = paste0('x', 1:3))
-y <- data.frame(id = 2:4, v = paste0('y', 2:4))
-d <- dplyr::left_join(x, y, by = 'id')
+x <- data.frame(id = 1:3, v = paste0("x", 1:3))
+y <- data.frame(id = 2:4, v = paste0("y", 2:4))
+d <- dplyr::left_join(x, y, by = "id")
 mutate_auto_coalesce(d)
 }
