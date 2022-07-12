@@ -223,7 +223,11 @@ redcap_logical <- function(name, value) {
 redcap_export_project_xml <-
   function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
            token,
-           filename = append_timestamp("redcap_project.xml"),
+           filename = sprintf(
+             "%s_%s.REDCap.xml",
+             gsub(" ", "", "Project Title"),
+             format(Sys.time(), "%Y-%m-%d_%H%M")
+           ),
            overwrite = FALSE,
            return_metadata_only = FALSE,
            records,
@@ -234,8 +238,6 @@ redcap_export_project_xml <-
            export_data_access_groups = FALSE,
            filter_logic = NULL,
            export_files = FALSE) {
-    filename <- paste0(filename, ".xml")
-
     body <- list(token = token, content = "project_xml")
 
     body <- append(
@@ -289,7 +291,7 @@ redcap_export_project_xml <-
       export_files
     ))
 
-    httr::POST(redcap_uri, httr::write_disk(filename, overwrite), body = body)
+    httr::POST(redcap_uri, httr::write_disk(filename, overwrite), body = body, encode = "form")
   }
 
 #' Delete Records
@@ -342,6 +344,234 @@ redcap_delete_records <-
 
     httr::POST(redcap_uri, body = body)
   }
+
+#' Export Project Information
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The API token specific to your REDCap project and username (each
+#'  token is unique to each user for each project). See the section on the
+#'  left-hand menu for obtaining a token for a given project.
+#' @param format format of the response content
+#' @param return_format csv, json, xml - specifies the format of error messages.
+#' If you do not pass in this flag, it will select the default format for you
+#' passed based on the 'format' flag you passed in or if no format flag was
+#' passed in, it will default to 'xml'.
+#'
+#' @return httr::response() object containing the project information
+#' @export
+redcap_export_project_information <-
+  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+           token,
+           format = c("xml", "csv", "json"),
+           return_format = c("xml", "csv", "json")) {
+    format <- match.arg(format)
+    return_format <- match.arg(return_format)
+
+    body <- list(
+      "token" = token,
+      "content" = "project",
+      "format" = format,
+      "returnFormat" = return_format
+    )
+
+    httr::POST(redcap_uri, body = body, encode = "form")
+  }
+
+#' Export Records
+#'
+#' @description This method allows you to export a set of records for a project.
+#'
+#' @note Note about export rights: Please be aware that Data Export user rights
+#' will be applied to this API request. For example, if you have 'No Access'
+#' data export rights in the project, then the API data export will fail and
+#' return an error. And if you have 'De-Identified' or 'Remove all tagged
+#' Identifier fields' data export rights, then some data fields *might* be
+#' removed and filtered out of the data set returned from the API. To make sure
+#' that no data is unnecessarily filtered out of your API request, you should
+#' have 'Full Data Set' export rights in the project.
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The Super API Token specific to a user
+#' @param format csv, json, xml [default], odm ('odm' refers to CDISC ODM XML
+#' format, specifically ODM version 1.3.1)
+#' @param type * 'record' refers to the record ID for the project
+#' \itemize{
+#'   \item{flat}{- output as one record per row [default]}
+#'   \item{eav}{- output as one data point per row
+#'     \item{Non-longitudinal:}{record*, field_name, value}
+#'     \item{Longitudinal:}{record*, field_name, value, redcap_event_name}
+#'   }
+#' }
+#' @param records an array of record names specifying specific records you wish
+#' to pull (by default, all records are pulled)
+#' @param fields an array of field names specifying specific fields you wish to
+#' pull (by default, all fields are pulled)
+#' @param forms an array of form names you wish to pull records for. If the
+#' form name has a space in it, replace the space with an underscore (by
+#' default, all records are pulled)
+#' @param events an array of unique event names that you wish to pull records
+#' for - only for longitudinal projects
+#' @param raw_or_label raw [default], label - export the raw coded values or
+#' labels for the options of multiple choice fields
+#' @param raw_or_label_headers raw [default], label - (for 'csv' format 'flat'
+#' type only) for the CSV headers, export the variable/field names (raw) or the
+#' field labels (label)
+#' @param export_checkbox_label true, false [default] - specifies the format of
+#' checkbox field values specifically when exporting the data as labels (i.e.,
+#' when rawOrLabel=label) in flat format (i.e., when type=flat). When exporting
+#' labels, by default (without providing the exportCheckboxLabel flag or if
+#' exportCheckboxLabel=false), all checkboxes will either have a value
+#' 'Checked' if they are checked or 'Unchecked' if not checked. But if
+#' exportCheckboxLabel is set to true, it will instead export the checkbox
+#' value as the checkbox option's label (e.g., 'Choice 1') if checked or it
+#' will be blank/empty (no value) if not checked. If rawOrLabel=false or if
+#' type=eav, then the exportCheckboxLabel flag is ignored. (The
+#' exportCheckboxLabel parameter is ignored for type=eav because 'eav' type
+#' always exports checkboxes differently anyway, in which checkboxes are
+#' exported with their true variable name (whereas the 'flat' type exports them
+#' as variable___code format), and another difference is that 'eav' type
+#' *always* exports checkbox values as the choice label for labels export, or
+#' as 0 or 1 (if unchecked or checked, respectively) for raw export.)
+#' @param return_format csv, json, xml - specifies the format of error
+#' messages. If you do not pass in this flag, it will select the default format
+#' for you passed based on the 'format' flag you passed in or if no format flag
+#' was passed in, it will default to 'xml'.
+#' @param export_survey_fields true, false [default] - specifies whether or not
+#' to export the survey identifier field (e.g., 'redcap_survey_identifier') or
+#' survey timestamp fields (e.g., instrument+'_timestamp') when surveys are
+#' utilized in the project. If you do not pass in this flag, it will default to
+#' 'false'. If set to 'true', it will return the redcap_survey_identifier field
+#' and also the survey timestamp field for a particular survey when at least
+#' one field from that survey is being exported. NOTE: If the survey identifier
+#' field or survey timestamp fields are imported via API data import, they will
+#' simply be ignored since they are not real fields in the project but rather
+#' are pseudo-fields.
+#' @param export_data_access_groups true, false [default] - specifies whether
+#' or not to export the 'redcap_data_access_group' field when data access
+#' groups are utilized in the project. If you do not pass in this flag, it will
+#' default to 'false'. NOTE: This flag is only viable if the user whose token
+#' is being used to make the API request is *not* in a data access group. If
+#' the user is in a group, then this flag will revert to its default value.
+#' @param filter_logic String of logic text (e.g., [age] > 30) for filtering
+#' the data to be returned by this API method, in which the API will only
+#' return the records (or record-events, if a longitudinal project) where the
+#' logic evaluates as TRUE. This parameter is blank/null by default unless a
+#' value is supplied. Please note that if the filter logic contains any
+#' incorrect syntax, the API will respond with an error message.
+#' @param date_range_begin To return only records that have been created or
+#' modified *after* a given date/time, provide a timestamp in the format
+#' YYYY-MM-DD HH:MM:SS (e.g., '2017-01-01 00:00:00' for January 1, 2017 at
+#' midnight server time). If not specified, it will assume no begin time.
+#' @param date_range_end To return only records that have been created or
+#' modified *before* a given date/time, provide a timestamp in the format
+#' YYYY-MM-DD HH:MM:SS (e.g., '2017-01-01 00:00:00' for January 1, 2017 at
+#' midnight server time). If not specified, it will use the current server time.
+#' @param csv_delimiter Set the delimiter used to separate values in the CSV
+#' data file (for CSV format only). Options include: comma ',' (default),
+#' 'tab', semi-colon ';', pipe '|', or caret '^'. Simply provide the value in
+#' quotes for this parameter.
+#' @param decimal_character If specified, force all numbers into same decimal
+#' format. You may choose to force all data values containing a decimal to have
+#' the same decimal character, which will be applied to all calc fields and
+#' number-validated text fields. Options include comma ',' or dot/full stop '.',
+#'  but if left blank/null, then it will export numbers using the fields'
+#'  native decimal format. Simply provide the value of either ',' or '.' for
+#'  this parameter.
+#'
+#' @return httr::response() object
+#' @export
+#'
+#' @examples \dontrun{
+#' redcap_export_records(token = my_token)
+#' }
+redcap_export_records <- function(
+  redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+  token,
+  format = c("xml", "csv", "json", "odm"),
+  type = c("flat", "eav"),
+  records,
+  fields,
+  forms,
+  events,
+  raw_or_label = c("raw", "label"),
+  raw_or_label_headers = c("raw", "label"),
+  export_checkbox_label = FALSE,
+  return_format = c("xml", "csv", "json"),
+  export_survey_fields = FALSE,
+  export_data_access_groups = FALSE,
+  filter_logic,
+  date_range_begin,
+  date_range_end,
+  csv_delimiter = c(",", "\t", ";", "|", "^"),
+  decimal_character = c("native", ",", ".")
+) {
+  body <- list(
+    "token" = token,
+    "content" = "record",
+    "format" = match.arg(format),
+    "type" = match.arg(type),
+    "rawOrLabel" = match.arg(raw_or_label),
+    "rawOrLabelHeaders" = match.arg(raw_or_label_headers),
+    "exportCheckboxLabel" = export_checkbox_label,
+    "returnFormat" = match.arg(return_format),
+    "exportSurveyFields" = export_survey_fields,
+    "exportDataAccessGroups" = export_data_access_groups,
+    "csvDelimiter" = match.arg(csv_delimiter),
+    "decimalCharacter" = match.arg(decimal_character)
+  )
+
+  if (missing(records) || is.null(records))
+    records <- NULL
+  else
+    records <- redcap_array(records)
+  body <- append(body, list("records" = records))
+
+  if (missing(fields) || is.null(fields))
+    fields <- NULL
+  else
+    fields <- redcap_array(fields)
+  body <- append(body, list("fields" = fields))
+
+  if (missing(forms) || is.null(forms))
+    forms <- NULL
+  else {
+    forms <- redcap_array(gsub(" ", "_", forms))
+  }
+  body <- append(body, list("forms" = forms))
+
+  if (missing(events) || is.null(events))
+    events <- NULL
+  else
+    events <- redcap_array(events)
+  body <- append(body, list("events" = events))
+
+  if (missing(filter_logic) || is.null(filter_logic)) {
+    filter_logic <- NULL
+  } else {
+    checkmate::assert(checkmate::check_character(filter_logic))
+  }
+  body <- append(body, list("filterLogic" = filter_logic))
+
+  if (missing(date_range_begin) || is.null(date_range_begin)) {
+    date_range_begin <- NULL
+  } else {
+    checkmate::assert(checkmate::check_character(date_range_begin))
+
+  }
+  body <- append(body, list("dateRangeBegin" = date_range_begin))
+
+  if (missing(date_range_end) || is.null(date_range_end)) {
+    date_range_end <- NULL
+  } else {
+    checkmate::assert(checkmate::check_character(date_range_end))
+  }
+  body <- append(body, list("dateRangeEnd" = date_range_end))
+
+
+  httr::POST(redcap_uri, body = body, encode = "form")
+}
 
 #' Import Records
 #'
@@ -485,39 +715,6 @@ redcap_import_records <-
     httr::POST(redcap_uri, body = body, encode = "form")
   }
 
-#' Export Project Information
-#'
-#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
-#' project.
-#' @param token The API token specific to your REDCap project and username (each
-#'  token is unique to each user for each project). See the section on the
-#'  left-hand menu for obtaining a token for a given project.
-#' @param format format of the response content
-#' @param return_format csv, json, xml - specifies the format of error messages.
-#' If you do not pass in this flag, it will select the default format for you
-#' passed based on the 'format' flag you passed in or if no format flag was
-#' passed in, it will default to 'xml'.
-#'
-#' @return httr::response() object containing the project information
-#' @export
-redcap_export_project_information <-
-  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-           token,
-           format = c("xml", "csv", "json"),
-           return_format = c("xml", "csv", "json")) {
-    format <- match.arg(format)
-    return_format <- match.arg(return_format)
-
-    body <- list(
-      "token" = token,
-      "content" = "project",
-      "format" = format,
-      "returnFormat" = return_format
-    )
-
-    httr::POST(redcap_uri, body = body, encode = "form")
-  }
-
 #' Export a File
 #'
 #' @description This method allows you to download a document that has been
@@ -607,7 +804,7 @@ redcap_export_file <-
 
     # retrieve the desired file name from header and construct absolute path
     fname <- parse_content_type(r[["headers"]][["content-type"]])[["name"]]
-    fpath <- file.path(tempdir(), fname)
+    fpath <- gsub("\\\\", "/", file.path(tempdir(), fname))
 
     # rename temp file to desired
     file.rename(r$content[[1]], fpath)
@@ -816,19 +1013,12 @@ redcap_migrate_files <- function(redcap_uri_src,
   data_dictionary[[1, 1]] -> field_names_record_id
 
   # vector of key (i.e., record identifying) variables
-  c(
-    field_names_record_id,
-    dplyr::if_else(
-      project_info$is_longitudinal == 1,
-      "redcap_event_name",
-      NULL
-    ),
-    dplyr::if_else(
-      project_info$has_repeating_instruments_or_events == 1,
-      "redcap_repeat_instance",
-      NULL
-    )
-  ) -> field_names_keys
+  field_names_keys <- field_names_record_id
+  if(project_info$is_longitudinal == 1)
+    field_names_keys <- c(field_names_keys, "redcap_event_name")
+  if(!is.null(project_info$has_repeating_instruments_or_events))
+    if(project_info$has_repeating_instruments_or_events == 1)
+      field_names_keys <- c(field_names_keys, "redcap_repeat_instance")
 
   # get names of fields of type file
   data_dictionary %>%
@@ -840,7 +1030,10 @@ redcap_migrate_files <- function(redcap_uri_src,
     redcap_uri = redcap_uri_src,
     token = token_src,
     fields_collapsed = paste(
-      c(field_names_keys, field_names_files),
+      c(
+        field_names_keys,
+        field_names_files
+      ),
       collapse = ","
     )
   )$data -> d
@@ -1126,264 +1319,65 @@ redcap_create_project_from_odm <-
     )
   }
 
-
-
-#' Export Records
+#' Migrate a Project
 #'
-#' @description This method allows you to export a set of records for a project.
+#' @param redcap_uri_src The URI (uniform resource identifier) of the source
+#' REDCap project.
+#' @param redcap_uri_dst The URI (uniform resource identifier) of the
+#' destination REDCap project.
+#' @param token_src The API token specific to your source REDCap project and
+#' username (each token is unique to each user for each project). See the
+#' section on the left-hand menu for obtaining a token for a given project.
+#' @param token_spr The Super API Token specific to a user
 #'
-#' @note Note about export rights: Please be aware that Data Export user rights
-#' will be applied to this API request. For example, if you have 'No Access'
-#' data export rights in the project, then the API data export will fail and
-#' return an error. And if you have 'De-Identified' or 'Remove all tagged
-#' Identifier fields' data export rights, then some data fields *might* be
-#' removed and filtered out of the data set returned from the API. To make sure
-#' that no data is unnecessarily filtered out of your API request, you should
-#' have 'Full Data Set' export rights in the project.
-#'
-#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
-#' project.
-#' @param token The Super API Token specific to a user
-#' @param format csv, json, xml [default], odm ('odm' refers to CDISC ODM XML
-#' format, specifically ODM version 1.3.1)
-#' @param type * 'record' refers to the record ID for the project
-#' \itemize{
-#'   \item{flat}{- output as one record per row [default]}
-#'   \item{eav}{- output as one data point per row
-#'     \item{Non-longitudinal:}{record*, field_name, value}
-#'     \item{Longitudinal:}{record*, field_name, value, redcap_event_name}
-#'   }
-#' }
-#' @param records an array of record names specifying specific records you wish
-#' to pull (by default, all records are pulled)
-#' @param fields an array of field names specifying specific fields you wish to
-#' pull (by default, all fields are pulled)
-#' @param forms an array of form names you wish to pull records for. If the
-#' form name has a space in it, replace the space with an underscore (by
-#' default, all records are pulled)
-#' @param events an array of unique event names that you wish to pull records
-#' for - only for longitudinal projects
-#' @param raw_or_label raw [default], label - export the raw coded values or
-#' labels for the options of multiple choice fields
-#' @param raw_or_label_headers raw [default], label - (for 'csv' format 'flat'
-#' type only) for the CSV headers, export the variable/field names (raw) or the
-#' field labels (label)
-#' @param export_checkbox_label true, false [default] - specifies the format of
-#' checkbox field values specifically when exporting the data as labels (i.e.,
-#' when rawOrLabel=label) in flat format (i.e., when type=flat). When exporting
-#' labels, by default (without providing the exportCheckboxLabel flag or if
-#' exportCheckboxLabel=false), all checkboxes will either have a value
-#' 'Checked' if they are checked or 'Unchecked' if not checked. But if
-#' exportCheckboxLabel is set to true, it will instead export the checkbox
-#' value as the checkbox option's label (e.g., 'Choice 1') if checked or it
-#' will be blank/empty (no value) if not checked. If rawOrLabel=false or if
-#' type=eav, then the exportCheckboxLabel flag is ignored. (The
-#' exportCheckboxLabel parameter is ignored for type=eav because 'eav' type
-#' always exports checkboxes differently anyway, in which checkboxes are
-#' exported with their true variable name (whereas the 'flat' type exports them
-#' as variable___code format), and another difference is that 'eav' type
-#' *always* exports checkbox values as the choice label for labels export, or
-#' as 0 or 1 (if unchecked or checked, respectively) for raw export.)
-#' @param return_format csv, json, xml - specifies the format of error
-#' messages. If you do not pass in this flag, it will select the default format
-#' for you passed based on the 'format' flag you passed in or if no format flag
-#' was passed in, it will default to 'xml'.
-#' @param export_survey_fields true, false [default] - specifies whether or not
-#' to export the survey identifier field (e.g., 'redcap_survey_identifier') or
-#' survey timestamp fields (e.g., instrument+'_timestamp') when surveys are
-#' utilized in the project. If you do not pass in this flag, it will default to
-#' 'false'. If set to 'true', it will return the redcap_survey_identifier field
-#' and also the survey timestamp field for a particular survey when at least
-#' one field from that survey is being exported. NOTE: If the survey identifier
-#' field or survey timestamp fields are imported via API data import, they will
-#' simply be ignored since they are not real fields in the project but rather
-#' are pseudo-fields.
-#' @param export_data_access_groups true, false [default] - specifies whether
-#' or not to export the 'redcap_data_access_group' field when data access
-#' groups are utilized in the project. If you do not pass in this flag, it will
-#' default to 'false'. NOTE: This flag is only viable if the user whose token
-#' is being used to make the API request is *not* in a data access group. If
-#' the user is in a group, then this flag will revert to its default value.
-#' @param filter_logic String of logic text (e.g., [age] > 30) for filtering
-#' the data to be returned by this API method, in which the API will only
-#' return the records (or record-events, if a longitudinal project) where the
-#' logic evaluates as TRUE. This parameter is blank/null by default unless a
-#' value is supplied. Please note that if the filter logic contains any
-#' incorrect syntax, the API will respond with an error message.
-#' @param date_range_begin To return only records that have been created or
-#' modified *after* a given date/time, provide a timestamp in the format
-#' YYYY-MM-DD HH:MM:SS (e.g., '2017-01-01 00:00:00' for January 1, 2017 at
-#' midnight server time). If not specified, it will assume no begin time.
-#' @param date_range_end To return only records that have been created or
-#' modified *before* a given date/time, provide a timestamp in the format
-#' YYYY-MM-DD HH:MM:SS (e.g., '2017-01-01 00:00:00' for January 1, 2017 at
-#' midnight server time). If not specified, it will use the current server time.
-#' @param csv_delimiter Set the delimiter used to separate values in the CSV
-#' data file (for CSV format only). Options include: comma ',' (default),
-#' 'tab', semi-colon ';', pipe '|', or caret '^'. Simply provide the value in
-#' quotes for this parameter.
-#' @param decimal_character If specified, force all numbers into same decimal
-#' format. You may choose to force all data values containing a decimal to have
-#' the same decimal character, which will be applied to all calc fields and
-#' number-validated text fields. Options include comma ',' or dot/full stop '.',
-#'  but if left blank/null, then it will export numbers using the fields'
-#'  native decimal format. Simply provide the value of either ',' or '.' for
-#'  this parameter.
-#'
-#' @return httr::response() object
 #' @export
 #'
-#' @examples \dontrun{
-#' redcap_export_records(token = my_token)
+#' @examples
+#' \dontrun{
+#' washu::redcap_migrate_project(
+#'   redcap_uri_src =
+#'   "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
+#'   redcap_uri_dst =
+#'   "https://redcap.wustl.edu/redcap/api/",
+#'   token_src = my_source_token,
+#'   token_spr = my_super_user_token
+#' )
 #' }
-redcap_export_records <- function(
-  redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-  token,
-  format = c("xml", "csv", "json", "odm"),
-  type = c("flat", "eav"),
-  records,
-  fields,
-  forms,
-  events,
-  raw_or_label = c("raw", "label"),
-  raw_or_label_headers = c("raw", "label"),
-  export_checkbox_label = FALSE,
-  return_format = c("xml", "csv", "json"),
-  export_survey_fields = FALSE,
-  export_data_access_groups = FALSE,
-  filter_logic,
-  date_range_begin,
-  date_range_end,
-  csv_delimiter = c(",", "\t", ";", "|", "^"),
-  decimal_character = c("native", ",", ".")
+redcap_migrate_project <- function(
+  redcap_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
+  redcap_uri_dst = "https://redcap.wustl.edu/redcap/api/",
+  token_src,
+  token_spr
 ) {
-  body <- list(
-    "token" = token,
-    "content" = "record",
-    "format" = match.arg(format),
-    "type" = match.arg(type),
-    "rawOrLabel" = match.arg(raw_or_label),
-    "rawOrLabelHeaders" = match.arg(raw_or_label_headers),
-    "exportCheckboxLabel" = export_checkbox_label,
-    "returnFormat" = match.arg(return_format),
-    "exportSurveyFields" = export_survey_fields,
-    "exportDataAccessGroups" = export_data_access_groups,
-    "csvDelimiter" = match.arg(csv_delimiter),
-    "decimalCharacter" = match.arg(decimal_character)
-  )
+  message("Exporting source project information...")
+  redcap_export_project_information(
+    redcap_uri = redcap_uri_src,
+    token = token_src,
+    format = "json"
+  ) %>%
+    httr::content() -> project_info
 
-  if (missing(records) || is.null(records))
-    records <- NULL
-  else
-    records <- redcap_array(records)
-  body <- append(body, list("records" = records))
+  message("Exporting source project to CDISC ODM XML...")
+  httr::POST(
+    url = redcap_uri_src,
+    body = list(
+      "token" = token_src,
+      "content" = "project_xml"
+    )
+  ) %>%
+    httr::content() %>%
+    as.character() -> cdisc_odm_xml
 
-  if (missing(fields) || is.null(fields))
-    fields <- NULL
-  else
-    fields <- redcap_array(fields)
-  body <- append(body, list("fields" = fields))
+  message("Creating new project from CDISC ODM XML...")
+  redcap_create_project(
+    redcap_uri = redcap_uri_dst,
+    token = token_spr,
+    format = "json",
+    data = paste0("[", jsonlite::toJSON(project_info, auto_unbox = TRUE), "]"),
+    odm = cdisc_odm_xml
+  ) %>%
+    httr::content(as = "text", encoding = "UTF-8") -> token_dst
 
-  if (missing(forms) || is.null(forms))
-    forms <- NULL
-  else {
-    forms <- redcap_array(gsub(" ", "_", forms))
-  }
-  body <- append(body, list("forms" = forms))
-
-  if (missing(events) || is.null(events))
-    events <- NULL
-  else
-    events <- redcap_array(events)
-  body <- append(body, list("events" = events))
-
-  if (missing(filter_logic) || is.null(filter_logic)) {
-    filter_logic <- NULL
-  } else {
-    checkmate::assert(checkmate::check_character(filter_logic))
-  }
-  body <- append(body, list("filterLogic" = filter_logic))
-
-  if (missing(date_range_begin) || is.null(date_range_begin)) {
-    date_range_begin <- NULL
-  } else {
-    checkmate::assert(checkmate::check_character(date_range_begin))
-
-  }
-  body <- append(body, list("dateRangeBegin" = date_range_begin))
-
-  if (missing(date_range_end) || is.null(date_range_end)) {
-    date_range_end <- NULL
-  } else {
-    checkmate::assert(checkmate::check_character(date_range_end))
-  }
-  body <- append(body, list("dateRangeEnd" = date_range_end))
-
-
-  httr::POST(redcap_uri, body = body, encode = "form")
+  message("Migrating files...")
+  redcap_migrate_files(redcap_uri_src, redcap_uri_dst, token_src, token_dst)
 }
-
-
-
-
-
-
-# redcap_export_project_information(
-#   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-#   token,
-#   format = c("xml", "csv", "json"),
-#   return_format = c("xml", "csv", "json")
-# )
-#
-# redcap_export_project_xml(
-#   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-#   token,
-#   filename = append_timestamp("redcap_project.xml"),
-#   overwrite = FALSE,
-#   return_metadata_only = FALSE,
-#   records,
-#   fields,
-#   events,
-#   return_format = c("xml", "json", "csv"),
-#   export_survey_fields = FALSE,
-#   export_data_access_groups = FALSE,
-#   filter_logic = NULL,
-#   export_files = FALSE
-# )
-#
-# redcap_create_project(
-#   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-#   token,
-#   format = c("xml", "csv", "json"),
-#   data,
-#   return_format = c("xml", "csv", "json"),
-#   odm
-# )
-#
-# redcap_export_records()
-#
-# redcap_import_records(
-#   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-#   token,
-#   format = c("xml", "csv", "json", "odm"),
-#   type = c("flat", "eav"),
-#   overwrite_behavior = c("normal", "overwrite"),
-#   force_auto_number = FALSE,
-#   data,
-#   date_format = c("YMD", "MDY", "DMY"),
-#   csv_delimiter = c(",", "tab", ";", "|", "^"),
-#   return_content = c("count", "ids", "auto_ids"),
-#   return_format = c("xml", "csv", "json")
-# )
-#
-# redcap_migrate_files(
-#   redcap_uri_src,
-#   redcap_uri_dst,
-#   token_src,
-#   token_dst,
-#   return_format = c("xml", "csv", "json")
-# )
-
-
-
-

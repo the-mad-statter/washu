@@ -7,7 +7,8 @@
 redcap_export_project_xml(
   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
   token,
-  filename = append_timestamp("redcap_project.xml"),
+  filename = sprintf("\%s_\%s.REDCap.xml", gsub(" ", "", "Project Title"),
+    format(Sys.time(), "\%Y-\%m-\%d_\%H\%M")),
   overwrite = FALSE,
   return_metadata_only = FALSE,
   records,
