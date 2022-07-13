@@ -592,7 +592,11 @@ redcap_export_project_xml <-
            export_data_access_groups = FALSE,
            filter_logic = NULL,
            export_files = FALSE) {
-    body <- list(token = token, content = "project_xml")
+    body <- list(
+      token = token,
+      content = "project_xml",
+      format = "xml"
+    )
 
     body <- append(
       body,
