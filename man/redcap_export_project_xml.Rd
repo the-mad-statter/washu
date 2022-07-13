@@ -7,9 +7,6 @@
 redcap_export_project_xml(
   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
   token,
-  filename = sprintf("\%s_\%s.REDCap.xml", gsub(" ", "", "Project Title"),
-    format(Sys.time(), "\%Y-\%m-\%d_\%H\%M")),
-  overwrite = FALSE,
   return_metadata_only = FALSE,
   records,
   fields,
@@ -28,10 +25,6 @@ project.}
 \item{token}{The API token specific to your REDCap project and username (each
 token is unique to each user for each project). See the section on the
 left-hand menu for obtaining a token for a given project.}
-
-\item{filename}{name of xml file to write results}
-
-\item{overwrite}{only overwrite existing filename if TRUE}
 
 \item{return_metadata_only}{TRUE returns only metadata (all fields, forms,
 events, and arms), whereas FALSE returns all metadata and also data (and
@@ -118,7 +111,6 @@ To use this method, you must have API Export privileges in the project.
 token <- REDCapR::retrieve_credential_local("~/.REDCapR", 7842)$token
 redcap_export_project_xml(
   token,
-  append_timestamp("static.xml"),
   exportFiles = TRUE
 )
 
@@ -126,7 +118,6 @@ redcap_export_project_xml(
 token <- REDCapR::retrieve_credential_local("~/.REDCapR", 6785)$token
 redcap_export_project_xml(
   token,
-  append_timestamp("mother.xml"),
   exportFiles = TRUE
 )
 
@@ -134,7 +125,6 @@ redcap_export_project_xml(
 token <- REDCapR::retrieve_credential_local("~/.REDCapR", 7842)$token
 redcap_export_project_xml(
   token,
-  append_timestamp("partial_static.xml"),
   records = redcap_array("records", 16227),
   fields = redcap_array("fields", c("id", "updatedate"))
 )

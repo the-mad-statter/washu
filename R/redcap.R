@@ -15,7 +15,7 @@ store_credential_local <-
            token,
            path_credential = "~/.REDCapR",
            username = Sys.getenv("WU_REDCAP_USER")) {
-    redcap_export_project_information(
+    redcap_export_project_info(
       redcap_uri = redcap_uri,
       token = token,
       format = "csv"
@@ -30,18 +30,6 @@ store_credential_local <-
       ) %>%
       readr::write_csv(path_credential, na = "", append = TRUE, quote = "all")
   }
-
-#' Parse Content Type
-#'
-#' @param content_type content-type header from REDCap to be parsed
-#' @return list containing type, name, and charset
-parse_content_type <- function(content_type) {
-  list(
-    "type" = stringr::str_extract(content_type, "^.*(?=; )"),
-    "name" = stringr::str_extract(content_type, "(?<=name=\").+(?=\";)"),
-    "charset" = stringr::str_extract(content_type, "(?<=charset=).*$")
-  )
-}
 
 #' @inherit REDCapR::retrieve_credential
 #' @export
@@ -115,6 +103,383 @@ redcap_logical <- function(name, value) {
   return(value)
 }
 
+#' Parse Content Type
+#'
+#' @param content_type content-type header from REDCap to be parsed
+#' @return list containing type, name, and charset
+parse_content_type <- function(content_type) {
+  list(
+    "type" = stringr::str_extract(content_type, "^.*(?=; )"),
+    "name" = stringr::str_extract(content_type, "(?<=name=\").+(?=\";)"),
+    "charset" = stringr::str_extract(content_type, "(?<=charset=).*$")
+  )
+}
+
+#' Generate Project XML Filename
+#'
+#' @param project_title name of the project
+#'
+#' @return a character representation of what REDCap would named the xml file
+#' if it had been exported via the web interface
+#'
+#' @export
+project_xml_filename <- function(project_title) {
+  sprintf(
+    "%s_%s.REDCap.xml",
+    gsub(" ", "", project_title),
+    format(Sys.time(), "%Y-%m-%d_%H%M")
+  )
+}
+
+#' Read Project XML
+#'
+#' @param odm path to a file
+#'
+#' @return collapsed character representation of the project xml file
+#'
+#' @export
+read_project_xml <- function(odm) {
+  paste(readLines(odm), collapse = "")
+}
+
+#' Write Project XML
+#'
+#' @param r httr response obejct from redcap_export_project_xml()
+#' @param file file or connection to write to
+#'
+#' @export
+write_project_xml <- function(r, file) {
+  r %>%
+    httr::content() %>%
+    as.character() %>%
+    writeLines(con = file)
+}
+
+#' Export a File
+#'
+#' @description This method allows you to download a document that has been
+#' attached to an individual record for a File Upload field. Please note that
+#' this method may also be used for Signature fields (i.e. File Upload fields
+#' with 'signature' validation type).
+#'
+#' @note Please be aware that Data Export user rights will be applied to this
+#' API request. For example, if you have 'No Access' data export rights in the
+#' project, then the API file export will fail and return an error. And if you
+#' have 'De-Identified' or 'Remove all tagged Identifier fields' data export
+#' rights, then the API file export will fail and return an error *only if* the
+#' File Upload field has been tagged as an Identifier field. To make sure that
+#' your API request does not return an error, you should have 'Full Data Set'
+#' export rights in the project.
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The API token specific to your REDCap project and username (each
+#'  token is unique to each user for each project). See the section on the
+#'  left-hand menu for obtaining a token for a given project.
+#' @param record the record ID
+#' @param field the name of the field that contains the file
+#' @param event the unique event name - only for longitudinal projects
+#' @param repeat_instance (only for projects with repeating instruments/events)
+#' The repeat instance number of the repeating event (if longitudinal) or the
+#' repeating instrument (if classic or longitudinal). Default value is '1'.
+#' @param return_format csv, json, xml - specifies the format of error messages.
+#' If you do not pass in this flag, it will select the default format for you
+#' passed based on the 'format' flag you passed in or if no format flag was
+#' passed in, it will default to 'xml'.
+#'
+#' @return httr::response() object containing the path to the file on disk
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' redcap_export_file(
+#'   redcap_uri =
+#'     "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
+#'   token = my_project_token,
+#'   record = 1,
+#'   field = "file_field_name"
+#' )
+#' }
+redcap_export_file <-
+  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+           token,
+           record,
+           field,
+           event,
+           repeat_instance,
+           return_format = c("xml", "csv", "json")) {
+    body <- list(
+      "token" = token,
+      "content" = "file",
+      "action" = "export",
+      "record" = record,
+      "field" = field,
+      "returnFormat" = match.arg(return_format)
+    )
+
+    if (missing(event) || is.null(event)) {
+      event <- ""
+    } else {
+      checkmate::assert(checkmate::check_character(event))
+    }
+    body <- append(body, list("event" = event))
+
+    if (missing(repeat_instance) || is.null(repeat_instance)) {
+      repeat_instance <- NULL
+    } else {
+      checkmate::assert(checkmate::check_integer(repeat_instance))
+    }
+    body <- append(body, list("repeat_instance" = repeat_instance))
+
+    # write to temp file because do not know name yet
+    tmp <- tempfile()
+    r <- httr::POST(
+      redcap_uri,
+      body = body,
+      encode = "form",
+      httr::write_disk(tmp)
+    )
+
+    # retrieve the desired file name from header and construct absolute path
+    fname <- parse_content_type(r[["headers"]][["content-type"]])[["name"]]
+    fpath <- gsub("\\\\", "/", file.path(tempdir(), fname))
+
+    # rename temp file to desired
+    file.rename(r$content[[1]], fpath)
+
+    content_type <- sub(basename(tmp), fname, r[["headers"]][["content-type"]])
+    attr(fpath, "class") <- "path"
+
+    # edit httr response object to reflect new download name
+    r[["headers"]][["content-type"]] <- content_type
+    r[["all_headers"]][[1]][["headers"]][["content-type"]] <- content_type
+    r[["content"]] <- fpath
+    r[["request"]][["output"]][["path"]] <- fpath[[1]]
+
+    r
+  }
+
+#' Import a File
+#'
+#' @description This method allows you to upload a document that will be
+#' attached to an individual record for a File Upload field. Please note that
+#' this method may NOT be used for Signature fields (i.e. File Upload fields
+#' with 'signature' validation type) because a signature can only be captured
+#' and stored using the web interface.
+#'
+#' @note To use this method, you must have API Import/Update privileges in the
+#' project.
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The API token specific to your REDCap project and username (each
+#'  token is unique to each user for each project). See the section on the
+#'  left-hand menu for obtaining a token for a given project.
+#' @param record the record ID
+#' @param field the name of the field that contains the file
+#' @param event the unique event name - only for longitudinal projects
+#' @param repeat_instance (only for projects with repeating instruments/events)
+#' The repeat instance number of the repeating event (if longitudinal) or the
+#' repeating instrument (if classic or longitudinal). Default value is '1'.
+#' @param file path to the file to upload
+#' @param return_format csv, json, xml - specifies the format of error messages.
+#' If you do not pass in this flag, it will select the default format for you
+#' passed based on the 'format' flag you passed in or if no format flag was
+#' passed in, it will default to 'xml'.
+#'
+#' @return httr::response() object reporting empty body on successful upload
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' redcap_import_file(
+#'   redcap_uri =
+#'     "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
+#'   token = my_project_token,
+#'   record = 1,
+#'   field = "file_field_name"
+#' )
+#' }
+redcap_import_file <-
+  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+           token,
+           record,
+           field,
+           event,
+           repeat_instance,
+           file,
+           return_format = c("xml", "csv", "json")) {
+    body <- list(
+      "token" = token,
+      "content" = "file",
+      "action" = "import",
+      "record" = record,
+      "field" = field,
+      "file" = httr::upload_file(file),
+      "returnFormat" = match.arg(return_format)
+    )
+
+    if (missing(event) || is.null(event)) {
+      event <- ""
+    } else {
+      checkmate::assert(checkmate::check_character(event))
+    }
+    body <- append(body, list("event" = event))
+
+    if (missing(repeat_instance) || is.null(repeat_instance)) {
+      repeat_instance <- NULL
+    } else {
+      checkmate::assert(checkmate::check_integer(repeat_instance))
+    }
+    body <- append(body, list("repeat_instance" = repeat_instance))
+
+    httr::POST(redcap_uri, body = body, encode = "multipart")
+  }
+
+#' Create A New Project
+#'
+#' @description  This method allows you to create a new REDCap project. A
+#' 64-character Super API Token is required for this method (as opposed to
+#' project-level API methods that require a regular 32-character token
+#' associated with the project-user). In the API request, you must minimally
+#' provide the project attributes 'project_title' and 'purpose' (with numerical
+#' value 0=Practice/Just for fun, 1=Other, 2=Research, 3=Quality Improvement,
+#' 4=Operational Support) when creating a project.
+#'
+#' When a project is created with this method, the project will automatically be
+#' given all the project-level defaults just as if you created a new empty
+#' project via the web user interface, such as a automatically creating a
+#' single data collection instrument seeded with a single Record ID field and
+#' Form Status field, as well as (for longitudinal projects) one arm with one
+#' event. And if you intend to create your own arms or events immediately after
+#' creating the project, it is recommended that you utilize the override=1
+#' parameter in the 'Import Arms' or 'Import Events' method, respectively, so
+#' that the default arm and event are removed when you add your own. Also, the
+#' user creating the project will automatically be added to the project as a
+#' user with full user privileges and a project-level API token, which could
+#' then be used for subsequent project-level API requests.
+#'
+#' NOTE: Only users with Super API Tokens can utilize this method. Users can
+#' only be granted a super token by a REDCap administrator (using the API Tokens
+#' page in the REDCap Control Center). Please be advised that users with a
+#' Super API Token can create new REDCap projects via the API without any
+#' approval needed by a REDCap administrator. If you are interested in
+#' obtaining a super token, please contact your local REDCap administrator.
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The Super API Token specific to a user
+#' @param format format of the data argument
+#' @param data Contains the attributes of the project to be created, in which
+#' they are provided in the specified format. While the only required attributes
+#' are 'project_title' and 'purpose', the fields listed below are all the
+#' possible attributes that can be provided in the 'data' parameter. The
+#' 'purpose' attribute must have a numerical value (0=Practice/Just for fun,
+#' 1=Other, 2=Research, 3=Quality Improvement, 4=Operational Support), in which
+#' 'purpose_other' is only required to have a value (as a text string) if
+#' purpose=1. The attributes is_longitudinal (0=False, 1=True; Default=0),
+#' surveys_enabled (0=False, 1=True; Default=0), and
+#' record_autonumbering_enabled (0=False, 1=True; Default=1) are all boolean.
+#' Please note that either is_longitudinal=1 or surveys_enabled=1 does not add
+#' arms/events or surveys to the project, respectively, but it merely enables
+#' those settings which are seen at the top of the project's Project Setup page.
+#' @param return_format csv, json, xml - specifies the format of error messages.
+#' If you do not pass in this flag, it will select the default format for you
+#' passed based on the 'format' flag you passed in or if no format flag was
+#' passed in, it will default to 'xml'.
+#' @param odm default: NULL - The 'odm' parameter must be an XML string in CDISC
+#' ODM XML format that contains project metadata (fields, forms, events, arms)
+#' and might optionally contain data to be imported as well. The XML contained
+#' in this parameter can come from a REDCap Project XML export file from REDCap
+#' itself, or may come from another system that is capable of exporting
+#' projects and data in CDISC ODM format. If the 'odm' parameter is included in
+#' the API request, it will use the XML to import its contents into the newly
+#' created project. This will allow you not only to create the project with the
+#' API request, but also to import all fields, forms, and project attributes
+#' (and events and arms, if longitudinal) as well as record data all at the same
+#' time.
+#'
+#' @return an httr response object containing a 32-character project-level API
+#' token (associated with both the project and user creating the project).
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' redcap_create_project(
+#'   token = my_super_token,
+#'   format = "json",
+#'   data = paste0(
+#'     "[",
+#'     jsonlite::toJSON(
+#'       list(
+#'         "project_title" = "My New REDCap Project",
+#'         "purpose" = "0"
+#'       ),
+#'       auto_unbox = TRUE
+#'     ),
+#'     "]"
+#'   )
+#' ) %>%
+#'   httr::content(as = "text") -> my_project_token
+#' }
+redcap_create_project <-
+  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+           token,
+           format = c("xml", "csv", "json"),
+           data,
+           return_format = c("xml", "csv", "json"),
+           odm) {
+    body <- list(
+      "token" = token,
+      "content" = "project",
+      "format" = format,
+      "data" = data,
+      "returnFormat" = match.arg(return_format)
+    )
+
+    if (missing(odm) || is.null(odm)) {
+      odm <- NULL
+    } else {
+      checkmate::assert(checkmate::check_character(odm))
+    }
+    body <- append(body, list("odm" = odm))
+
+    httr::POST(redcap_uri, body = body, encode = "form")
+  }
+
+#' Export Project Information
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The API token specific to your REDCap project and username (each
+#'  token is unique to each user for each project). See the section on the
+#'  left-hand menu for obtaining a token for a given project.
+#' @param format format of the response content
+#' @param return_format csv, json, xml - specifies the format of error messages.
+#' If you do not pass in this flag, it will select the default format for you
+#' passed based on the 'format' flag you passed in or if no format flag was
+#' passed in, it will default to 'xml'.
+#'
+#' @return httr::response() object containing the project information
+#' @export
+redcap_export_project_info <-
+  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+           token,
+           format = c("xml", "csv", "json"),
+           return_format = c("xml", "csv", "json")) {
+    body <- list(
+      "token" = token,
+      "content" = "project",
+      "format" = match.arg(format),
+      "returnFormat" = match.arg(return_format)
+    )
+
+    httr::POST(redcap_uri, body = body, encode = "form")
+  }
+
+
+
+
 #' Export Entire Project as REDCap XML File (containing metadata & data)
 #'
 #' @description The entire project (all records, events, arms, instruments,
@@ -146,8 +511,6 @@ redcap_logical <- function(name, value) {
 #' @param token The API token specific to your REDCap project and username (each
 #'  token is unique to each user for each project). See the section on the
 #'  left-hand menu for obtaining a token for a given project.
-#' @param filename name of xml file to write results
-#' @param overwrite only overwrite existing filename if TRUE
 #' @param return_metadata_only TRUE returns only metadata (all fields, forms,
 #' events, and arms), whereas FALSE returns all metadata and also data (and
 #' optionally filters the data according to any of the optional parameters
@@ -199,7 +562,6 @@ redcap_logical <- function(name, value) {
 #' token <- REDCapR::retrieve_credential_local("~/.REDCapR", 7842)$token
 #' redcap_export_project_xml(
 #'   token,
-#'   append_timestamp("static.xml"),
 #'   exportFiles = TRUE
 #' )
 #'
@@ -207,7 +569,6 @@ redcap_logical <- function(name, value) {
 #' token <- REDCapR::retrieve_credential_local("~/.REDCapR", 6785)$token
 #' redcap_export_project_xml(
 #'   token,
-#'   append_timestamp("mother.xml"),
 #'   exportFiles = TRUE
 #' )
 #'
@@ -215,7 +576,6 @@ redcap_logical <- function(name, value) {
 #' token <- REDCapR::retrieve_credential_local("~/.REDCapR", 7842)$token
 #' redcap_export_project_xml(
 #'   token,
-#'   append_timestamp("partial_static.xml"),
 #'   records = redcap_array("records", 16227),
 #'   fields = redcap_array("fields", c("id", "updatedate"))
 #' )
@@ -223,12 +583,6 @@ redcap_logical <- function(name, value) {
 redcap_export_project_xml <-
   function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
            token,
-           filename = sprintf(
-             "%s_%s.REDCap.xml",
-             gsub(" ", "", "Project Title"),
-             format(Sys.time(), "%Y-%m-%d_%H%M")
-           ),
-           overwrite = FALSE,
            return_metadata_only = FALSE,
            records,
            fields,
@@ -290,90 +644,6 @@ redcap_export_project_xml <-
       "exportFiles",
       export_files
     ))
-
-    httr::POST(redcap_uri, httr::write_disk(filename, overwrite), body = body, encode = "form")
-  }
-
-#' Delete Records
-#'
-#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
-#' project.
-#' @param token The API token specific to your REDCap project and username (each
-#'  token is unique to each user for each project). See the section on the
-#'  left-hand menu for obtaining a token for a given project.
-#' @param records an array of record names specifying specific records you wish
-#' to delete
-#' @param arm the arm number of the arm in which the record(s) should be
-#' deleted. (This can only be used if the project is longitudinal with more than
-#'  one arm.) NOTE: If the arm parameter is not provided, the specified records
-#'  will be deleted from all arms in which they exist. Whereas, if arm is
-#'  provided, they will only be deleted from the specified arm.
-#'
-#' @return httr::response() object containing the number of records deleted.
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' ## delete two records from static
-#' token <- REDCapR::retrieve_credential_local("~/.REDCapR", 7842)$token
-#' redcap_delete_records(
-#'   token,
-#'   records = redcap_array("records", c(16227, 16342))
-#' )
-#' }
-redcap_delete_records <-
-  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-           token,
-           records,
-           arm) {
-    body <- list(
-      token = token,
-      action = "delete",
-      content = "record"
-    )
-
-    checkmate::assert(checkmate::check_class(records, "redcap_array"))
-    body <- append(body, records)
-
-    if (missing(arm)) {
-      arm <- NULL
-    } else {
-      checkmate::assert(checkmate::check_integer(arm))
-    }
-    body <- append(body, list(arm = arm))
-
-    httr::POST(redcap_uri, body = body)
-  }
-
-#' Export Project Information
-#'
-#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
-#' project.
-#' @param token The API token specific to your REDCap project and username (each
-#'  token is unique to each user for each project). See the section on the
-#'  left-hand menu for obtaining a token for a given project.
-#' @param format format of the response content
-#' @param return_format csv, json, xml - specifies the format of error messages.
-#' If you do not pass in this flag, it will select the default format for you
-#' passed based on the 'format' flag you passed in or if no format flag was
-#' passed in, it will default to 'xml'.
-#'
-#' @return httr::response() object containing the project information
-#' @export
-redcap_export_project_information <-
-  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-           token,
-           format = c("xml", "csv", "json"),
-           return_format = c("xml", "csv", "json")) {
-    format <- match.arg(format)
-    return_format <- match.arg(return_format)
-
-    body <- list(
-      "token" = token,
-      "content" = "project",
-      "format" = format,
-      "returnFormat" = return_format
-    )
 
     httr::POST(redcap_uri, body = body, encode = "form")
   }
@@ -689,215 +959,210 @@ redcap_import_records <-
            csv_delimiter = c(",", "tab", ";", "|", "^"),
            return_content = c("count", "ids", "auto_ids"),
            return_format = c("xml", "csv", "json")) {
-    format <- match.arg(format)
-    type <- match.arg(type)
-    overwrite_behavior <- match.arg(overwrite_behavior)
-    checkmate::assert_logical(force_auto_number)
-    date_format <- match.arg(date_format)
-    csv_delimiter <- match.arg(csv_delimiter)
-    return_content <- match.arg(return_content)
-    return_format <- match.arg(return_format)
-
     body <- list(
       "token" = token,
       "content" = "record",
-      "format" = format,
-      "type" = type,
-      "overwriteBehavior" = overwrite_behavior,
-      "forceAutoNumber" = tolower(as.character(force_auto_number)),
+      "format" = match.arg(format),
+      "type" = match.arg(type),
+      "overwriteBehavior" = match.arg(overwrite_behavior),
+      "forceAutoNumber" = unname(
+        redcap_logical("forceAutoNumber", force_auto_number)
+      ),
       "data" = data,
-      "dateFormat" = date_format,
-      "csvDelimiter" = csv_delimiter,
-      "returnContent" = return_content,
-      "returnFormat" = return_format
+      "dateFormat" = match.arg(date_format),
+      "csvDelimiter" = match.arg(csv_delimiter),
+      "returnContent" = match.arg(return_content),
+      "returnFormat" = match.arg(return_format)
     )
 
     httr::POST(redcap_uri, body = body, encode = "form")
   }
 
-#' Export a File
-#'
-#' @description This method allows you to download a document that has been
-#' attached to an individual record for a File Upload field. Please note that
-#' this method may also be used for Signature fields (i.e. File Upload fields
-#' with 'signature' validation type).
-#'
-#' @note Please be aware that Data Export user rights will be applied to this
-#' API request. For example, if you have 'No Access' data export rights in the
-#' project, then the API file export will fail and return an error. And if you
-#' have 'De-Identified' or 'Remove all tagged Identifier fields' data export
-#' rights, then the API file export will fail and return an error *only if* the
-#' File Upload field has been tagged as an Identifier field. To make sure that
-#' your API request does not return an error, you should have 'Full Data Set'
-#' export rights in the project.
+#' Delete Records
 #'
 #' @param redcap_uri The URI (uniform resource identifier) of the REDCap
 #' project.
 #' @param token The API token specific to your REDCap project and username (each
 #'  token is unique to each user for each project). See the section on the
 #'  left-hand menu for obtaining a token for a given project.
-#' @param record the record ID
-#' @param field the name of the field that contains the file
-#' @param event the unique event name - only for longitudinal projects
-#' @param repeat_instance (only for projects with repeating instruments/events)
-#' The repeat instance number of the repeating event (if longitudinal) or the
-#' repeating instrument (if classic or longitudinal). Default value is '1'.
-#' @param return_format csv, json, xml - specifies the format of error messages.
-#' If you do not pass in this flag, it will select the default format for you
-#' passed based on the 'format' flag you passed in or if no format flag was
-#' passed in, it will default to 'xml'.
+#' @param records an array of record names specifying specific records you wish
+#' to delete
+#' @param arm the arm number of the arm in which the record(s) should be
+#' deleted. (This can only be used if the project is longitudinal with more than
+#'  one arm.) NOTE: If the arm parameter is not provided, the specified records
+#'  will be deleted from all arms in which they exist. Whereas, if arm is
+#'  provided, they will only be deleted from the specified arm.
 #'
-#' @return httr::response() object containing the path to the file on disk
+#' @return httr::response() object containing the number of records deleted.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' redcap_export_file(
-#'   redcap_uri =
-#'     "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
-#'   token = my_project_token,
-#'   record = 1,
-#'   field = "file_field_name"
+#' ## delete two records from static
+#' token <- REDCapR::retrieve_credential_local("~/.REDCapR", 7842)$token
+#' redcap_delete_records(
+#'   token,
+#'   records = redcap_array("records", c(16227, 16342))
 #' )
 #' }
-redcap_export_file <-
+redcap_delete_records <-
   function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
            token,
-           record,
-           field,
-           event,
-           repeat_instance,
-           return_format = c("xml", "csv", "json")) {
-    return_format <- match.arg(return_format)
-
+           records,
+           arm) {
     body <- list(
-      "token" = token,
-      "content" = "file",
-      "action" = "export",
-      "record" = record,
-      "field" = field,
-      "returnFormat" = return_format
+      token = token,
+      action = "delete",
+      content = "record"
     )
 
-    if (missing(event) || is.null(event)) {
-      event <- ""
+    checkmate::assert(checkmate::check_class(records, "redcap_array"))
+    body <- append(body, records)
+
+    if (missing(arm)) {
+      arm <- NULL
     } else {
-      checkmate::assert(checkmate::check_character(event))
+      checkmate::assert(checkmate::check_integer(arm))
     }
-    body <- append(body, list("event" = event))
+    body <- append(body, list(arm = arm))
 
-    if (missing(repeat_instance) || is.null(repeat_instance)) {
-      repeat_instance <- NULL
-    } else {
-      checkmate::assert(checkmate::check_integer(repeat_instance))
-    }
-    body <- append(body, list("repeat_instance" = repeat_instance))
-
-    # write to temp file because do not know name yet
-    tmp <- tempfile()
-    r <- httr::POST(
-      redcap_uri,
-      body = body,
-      encode = "form",
-      httr::write_disk(tmp)
-    )
-
-    # retrieve the desired file name from header and construct absolute path
-    fname <- parse_content_type(r[["headers"]][["content-type"]])[["name"]]
-    fpath <- gsub("\\\\", "/", file.path(tempdir(), fname))
-
-    # rename temp file to desired
-    file.rename(r$content[[1]], fpath)
-
-    content_type <- sub(basename(tmp), fname, r[["headers"]][["content-type"]])
-    attr(fpath, "class") <- "path"
-
-    # edit httr response object to reflect new download name
-    r[["headers"]][["content-type"]] <- content_type
-    r[["all_headers"]][[1]][["headers"]][["content-type"]] <- content_type
-    r[["content"]] <- fpath
-    r[["request"]][["output"]][["path"]] <- fpath[[1]]
-
-    r
+    httr::POST(redcap_uri, body = body)
   }
 
-#' Import a File
+#' Create Project
 #'
-#' @description This method allows you to upload a document that will be
-#' attached to an individual record for a File Upload field. Please note that
-#' this method may NOT be used for Signature fields (i.e. File Upload fields
-#' with 'signature' validation type) because a signature can only be captured
-#' and stored using the web interface.
+#' @description  This method allows you to create a new REDCap project. A
+#' 64-character Super API Token is required for this method (as opposed to
+#' project-level API methods that require a regular 32-character token
+#' associated with the project-user). In the API request, you must minimally
+#' provide the project attributes 'project_title' and 'purpose' (with numerical
+#' value 0=Practice/Just for fun, 1=Other, 2=Research, 3=Quality Improvement,
+#' 4=Operational Support) when creating a project.
 #'
-#' @note To use this method, you must have API Import/Update privileges in the
-#' project.
+#' When a project is created with this method, the project will automatically be
+#' given all the project-level defaults just as if you created a new empty
+#' project via the web user interface, such as a automatically creating a
+#' single data collection instrument seeded with a single Record ID field and
+#' Form Status field, as well as (for longitudinal projects) one arm with one
+#' event. And if you intend to create your own arms or events immediately after
+#' creating the project, it is recommended that you utilize the override=1
+#' parameter in the 'Import Arms' or 'Import Events' method, respectively, so
+#' that the default arm and event are removed when you add your own. Also, the
+#' user creating the project will automatically be added to the project as a
+#' user with full user privileges and a project-level API token, which could
+#' then be used for subsequent project-level API requests.
+#'
+#' NOTE: Only users with Super API Tokens can utilize this method. Users can
+#' only be granted a super token by a REDCap administrator (using the API Tokens
+#' page in the REDCap Control Center). Please be advised that users with a
+#' Super API Token can create new REDCap projects via the API without any
+#' approval needed by a REDCap administrator. If you are interested in
+#' obtaining a super token, please contact your local REDCap administrator.
 #'
 #' @param redcap_uri The URI (uniform resource identifier) of the REDCap
 #' project.
-#' @param token The API token specific to your REDCap project and username (each
-#'  token is unique to each user for each project). See the section on the
-#'  left-hand menu for obtaining a token for a given project.
-#' @param record the record ID
-#' @param field the name of the field that contains the file
-#' @param event the unique event name - only for longitudinal projects
-#' @param repeat_instance (only for projects with repeating instruments/events)
-#' The repeat instance number of the repeating event (if longitudinal) or the
-#' repeating instrument (if classic or longitudinal). Default value is '1'.
-#' @param file path to the file to upload
+#' @param token The Super API Token specific to a user
+#' @param project_title (required) title of the project
+#' @param purpose (required) purpose of the project
+#' @param purpose_other (required if purpose is "Other") custom purpose
+#' @param project_notes (optional) notes describing the project
+#' @param is_longitudinal is the project to be longitudinal
+#' @param surveys_enabled is the project to contain surveys
+#' @param record_autonumbering_enabled should the records be autonumbered
 #' @param return_format csv, json, xml - specifies the format of error messages.
 #' If you do not pass in this flag, it will select the default format for you
 #' passed based on the 'format' flag you passed in or if no format flag was
 #' passed in, it will default to 'xml'.
+#' @param odm path to file containing an XML string in CDISC ODM XML format that
+#' contains project metadata (fields, forms, events, arms) and might optionally
+#' contain data to be imported as well. The XML contained in this parameter
+#' can come from a REDCap Project XML export file from REDCap itself, or may
+#' come from another system that is capable of exporting projects and data in
+#' CDISC ODM format. If the 'odm' parameter is included in the API request, it
+#' will use the XML to import its contents into the newly created project.
+#' This will allow you not only to create the project with the API request,
+#' but also to import all fields, forms, and project attributes (and events
+#' and arms, if longitudinal) as well as record data all at the same time.
 #'
-#' @return httr::response() object reporting empty body on successful upload
+#' @return an httr response object containing a 32-character project-level API
+#' token (associated with both the project and user creating the project).
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' redcap_import_file(
-#'   redcap_uri =
-#'     "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
-#'   token = my_project_token,
-#'   record = 1,
-#'   field = "file_field_name"
-#' )
+#' redcap_create_project_from_odm(
+#'   token = my_super_token,
+#'   project_title = "redcap_create_project_from_odm test",
+#'   purpose = "Practice/Just for fun",
+#'   odm = "odm.xml"
+#' ) %>%
+#'   httr::content(r, as = "text") -> my_project_token
 #' }
-redcap_import_file <-
+redcap_create_project2 <-
   function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
            token,
-           record,
-           field,
-           event,
-           repeat_instance,
-           file,
-           return_format = c("xml", "csv", "json")) {
-    return_format <- match.arg(return_format)
+           project_title,
+           purpose = c(
+             "Practice/Just for fun",
+             "Other",
+             "Research",
+             "Quality Improvement",
+             "Operational Support"
+           ),
+           purpose_other,
+           project_notes,
+           is_longitudinal = FALSE,
+           surveys_enabled = FALSE,
+           record_autonumbering_enabled = FALSE,
+           return_format = c("xml", "csv", "json"),
+           odm) {
+    purpose <- which(
+      match.arg(purpose) == c(
+        "Practice/Just for fun",
+        "Other",
+        "Research",
+        "Quality Improvement",
+        "Operational Support"
+      )
+    ) - 1
 
-    body <- list(
-      "token" = token,
-      "content" = "file",
-      "action" = "import",
-      "record" = record,
-      "field" = field,
-      "file" = httr::upload_file(file),
-      "returnFormat" = return_format
+    data <- list(
+      "project_title" = project_title,
+      "purpose" = as.character(purpose)
     )
 
-    if (missing(event) || is.null(event)) {
-      event <- ""
-    } else {
-      checkmate::assert(checkmate::check_character(event))
+    if (purpose == 1) {
+      if (missing(purpose_other) || is.null(purpose_other)) {
+        purpose_other <- NULL
+      } else {
+        checkmate::assert(checkmate::check_character(purpose_other))
+      }
+      data <- append(data, list("purpose_other" = purpose_other))
     }
-    body <- append(body, list("event" = event))
 
-    if (missing(repeat_instance) || is.null(repeat_instance)) {
-      repeat_instance <- NULL
+    if (missing(project_notes) || is.null(project_notes)) {
+      project_notes <- NULL
     } else {
-      checkmate::assert(checkmate::check_integer(repeat_instance))
+      checkmate::assert(checkmate::check_character(project_notes))
     }
-    body <- append(body, list("repeat_instance" = repeat_instance))
+    body <- append(body, list("project_notes" = project_notes))
 
-    httr::POST(redcap_uri, body = body, encode = "multipart")
+    data <- append(data, list(
+      "is_longitudinal" = as.character(as.integer(is_longitudinal)),
+      "surveys_enabled" = as.character(as.integer(surveys_enabled)),
+      "record_autonumbering_enabled" = as.character(
+        as.integer(record_autonumbering_enabled)
+      )
+    ))
+
+    redcap_create_project(
+      redcap_uri = redcap_uri,
+      token = token,
+      format = "json",
+      data = paste0("[", jsonlite::toJSON(data, auto_unbox = TRUE), "]"),
+      return_format = match.arg(return_format),
+      odm = paste(readLines(odm), collapse = "")
+    )
   }
 
 #' Migrate a File from One Project to Another
@@ -935,8 +1200,6 @@ redcap_migrate_file <- function(redcap_uri_src,
                                 event,
                                 repeat_instance,
                                 return_format = c("xml", "csv", "json")) {
-  return_format <- match.arg(return_format)
-
   r_export <- redcap_export_file(
     redcap_uri = redcap_uri_src,
     token = token_src,
@@ -944,7 +1207,7 @@ redcap_migrate_file <- function(redcap_uri_src,
     field = field,
     event = event,
     repeat_instance = repeat_instance,
-    return_format = return_format
+    return_format = match.arg(return_format)
   )
 
   r_import <- redcap_import_file(
@@ -955,7 +1218,7 @@ redcap_migrate_file <- function(redcap_uri_src,
     event = event,
     repeat_instance = repeat_instance,
     file = r_export$content[[1]],
-    return_format = return_format
+    return_format = match.arg(return_format)
   )
 
   list(
@@ -989,11 +1252,9 @@ redcap_migrate_files <- function(redcap_uri_src,
                                  token_src,
                                  token_dst,
                                  return_format = c("xml", "csv", "json")) {
-  return_format <- match.arg(return_format)
-
   # identify if project is longitudinal and/or has repeating events
   # so that we can deal with such project designs
-  redcap_export_project_information(
+  redcap_export_project_info(
     redcap_uri = redcap_uri_src,
     token = token_src,
     format = "json"
@@ -1063,261 +1324,13 @@ redcap_migrate_files <- function(redcap_uri_src,
           event = d_files_to_migrate[[., "redcap_event_name"]],
           repeat_instance = as.integer(
             d_files_to_migrate[[., "redcap_repeat_instance"]]
-          )
+          ),
+          return_format = match.arg(return_format)
         )
       )
     }
   )
 }
-
-#' Create A New Project
-#'
-#' @description  This method allows you to create a new REDCap project. A
-#' 64-character Super API Token is required for this method (as opposed to
-#' project-level API methods that require a regular 32-character token
-#' associated with the project-user). In the API request, you must minimally
-#' provide the project attributes 'project_title' and 'purpose' (with numerical
-#' value 0=Practice/Just for fun, 1=Other, 2=Research, 3=Quality Improvement,
-#' 4=Operational Support) when creating a project.
-#'
-#' When a project is created with this method, the project will automatically be
-#' given all the project-level defaults just as if you created a new empty
-#' project via the web user interface, such as a automatically creating a
-#' single data collection instrument seeded with a single Record ID field and
-#' Form Status field, as well as (for longitudinal projects) one arm with one
-#' event. And if you intend to create your own arms or events immediately after
-#' creating the project, it is recommended that you utilize the override=1
-#' parameter in the 'Import Arms' or 'Import Events' method, respectively, so
-#' that the default arm and event are removed when you add your own. Also, the
-#' user creating the project will automatically be added to the project as a
-#' user with full user privileges and a project-level API token, which could
-#' then be used for subsequent project-level API requests.
-#'
-#' NOTE: Only users with Super API Tokens can utilize this method. Users can
-#' only be granted a super token by a REDCap administrator (using the API Tokens
-#' page in the REDCap Control Center). Please be advised that users with a
-#' Super API Token can create new REDCap projects via the API without any
-#' approval needed by a REDCap administrator. If you are interested in
-#' obtaining a super token, please contact your local REDCap administrator.
-#'
-#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
-#' project.
-#' @param token The Super API Token specific to a user
-#' @param format format of the data argument
-#' @param data Contains the attributes of the project to be created, in which
-#' they are provided in the specified format. While the only required attributes
-#' are 'project_title' and 'purpose', the fields listed below are all the
-#' possible attributes that can be provided in the 'data' parameter. The
-#' 'purpose' attribute must have a numerical value (0=Practice/Just for fun,
-#' 1=Other, 2=Research, 3=Quality Improvement, 4=Operational Support), in which
-#' 'purpose_other' is only required to have a value (as a text string) if
-#' purpose=1. The attributes is_longitudinal (0=False, 1=True; Default=0),
-#' surveys_enabled (0=False, 1=True; Default=0), and
-#' record_autonumbering_enabled (0=False, 1=True; Default=1) are all boolean.
-#' Please note that either is_longitudinal=1 or surveys_enabled=1 does not add
-#' arms/events or surveys to the project, respectively, but it merely enables
-#' those settings which are seen at the top of the project's Project Setup page.
-#' @param return_format csv, json, xml - specifies the format of error messages.
-#' If you do not pass in this flag, it will select the default format for you
-#' passed based on the 'format' flag you passed in or if no format flag was
-#' passed in, it will default to 'xml'.
-#' @param odm default: NULL - The 'odm' parameter must be an XML string in CDISC
-#' ODM XML format that contains project metadata (fields, forms, events, arms)
-#' and might optionally contain data to be imported as well. The XML contained
-#' in this parameter can come from a REDCap Project XML export file from REDCap
-#' itself, or may come from another system that is capable of exporting
-#' projects and data in CDISC ODM format. If the 'odm' parameter is included in
-#' the API request, it will use the XML to import its contents into the newly
-#' created project. This will allow you not only to create the project with the
-#' API request, but also to import all fields, forms, and project attributes
-#' (and events and arms, if longitudinal) as well as record data all at the same
-#' time.
-#'
-#' @return an httr response object containing a 32-character project-level API
-#' token (associated with both the project and user creating the project).
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' redcap_create_project(
-#'   token = my_super_token,
-#'   format = "json",
-#'   data = paste0(
-#'     "[",
-#'     jsonlite::toJSON(
-#'       list(
-#'         "project_title" = "My New REDCap Project",
-#'         "purpose" = "0"
-#'       ),
-#'       auto_unbox = TRUE
-#'     ),
-#'     "]"
-#'   )
-#' ) %>%
-#'   httr::content(as = "text") -> my_project_token
-#' }
-redcap_create_project <-
-  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-           token,
-           format = c("xml", "csv", "json"),
-           data,
-           return_format = c("xml", "csv", "json"),
-           odm) {
-    return_format <- match.arg(return_format)
-
-    body <- list(
-      "token" = token,
-      "content" = "project",
-      "format" = format,
-      "data" = data,
-      "returnFormat" = return_format
-    )
-
-    if (missing(odm) || is.null(odm)) {
-      odm <- NULL
-    } else {
-      checkmate::assert(checkmate::check_character(odm))
-    }
-    body <- append(body, list("odm" = odm))
-
-    httr::POST(redcap_uri, body = body, encode = "form")
-  }
-
-#' Create Project from ODM
-#'
-#' @description  This method allows you to create a new REDCap project. A
-#' 64-character Super API Token is required for this method (as opposed to
-#' project-level API methods that require a regular 32-character token
-#' associated with the project-user). In the API request, you must minimally
-#' provide the project attributes 'project_title' and 'purpose' (with numerical
-#' value 0=Practice/Just for fun, 1=Other, 2=Research, 3=Quality Improvement,
-#' 4=Operational Support) when creating a project.
-#'
-#' When a project is created with this method, the project will automatically be
-#' given all the project-level defaults just as if you created a new empty
-#' project via the web user interface, such as a automatically creating a
-#' single data collection instrument seeded with a single Record ID field and
-#' Form Status field, as well as (for longitudinal projects) one arm with one
-#' event. And if you intend to create your own arms or events immediately after
-#' creating the project, it is recommended that you utilize the override=1
-#' parameter in the 'Import Arms' or 'Import Events' method, respectively, so
-#' that the default arm and event are removed when you add your own. Also, the
-#' user creating the project will automatically be added to the project as a
-#' user with full user privileges and a project-level API token, which could
-#' then be used for subsequent project-level API requests.
-#'
-#' NOTE: Only users with Super API Tokens can utilize this method. Users can
-#' only be granted a super token by a REDCap administrator (using the API Tokens
-#' page in the REDCap Control Center). Please be advised that users with a
-#' Super API Token can create new REDCap projects via the API without any
-#' approval needed by a REDCap administrator. If you are interested in
-#' obtaining a super token, please contact your local REDCap administrator.
-#'
-#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
-#' project.
-#' @param token The Super API Token specific to a user
-#' @param project_title (required) title of the project
-#' @param purpose (required) purpose of the project
-#' @param purpose_other (required if purpose is "Other") custom purpose
-#' @param project_notes (optional) notes describing the project
-#' @param is_longitudinal is the project to be longitudinal
-#' @param surveys_enabled is the project to contain surveys
-#' @param record_autonumbering_enabled should the records be autonumbered
-#' @param return_format csv, json, xml - specifies the format of error messages.
-#' If you do not pass in this flag, it will select the default format for you
-#' passed based on the 'format' flag you passed in or if no format flag was
-#' passed in, it will default to 'xml'.
-#' @param odm path to file containing an XML string in CDISC ODM XML format that
-#' contains project metadata (fields, forms, events, arms) and might optionally
-#' contain data to be imported as well. The XML contained in this parameter
-#' can come from a REDCap Project XML export file from REDCap itself, or may
-#' come from another system that is capable of exporting projects and data in
-#' CDISC ODM format. If the 'odm' parameter is included in the API request, it
-#' will use the XML to import its contents into the newly created project.
-#' This will allow you not only to create the project with the API request,
-#' but also to import all fields, forms, and project attributes (and events
-#' and arms, if longitudinal) as well as record data all at the same time.
-#'
-#' @return an httr response object containing a 32-character project-level API
-#' token (associated with both the project and user creating the project).
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' redcap_create_project_from_odm(
-#'   token = my_super_token,
-#'   project_title = "redcap_create_project_from_odm test",
-#'   purpose = "Practice/Just for fun",
-#'   odm = "odm.xml"
-#' ) %>%
-#'   httr::content(r, as = "text") -> my_project_token
-#' }
-redcap_create_project_from_odm <-
-  function(redcap_uri = "https://redcap.wustl.edu/redcap/api/",
-           token,
-           project_title,
-           purpose = c(
-             "Practice/Just for fun",
-             "Other",
-             "Research",
-             "Quality Improvement",
-             "Operational Support"
-           ),
-           purpose_other,
-           project_notes,
-           is_longitudinal = FALSE,
-           surveys_enabled = FALSE,
-           record_autonumbering_enabled = FALSE,
-           return_format = c("xml", "csv", "json"),
-           odm) {
-    purpose <- which(
-      match.arg(purpose) == c(
-        "Practice/Just for fun",
-        "Other",
-        "Research",
-        "Quality Improvement",
-        "Operational Support"
-      )
-    ) - 1
-
-    data <- list(
-      "project_title" = project_title,
-      "purpose" = as.character(purpose)
-    )
-
-    if (purpose == 1) {
-      if (missing(purpose_other) || is.null(purpose_other)) {
-        purpose_other <- NULL
-      } else {
-        checkmate::assert(checkmate::check_character(purpose_other))
-      }
-      data <- append(data, list("purpose_other" = purpose_other))
-    }
-
-    if (missing(project_notes) || is.null(project_notes)) {
-      project_notes <- NULL
-    } else {
-      checkmate::assert(checkmate::check_character(project_notes))
-    }
-    body <- append(body, list("project_notes" = project_notes))
-
-    data <- append(data, list(
-      "is_longitudinal" = as.character(as.integer(is_longitudinal)),
-      "surveys_enabled" = as.character(as.integer(surveys_enabled)),
-      "record_autonumbering_enabled" = as.character(
-        as.integer(record_autonumbering_enabled)
-      )
-    ))
-
-    redcap_create_project(
-      redcap_uri = redcap_uri,
-      token = token,
-      format = "json",
-      data = paste0("[", jsonlite::toJSON(data, auto_unbox = TRUE), "]"),
-      return_format = match.arg(return_format),
-      odm = paste(readLines(odm), collapse = "")
-    )
-  }
 
 #' Migrate a Project
 #'
@@ -1350,7 +1363,7 @@ redcap_migrate_project <- function(
   token_spr
 ) {
   message("Exporting source project information...")
-  redcap_export_project_information(
+  redcap_export_project_info(
     redcap_uri = redcap_uri_src,
     token = token_src,
     format = "json"
@@ -1358,12 +1371,13 @@ redcap_migrate_project <- function(
     httr::content() -> project_info
 
   message("Exporting source project to CDISC ODM XML...")
-  httr::POST(
-    url = redcap_uri_src,
-    body = list(
-      "token" = token_src,
-      "content" = "project_xml"
-    )
+  redcap_export_project_xml(
+    redcap_uri = redcap_uri_src,
+    token = token_src,
+    return_metadata_only = FALSE,
+    export_survey_fields = TRUE,
+    export_data_access_groups = TRUE,
+    export_files = FALSE
   ) %>%
     httr::content() %>%
     as.character() -> cdisc_odm_xml
