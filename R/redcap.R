@@ -107,11 +107,16 @@ redcap_logical <- function(name, value) {
 #'
 #' @param content_type content-type header from REDCap to be parsed
 #' @return list containing type, name, and charset
-parse_content_type <- function(content_type) {
+parse_content_type <- function (content_type) {
+  parts <- stringr::str_remove_all(
+    stringr::str_trim(strsplit(content_type, ";")[[1]]),
+    '"'
+  )
+
   list(
-    "type" = stringr::str_extract(content_type, "^.*(?=; )"),
-    "name" = stringr::str_extract(content_type, "(?<=name=\").+(?=\";)"),
-    "charset" = stringr::str_extract(content_type, "(?<=charset=).*$")
+    "type" = parts[1],
+    "name" = stringr::str_remove(parts[2], "name="),
+    "charset" = stringr::str_remove(parts[3], "charset=")
   )
 }
 
@@ -154,6 +159,45 @@ write_project_xml <- function(r, file) {
     as.character() %>%
     writeLines(con = file)
 }
+
+
+
+redcap_export_dags <- function(
+  redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+  token,
+  format = c("xml", "csv", "json"),
+  return_format = c("xml", "csv", "json")
+) {
+  body <- list(
+    "token" = token,
+    "content" = "dag",
+    "format" = match.arg(format),
+    "returnFormat" = match.arg(return_format)
+  )
+
+  httr::POST(redcap_uri, body = body, encode = "form")
+}
+
+redcap_import_dags <- function(
+  redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+  token,
+  format = c("xml", "csv", "json"),
+  data,
+  return_format = c("xml", "csv", "json")
+) {
+  body <- list(
+    "token" = token,
+    "content" = "dag",
+    "action" = "import",
+    "format" = match.arg(format),
+    "data" = data,
+    "returnFormat" = match.arg(return_format)
+  )
+
+  httr::POST(redcap_uri, body = body, encode = "form")
+}
+
+
 
 #' Export a File
 #'
@@ -592,6 +636,10 @@ redcap_export_project_xml <-
            export_data_access_groups = FALSE,
            filter_logic = NULL,
            export_files = FALSE) {
+    # https://community.projectredcap.org/questions/81879/api-project-xml-export-missing-redcapsurveysgroup.html
+    # - bug reported in v9.7.7 saying xml file missing a lot of the project settings
+    # - essentially this endpoint can only export metadata + data only in versions prior to v9
+
     body <- list(
       token = token,
       content = "project_xml",
