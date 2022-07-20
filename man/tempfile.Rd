@@ -11,6 +11,6 @@ Create Names for Temporary HTML File
 }
 \section{Functions}{
 \itemize{
-\item \code{tempfile_html}: tempfile_html returns a vector of character strings which can be used as names for temporary html files.
-}}
+\item \code{tempfile_html()}: tempfile_html returns a vector of character strings which can be used as names for temporary html files.
 
+}}

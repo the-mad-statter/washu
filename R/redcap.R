@@ -1,3 +1,5 @@
+# REDCapR EXTENSIONS -----------------------------------------------------------
+
 #' Store a token and other credentials in a file
 #'
 #' @param redcap_uri The URI (uniform resource identifier) of the REDCap
@@ -53,6 +55,8 @@ redcap_read <- function(project_id, path_credential = "~/.REDCapR", ...) {
     ...
   )$data
 }
+
+# UTILITIES --------------------------------------------------------------------
 
 #' REDCap Array
 #'
@@ -160,8 +164,29 @@ write_project_xml <- function(r, file) {
     writeLines(con = file)
 }
 
+# API ENDPOINTS ----------------------------------------------------------------
 
+## Data Access Groups ----------------------------------------------------------
 
+#' Export DAGs
+#'
+#' @description This method allows you to export the Data Access Groups for a
+#' project
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The API token specific to your REDCap project and username (each
+#'  token is unique to each user for each project). See the section on the
+#'  left-hand menu for obtaining a token for a given project.
+#' @param format csv, json, xml [default]
+#' @param return_format csv, json, xml - specifies the format of error messages.
+#' If you do not pass in this flag, it will select the default format for you
+#' passed based on the 'format' flag you passed in or if no format flag was
+#' passed in, it will default to 'xml'.
+#'
+#' @return httr::response() object containing DAGs for the project in the
+#' format specified
+#' @export
 redcap_export_dags <- function(
   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
   token,
@@ -178,6 +203,58 @@ redcap_export_dags <- function(
   httr::POST(redcap_uri, body = body, encode = "form")
 }
 
+#' Import DAGs
+#'
+#' @description This method allows you to import new DAGs (Data Access Groups)
+#' into a project or update the group name of any existing DAGs.
+#'
+#' @note DAGs can be renamed by simply changing the group name
+#' (data_access_group_name). DAG can be created by providing group name value
+#' while unique group name should be set to blank. To use this method, you must
+#' have API Import/Update privileges in the project.
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The API token specific to your REDCap project and username (each
+#'  token is unique to each user for each project). See the section on the
+#'  left-hand menu for obtaining a token for a given project.
+#' @param format csv, json, xml [default]
+#' @param data Contains the attributes 'data_access_group_name'
+#' (referring to the group name) and 'unique_group_name'
+#' (referring to the auto-generated unique group name) of each DAG to be
+#' created/modified, in which they are provided in the specified format.
+#' 1. JSON Example:
+#' \[{"data_access_group_name":"CA Site","unique_group_name":"ca_site"}
+#' {"data_access_group_name":"FL Site","unique_group_name":"fl_site"},
+#' {"data_access_group_name":"New Site","unique_group_name":""}\]
+#' 2. CSV Example:
+#' data_access_group_name,unique_group_name
+#' "CA Site",ca_site
+#' "FL Site",fl_site
+#' "New Site",
+#' XML Example:
+#' <?xml version="1.0" encoding="UTF-8" ?>
+#' <dags>
+#'   <item>
+#'   <data_access_group_name>CA Site</data_access_group_name>
+#'   <unique_group_name>ca_site</unique_group_name>
+#'   </item>
+#'   <item>
+#'   <data_access_group_name>FL Site</data_access_group_name>
+#'   <unique_group_name>fl_site</unique_group_name>
+#'   </item>
+#'   <item>
+#'   <data_access_group_name>New Site</data_access_group_name>
+#'   <unique_group_name></unique_group_name>
+#'   </item>
+#' </dags>
+#' @param return_format csv, json, xml - specifies the format of error messages.
+#' If you do not pass in this flag, it will select the default format for you
+#' passed based on the 'format' flag you passed in or if no format flag was
+#' passed in, it will default to 'xml'.
+#'
+#' @return httr::response() object containing number of DAGs added or updated
+#' @export
 redcap_import_dags <- function(
   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
   token,
@@ -197,7 +274,97 @@ redcap_import_dags <- function(
   httr::POST(redcap_uri, body = body, encode = "form")
 }
 
+## Field Names -----------------------------------------------------------------
 
+#' Export List of Export Field Names
+#'
+#' @description This method returns a list of the export/import-specific
+#' version of field names for all fields (or for one field, if desired) in a
+#' project. This is mostly used for checkbox fields because during data exports
+#' and data imports, checkbox fields have a different variable name used than
+#' the exact one defined for them in the Online Designer and Data Dictionary,
+#' in which *each checkbox option* gets represented as its own export field
+#' name in the following format: field_name + triple underscore + converted
+#' coded value for the choice. For non-checkbox fields, the export field name
+#' will be exactly the same as the original field name. Note: The following
+#' field types will be automatically removed from the list returned by this
+#' method since they cannot be utilized during the data import process: 'calc',
+#' 'file', and 'descriptive'.
+#'
+#' The list that is returned will contain the three following attributes for
+#' each field/choice: 'original_field_name', 'choice_value', and
+#' 'export_field_name'. The choice_value attribute represents the raw coded
+#' value for a checkbox choice. For non-checkbox fields, the choice_value
+#' attribute will always be blank/empty. The export_field_name attribute
+#' represents the export/import-specific version of that field name.
+#'
+#' @note To use this method, you must have API Export privileges in the project.
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The API token specific to your REDCap project and username (each
+#'  token is unique to each user for each project). See the section on the
+#'  left-hand menu for obtaining a token for a given project.
+#' @param format csv, json, xml [default]
+#' @param field A field's variable name. By default, all fields are returned,
+#' but if field is provided, then it will only the export field name(s) for
+#' that field. If the field name provided is invalid, it will return an error.
+#' @param return_format csv, json, xml - specifies the format of error messages.
+#' If you do not pass in this flag, it will select the default format for you
+#' passed based on the 'format' flag you passed in or if no format flag was
+#' passed in, it will default to 'xml'.
+#'
+#' @return httr::response() object containing Returns a list of the
+#' export/import-specific version of field names for all fields (or for one
+#' field, if desired) in a project in the format specified and ordered by their
+#' field order . The list that is returned will contain the three following
+#' attributes for each field/choice: 'original_field_name', 'choice_value',
+#' and 'export_field_name'. The choice_value attribute represents the raw
+#' coded value for a checkbox choice. For non-checkbox fields, the choice_value
+#' attribute will always be blank/empty. The export_field_name attribute
+#' represents the export/import-specific version of that field name.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' redcap_export_field_names(
+#'   token = my_token,
+#'   format = "csv",
+#'   field = "checkboxes"
+#'  ) %>%
+#'  httr::content(
+#'    as = "text",
+#'    encoding = "UTF-8",
+#'    content_type = "text/csv"
+#'  ) %>%
+#'  readr::read_csv() %>%
+#'  dplyr::pull(export_field_name)
+#' }
+redcap_export_field_names <- function(
+  redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+  token,
+  format = c("xml", "csv", "json"),
+  field,
+  return_format = c("xml", "csv", "json")
+) {
+  body <- list(
+    "token" = token,
+    "content" = "exportFieldNames",
+    "format" = match.arg(format),
+    "returnFormat" = match.arg(return_format)
+  )
+
+  if (missing(field) || is.null(field)) {
+    field <- NULL
+  } else {
+    checkmate::assert(checkmate::check_character(field))
+  }
+  body <- append(body, list("field" = field))
+
+  httr::POST(redcap_uri, body = body, encode = "form")
+}
+
+## Files -----------------------------------------------------------------------
 
 #' Export a File
 #'
@@ -380,6 +547,8 @@ redcap_import_file <-
     httr::POST(redcap_uri, body = body, encode = "multipart")
   }
 
+## Projects --------------------------------------------------------------------
+
 #' Create A New Project
 #'
 #' @description  This method allows you to create a new REDCap project. A
@@ -520,9 +689,6 @@ redcap_export_project_info <-
 
     httr::POST(redcap_uri, body = body, encode = "form")
   }
-
-
-
 
 #' Export Entire Project as REDCap XML File (containing metadata & data)
 #'
@@ -699,6 +865,8 @@ redcap_export_project_xml <-
 
     httr::POST(redcap_uri, body = body, encode = "form")
   }
+
+## Records ---------------------------------------------------------------------
 
 #' Export Records
 #'
@@ -1081,6 +1249,8 @@ redcap_delete_records <-
     httr::POST(redcap_uri, body = body)
   }
 
+# COMPLEX FUNCTIONS ------------------------------------------------------------
+
 #' Create Project
 #'
 #' @description  This method allows you to create a new REDCap project. A
@@ -1252,7 +1422,7 @@ redcap_migrate_file <- function(redcap_uri_src,
                                 event,
                                 repeat_instance,
                                 return_format = c("xml", "csv", "json")) {
-  r_export <- redcap_export_file(
+  redcap_export_file(
     redcap_uri = redcap_uri_src,
     token = token_src,
     record = record,
@@ -1260,9 +1430,13 @@ redcap_migrate_file <- function(redcap_uri_src,
     event = event,
     repeat_instance = repeat_instance,
     return_format = match.arg(return_format)
-  )
+  ) -> r_export
 
-  r_import <- redcap_import_file(
+  base_name <- basename(r_export$content[[1]])
+
+  message(sprintf("Downloading file: %s...", base_name))
+
+  redcap_import_file(
     token = token_dst,
     redcap_uri = redcap_uri_dst,
     record = record,
@@ -1271,7 +1445,9 @@ redcap_migrate_file <- function(redcap_uri_src,
     repeat_instance = repeat_instance,
     file = r_export$content[[1]],
     return_format = match.arg(return_format)
-  )
+  ) -> r_import
+
+  message(sprintf("Uploading file: %s...", base_name))
 
   list(
     "export" = r_export,
@@ -1279,7 +1455,7 @@ redcap_migrate_file <- function(redcap_uri_src,
   )
 }
 
-#' Migrate all Files from One Project to Another
+#' Migrate All Files from One Project to Another
 #'
 #' @param redcap_uri_src The URI (uniform resource identifier) of the source
 #' REDCap project.
@@ -1296,154 +1472,498 @@ redcap_migrate_file <- function(redcap_uri_src,
 #' passed based on the 'format' flag you passed in or if no format flag was
 #' passed in, it will default to 'xml'.
 #'
-#' @return for each file identified, a pair of httr response objects: one for
-#' the export and one for the import
 #' @export
-redcap_migrate_files <- function(redcap_uri_src,
-                                 redcap_uri_dst,
-                                 token_src,
-                                 token_dst,
-                                 return_format = c("xml", "csv", "json")) {
-  # identify if project is longitudinal and/or has repeating events
-  # so that we can deal with such project designs
-  redcap_export_project_info(
-    redcap_uri = redcap_uri_src,
-    token = token_src,
-    format = "json"
-  ) %>%
-    httr::content(as = "text") %>%
-    jsonlite::fromJSON() -> project_info
-
-  # download entire data dictionary
-  # 1. to identify record_id field name
-  # 2. to identify names of fields of type file
+redcap_migrate_files <- function(
+  redcap_uri_src,
+  redcap_uri_dst,
+  token_src,
+  token_dst,
+  return_format = c("xml", "csv", "json")
+) {
+  message("Reading source project data dictionary...")
   REDCapR::redcap_metadata_read(
     redcap_uri = redcap_uri_src,
     token = token_src
   )$data -> data_dictionary
 
-  # get record_id field name (in case of customization)
-  data_dictionary[[1, 1]] -> field_names_record_id
-
-  # vector of key (i.e., record identifying) variables
-  field_names_keys <- field_names_record_id
-  if(project_info$is_longitudinal == 1)
-    field_names_keys <- c(field_names_keys, "redcap_event_name")
-  if(!is.null(project_info$has_repeating_instruments_or_events))
-    if(project_info$has_repeating_instruments_or_events == 1)
-      field_names_keys <- c(field_names_keys, "redcap_repeat_instance")
-
-  # get names of fields of type file
-  data_dictionary %>%
-    dplyr::filter(field_type == "file") %>% # (signatures are also files)
-    dplyr::pull(field_name) -> field_names_files
-
-  # download data for necessary fields only
+  message("Reading source project records...")
   REDCapR::redcap_read(
     redcap_uri = redcap_uri_src,
     token = token_src,
-    fields_collapsed = paste(
-      c(
-        field_names_keys,
-        field_names_files
+    export_survey_fields = TRUE,
+    export_data_access_groups = TRUE
+  )$data -> project_records
+
+  # temporarily change signature fields into regular upload fields
+  message("Disabling destination project signature constraints...")
+  REDCapR::redcap_metadata_write(
+    ds = data_dictionary %>%
+      dplyr::mutate(
+        text_validation_type_or_show_slider_number =
+          dplyr::if_else(
+            text_validation_type_or_show_slider_number == "signature",
+            NA_character_,
+            text_validation_type_or_show_slider_number
+          )
       ),
-      collapse = ","
-    )
-  )$data -> d
+    redcap_uri = redcap_uri_dst,
+    token = token_dst
+  )
 
-  # for each file field migrate each file
-  purrr::map(
-    field_names_files,
-    ~ {
-      # for each file field
-      file_field_name <- .
+  # get names of fields of type file
+  data_dictionary %>%
+    dplyr::filter(field_type == "file") %>%
+    dplyr::pull(field_name) -> file_field_names
 
-      # identify files that need to be migrated
-      d %>%
-        dplyr::select(dplyr::any_of(c(field_names_keys, file_field_name))) %>%
-        dplyr::filter(!is.na(.data[[file_field_name]])) -> d_files_to_migrate
+  # for each file field find records requiring a file migration and do it
+  for(file_field_name in file_field_names) {
+    message(sprintf("Transfering files for field: %s...", file_field_name))
 
-      # and migrate each file
-      purrr::map(
-        1:nrow(d_files_to_migrate),
-        ~ redcap_migrate_file(
-          redcap_uri_src = redcap_uri_src,
-          redcap_uri_dst = redcap_uri_dst,
-          token_src = token_src,
-          token_dst = token_dst,
-          record = d_files_to_migrate[[., field_names_record_id]],
-          field = file_field_name,
-          event = d_files_to_migrate[[., "redcap_event_name"]],
-          repeat_instance = as.integer(
-            d_files_to_migrate[[., "redcap_repeat_instance"]]
-          ),
-          return_format = match.arg(return_format)
+    # find records with files in the current field
+    project_records %>%
+      dplyr::select(
+        dplyr::any_of(
+          c(
+            data_dictionary[[1, 1]],
+            "redcap_event_name",
+            "redcap_repeat_instance",
+            file_field_name
+          )
         )
+      ) %>%
+      dplyr::filter(
+        !is.na(.data[[file_field_name]])
+      ) -> files_for_migration
+
+    # migrate the files
+    for(k in 1:nrow(files_for_migration)) {
+      redcap_migrate_file(
+        redcap_uri_src = redcap_uri_src,
+        redcap_uri_dst = redcap_uri_dst,
+        token_src = token_src,
+        token_dst = token_dst,
+        record = files_for_migration[[k, data_dictionary[[1, 1]]]],
+        field = file_field_name,
+        event = files_for_migration[[k, "redcap_event_name"]],
+        repeat_instance = as.integer(
+          files_for_migration[[k, "redcap_repeat_instance"]]
+        ),
+        return_format = match.arg(return_format)
       )
     }
+  }
+
+  # add signature constraint back to original signature fields
+  message("Enabling destination project signature constraints...")
+  REDCapR::redcap_metadata_write(
+    ds = data_dictionary,
+    redcap_uri = redcap_uri_dst,
+    token = token_dst
   )
 }
 
-#' Migrate a Project
+#' Reset Completion Flags
+#'
+#' @description When exporting records containing instrument completion flag
+#' fields from REDCap (regardless of format), REDCap maps both
+#' grey/no sql table record/"Incomplete (no data saved)" and
+#' red/1/"Incomplete" to red/1/"Incomplete". Because it is difficult to
+#' determine which records should have remained
+#' grey/no sql table record/"Incomplete (no data saved)", this function
+#' assumes instruments with no data present should be set to
+#' grey/no sql table record/"Incomplete (no data saved)"
+#'
+#' @param redcap_uri The URI (uniform resource identifier) of the REDCap
+#' project.
+#' @param token The API token specific to your REDCap project and username (each
+#'  token is unique to each user for each project). See the section on the
+#'  left-hand menu for obtaining a token for a given project.
+#' @param data_dictionary (optional) If supplied should be data object from a
+#' call to REDCapR::redcap_metadata_read(). If not supplied the function will
+#' call REDCapR::redcap_metadata_read().
+#' @param project_records (optional) If supplied should be the data object from
+#' a call to REDCapR::redcap_read(). If not supplied the function will call
+#' REDCapR::redcap_read().
+#'
+#' @export
+redcap_reset_completion_flags <- function(
+  redcap_uri,
+  token,
+  data_dictionary,
+  project_records
+) {
+  if(missing(data_dictionary) || is.null(data_dictionary)) {
+    REDCapR::redcap_metadata_read(
+      redcap_uri = redcap_uri,
+      token = token
+    )$data -> data_dictionary
+  }
+
+  if(missing(project_records) || is.null(project_records)) {
+    REDCapR::redcap_read(
+      redcap_uri = redcap_uri_src,
+      token = input$token_src,
+      export_survey_fields = TRUE,
+      export_data_access_groups = TRUE
+    )$data -> project_records
+  }
+
+  for(form in unique(data_dictionary$form_name)) {
+    # generate vector of checkbox field names for form
+    data_dictionary %>%
+      dplyr::filter(form_name == form) %>%
+      dplyr::filter(field_type == "checkbox") %>%
+      dplyr::mutate(
+        n_choices = stringr::str_count(
+          select_choices_or_calculations, "\\|"
+        )
+      ) %>%
+      dplyr::select(field_name, n_choices) %>%
+      purrr::pmap(
+        function(field_name, n_choices) {
+          paste0(field_name, "___", 0:n_choices)
+        }
+      ) %>%
+      unlist() -> checkbox_field_names
+
+    # generate vector of non-checkbox field names for form
+    data_dictionary %>%
+      dplyr::filter(form_name == form) %>%
+      dplyr::filter(
+        field_type != "checkbox" &
+          field_name != data_dictionary[[1, 1]] &
+          field_type != "descriptive") %>%
+      dplyr::pull(field_name) -> noncheckbox_field_names
+
+    # count not missing for form for record-event-instance
+    project_records %>%
+      dplyr::select(
+        dplyr::all_of(
+          c(
+            noncheckbox_field_names,
+            checkbox_field_names
+          )
+        )
+      ) %>%
+      dplyr::mutate_at(
+        dplyr::all_of(checkbox_field_names),
+        ~ dplyr::if_else(. == 0, NA_real_, .)
+      ) %>%
+      dplyr::mutate(n_nna = rowSums(!is.na(.))) %>%
+      dplyr::pull(n_nna) -> n_nna
+
+    # make dataframe of flags to set to grey "Incomplete (no data saved)"
+    project_records %>%
+      dplyr::mutate(n_nna = n_nna) %>%
+      dplyr::filter(n_nna == 0) %>%
+      dplyr::select(
+        dplyr::any_of(
+          c(
+            data_dictionary[[1, 1]],
+            "redcap_event_name",
+            "redcap_repeat_instance",
+            paste0(form, "_complete")
+          )
+        )
+      ) -> d
+    d[paste0(form, "_complete")] <- ""
+
+    # write flags to REDCap
+    REDCapR::redcap_write(
+      ds_to_write = d,
+      redcap_uri = redcap_uri,
+      token = token
+    )
+  }
+}
+
+#' Project Migration App
+#'
+#' @description This shiny app migrates most project settings from one REDCap
+#' instance to another by using API calls. It was written to help transfer
+#' projects on a v7 instance to a v10 instance where version inconsistencies as
+#' well as technical and labor issues prevented a simple CDISC ODM XML port.
 #'
 #' @param redcap_uri_src The URI (uniform resource identifier) of the source
 #' REDCap project.
+#' @param redcap_dag_uri_src The base URI for the source DAG page
 #' @param redcap_uri_dst The URI (uniform resource identifier) of the
 #' destination REDCap project.
-#' @param token_src The API token specific to your source REDCap project and
-#' username (each token is unique to each user for each project). See the
-#' section on the left-hand menu for obtaining a token for a given project.
-#' @param token_spr The Super API Token specific to a user
+#' @param redcap_dag_uri_dst The base URI for the destination DAG page
 #'
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' washu::redcap_migrate_project(
-#'   redcap_uri_src =
-#'   "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
-#'   redcap_uri_dst =
-#'   "https://redcap.wustl.edu/redcap/api/",
-#'   token_src = my_source_token,
-#'   token_spr = my_super_user_token
-#' )
-#' }
-redcap_migrate_project <- function(
+redcap_project_migration_app <- function(
   redcap_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
+  redcap_dag_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/redcap_v7.3.5/DataAccessGroups/index.php?pid=",
   redcap_uri_dst = "https://redcap.wustl.edu/redcap/api/",
-  token_src,
-  token_spr
+  redcap_dag_uri_dst = "https://redcap.wustl.edu/redcap/redcap_v10.6.28/index.php?route=DataAccessGroupsController:index&pid="
 ) {
-  message("Exporting source project information...")
-  redcap_export_project_info(
-    redcap_uri = redcap_uri_src,
-    token = token_src,
-    format = "json"
-  ) %>%
-    httr::content() -> project_info
+  ui <- function() {
+    shiny::fluidPage(
+      shiny::titlePanel("REDCap Migrate Project App"),
 
-  message("Exporting source project to CDISC ODM XML...")
-  redcap_export_project_xml(
-    redcap_uri = redcap_uri_src,
-    token = token_src,
-    return_metadata_only = FALSE,
-    export_survey_fields = TRUE,
-    export_data_access_groups = TRUE,
-    export_files = FALSE
-  ) %>%
-    httr::content() %>%
-    as.character() -> cdisc_odm_xml
+      shiny::verticalLayout(
+        shiny::passwordInput(
+          "token_src",
+          "Source Project Token",
+          width = "100%"
+        ),
+        shiny::passwordInput(
+          "token_spr",
+          "Destination Super Token",
+          width = "100%"
+        ),
+        shiny::actionButton("migrate", "Migrate")
+      )
+    )
+  }
 
-  message("Creating new project from CDISC ODM XML...")
-  redcap_create_project(
-    redcap_uri = redcap_uri_dst,
-    token = token_spr,
-    format = "json",
-    data = paste0("[", jsonlite::toJSON(project_info, auto_unbox = TRUE), "]"),
-    odm = cdisc_odm_xml
-  ) %>%
-    httr::content(as = "text", encoding = "UTF-8") -> token_dst
+  server <- function(input, output, session) {
+    rvs <- shiny::reactiveValues(
+      token_dst = NULL # api token created during destination project creation
+    )
 
-  message("Migrating files...")
-  redcap_migrate_files(redcap_uri_src, redcap_uri_dst, token_src, token_dst)
+    shiny::observeEvent(input$migrate, {
+      shiny::withProgress({
+
+        shiny::setProgress(0.00, "Initiating migration...")
+        Sys.sleep(3)
+
+        # these attributes will be copied to the new project during creation
+        shiny::setProgress(0.05, "Exporting attributes from source...")
+        redcap_export_project_info(
+          redcap_uri = redcap_uri_src,
+          token = input$token_src,
+          format = "json"
+        ) %>%
+          httr::content() -> project_info_src
+
+        # cdisc odm is the most complete/portable representation of the project
+        # this will be used during the new project creation
+        shiny::setProgress(0.10, "Exporting metadata from source...")
+        redcap_export_project_xml(
+          redcap_uri_src,
+          input$token_src,
+          return_metadata_only = TRUE
+        ) %>%
+          httr::content() %>%
+          as.character() -> cdisc_odm_xml
+
+        # create the new project and make a note of the project specific token
+        shiny::setProgress(0.20, "Creating project at destination...")
+        redcap_create_project(
+          redcap_uri = redcap_uri_dst,
+          token = input$token_spr,
+          format = "json",
+          data = paste0(
+            "[", jsonlite::toJSON(project_info_src, auto_unbox = TRUE), "]"
+          ),
+          odm = cdisc_odm_xml
+        ) %>%
+          httr::content(as = "text", encoding = "UTF-8") -> rvs$token_dst
+
+        # extract attributes from the new project to identify pid
+        shiny::setProgress(0.30, "Exporting attributes from destination...")
+        redcap_export_project_info(
+          redcap_uri = redcap_uri_dst,
+          token = rvs$token_dst,
+          format = "json"
+        ) %>%
+          httr::content() -> project_info_dst
+
+        Sys.sleep(3)
+      })
+
+      # data access groups definitions cannot be exported from v7 via the api
+      # here we help the user manually define them as much as possible
+      shinyalert::shinyalert(
+        title = "DAGs?",
+        text = paste0(
+          "<p>Because data access groups (DAGs) definitions cannot be exported ",
+          "via the API from REDCap v7, they must be manually migrated.</p><br/>",
+          "<p>View the definitions in the source project ",
+          "<a href=\"",
+          redcap_dag_uri_src, project_info_src$project_id,
+          "\" target = \"_blank\">here</a>.</p><br/>",
+          "<p>Enter the definitions in the destination project ",
+          "<a href=\"",
+          redcap_dag_uri_dst, project_info_dst$project_id,
+          "\" target = \"_blank\">here</a>.</p><br/>",
+          "<p>Click OK after all DAGs have been manually migrated.</p><br/>"
+        ),
+        type = "info",
+        html = TRUE,
+        inputId = "dags_defined"
+      )
+    })
+
+    # after dags have been dealt with
+    shiny::observeEvent(input$dags_defined, {
+      shiny::withProgress({
+        # export records
+        shiny::setProgress(0.35, "Exporting records from source...")
+        REDCapR::redcap_read(
+          redcap_uri = redcap_uri_src,
+          token = input$token_src,
+          export_survey_fields = TRUE,
+          export_data_access_groups = TRUE
+        )$data -> project_records
+
+        # import records
+        shiny::setProgress(0.45, "Importing records to destination...")
+        REDCapR::redcap_write(
+          ds_to_write = project_records,
+          redcap_uri = redcap_uri_dst,
+          token = rvs$token_dst
+        )
+
+        # read the data dictionary to:
+        # a) identify fields of type file (this includes uploads and signatures)
+        # b) to temporarily change signature fields to regular upload fields as
+        #    the api does not allow signatures to be uploaded, but we can trick
+        #    it by setting signature fields to be regular upload fields while
+        #    uploading files and then reverting after the fact
+        # Note: while signatures are also files, they are not importable:
+        # <?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<hash>\n  <error>The field
+        # 'var_8' is a signature field, which cannot be imported using the API but
+        # can only be created using the web interface. However, it can be
+        # downloaded or deleted using the API.</error>\n</hash>\n
+        shiny::setProgress(0.60, "Reading data dictionary...")
+        REDCapR::redcap_metadata_read(
+          redcap_uri = redcap_uri_src,
+          token = input$token_src
+        )$data -> data_dictionary
+
+        # temporarily change signature fields into regular upload fields
+        shiny::setProgress(0.60, "Disabling signature constraints...")
+        REDCapR::redcap_metadata_write(
+          ds = data_dictionary %>%
+            dplyr::mutate(
+              text_validation_type_or_show_slider_number =
+                dplyr::if_else(
+                  text_validation_type_or_show_slider_number == "signature",
+                  NA_character_,
+                  text_validation_type_or_show_slider_number
+                )
+            ),
+          redcap_uri = redcap_uri_dst,
+          token = rvs$token_dst
+        )
+
+        # get names of fields of type file
+        data_dictionary %>%
+          dplyr::filter(field_type == "file") %>%
+          dplyr::pull(field_name) -> field_names_files
+
+        # compute a delta for updating the progress bar
+        progress_field_delta <- (0.80 - 0.60) / length(field_names_files)
+
+        # for each file field find records requiring a file migration and do it
+        for(j in 1:length(field_names_files)) {
+          shiny::setProgress(
+            0.6 + j * progress_field_delta,
+            sprintf("Transfering files for field: %s...", field_names_files[j]),
+            ""
+          )
+
+          # find records with files in the current field
+          project_records %>%
+            dplyr::select(
+              dplyr::any_of(
+                c(
+                  data_dictionary[[1, 1]],
+                  "redcap_event_name",
+                  "redcap_repeat_instance",
+                  field_names_files[j]
+                )
+              )
+            ) %>%
+            dplyr::filter(
+              !is.na(.data[[field_names_files[j]]])
+            ) -> d_files_to_migrate
+
+          # migrate the files
+          for(k in 1:nrow(d_files_to_migrate)) {
+            redcap_export_file(
+              redcap_uri = redcap_uri_src,
+              token = input$token_src,
+              record = d_files_to_migrate[[k, data_dictionary[[1, 1]]]],
+              field = field_names_files[j],
+              event = d_files_to_migrate[[k, "redcap_event_name"]],
+              repeat_instance = as.integer(
+                d_files_to_migrate[[k, "redcap_repeat_instance"]]
+              )
+            ) -> r_export
+
+            shiny::setProgress(
+              message = sprintf(
+                "Transfering files for field: %s...", field_names_files[j]
+              ),
+              detail = sprintf(
+                "Downloading file: %s...", basename(r_export$content[[1]])
+              )
+            )
+
+            redcap_import_file(
+              token = rvs$token_dst,
+              redcap_uri = redcap_uri_dst,
+              record = d_files_to_migrate[[k, data_dictionary[[1, 1]]]],
+              field = field_names_files[j],
+              event = d_files_to_migrate[[k, "redcap_event_name"]],
+              repeat_instance = as.integer(
+                d_files_to_migrate[[k, "redcap_repeat_instance"]]
+              ),
+              file = r_export$content[[1]]
+            ) -> r_import
+
+            shiny::setProgress(
+              message = sprintf(
+                "Transfering files for field: %s...", field_names_files[j]
+              ),
+              detail = sprintf(
+                "Uploading file: %s...", basename(r_export$content[[1]])
+              )
+            )
+          }
+        }
+
+        # add signature constraint back to original signature fields
+        shiny::setProgress(0.80, "Enabling signature constraints...")
+        REDCapR::redcap_metadata_write(
+          ds = data_dictionary,
+          redcap_uri = redcap_uri_dst,
+          token = rvs$token_dst
+        )
+
+        # upon any export, REDCap maps both "Incomplete (no data saved)" as well
+        # as "Incomplete" to "Incomplete" for the instrument completion flags.
+        # here we attempt to revert the "Incomplete (no data saved)" flags by
+        # examining if the record had any data entered, and if it didn't, we
+        # we assume the flag should be reverted to grey no data saved.
+        shiny::setProgress(0.90, "Resetting form completion flags...", "")
+        redcap_reset_completion_flags(
+          redcap_uri = redcap_uri_dst,
+          token = rvs$token_dst,
+          data_dictionary = data_dictionary,
+          project_records = project_records
+        )
+
+        shiny::setProgress(1.00, "Completing migration...", "")
+        Sys.sleep(3)
+      })
+
+      shinyalert::shinyalert(
+        title = "Migration Complete",
+        text = "Project migration has completed.",
+        type = "info",
+        inputId = "migration_complete"
+      )
+    })
+
+    shiny::observeEvent(input$migration_complete, {
+      shiny::stopApp()
+    })
+  }
+
+  shiny::runGadget(ui(), server, viewer = shiny::browserViewer())
 }

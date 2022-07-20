@@ -2,7 +2,7 @@
 % Please edit documentation in R/redcap.R
 \name{redcap_migrate_files}
 \alias{redcap_migrate_files}
-\title{Migrate all Files from One Project to Another}
+\title{Migrate All Files from One Project to Another}
 \usage{
 redcap_migrate_files(
   redcap_uri_src,
@@ -32,10 +32,6 @@ If you do not pass in this flag, it will select the default format for you
 passed based on the 'format' flag you passed in or if no format flag was
 passed in, it will default to 'xml'.}
 }
-\value{
-for each file identified, a pair of httr response objects: one for
-the export and one for the import
-}
 \description{
-Migrate all Files from One Project to Another
+Migrate All Files from One Project to Another
 }
