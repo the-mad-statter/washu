@@ -45,6 +45,19 @@ retrieve_credential_local <- function(project_id,
   )
 }
 
+#' Edit tokens and other credentials in a file
+#'
+#' @param path_credential The file path to the CSV containing the credentials.
+#' Required.
+#'
+#' @return Target path, invisibly.
+#' @export
+edit_credential_local <- function(path_credential = "~/.REDCapR") {
+  r_user <- gsub("\\\\", "/", normalizePath("~"))
+  path_credential <- sub("~", r_user, path_credential)
+  usethis::edit_file(path_credential)
+}
+
 #' @inherit REDCapR::redcap_read
 #' @export
 redcap_read <- function(project_id, path_credential = "~/.REDCapR", ...) {
@@ -1413,15 +1426,17 @@ redcap_create_project2 <-
 #' @return a pair of httr response objects: one for the export and one for the
 #' import
 #' @export
-redcap_migrate_file <- function(redcap_uri_src,
-                                redcap_uri_dst,
-                                token_src,
-                                token_dst,
-                                record,
-                                field,
-                                event,
-                                repeat_instance,
-                                return_format = c("xml", "csv", "json")) {
+redcap_migrate_file <- function(
+  redcap_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
+  redcap_uri_dst = "https://redcap.wustl.edu/redcap/api/",
+  token_src,
+  token_dst,
+  record,
+  field,
+  event,
+  repeat_instance,
+  return_format = c("xml", "csv", "json")
+) {
   redcap_export_file(
     redcap_uri = redcap_uri_src,
     token = token_src,
@@ -1474,8 +1489,8 @@ redcap_migrate_file <- function(redcap_uri_src,
 #'
 #' @export
 redcap_migrate_files <- function(
-  redcap_uri_src,
-  redcap_uri_dst,
+  redcap_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
+  redcap_uri_dst = "https://redcap.wustl.edu/redcap/api/",
   token_src,
   token_dst,
   return_format = c("xml", "csv", "json")
@@ -1559,7 +1574,7 @@ redcap_migrate_files <- function(
     ds = data_dictionary,
     redcap_uri = redcap_uri_dst,
     token = token_dst
-  )
+  ) -> r
 }
 
 #' Reset Completion Flags
@@ -1584,14 +1599,61 @@ redcap_migrate_files <- function(
 #' @param project_records (optional) If supplied should be the data object from
 #' a call to REDCapR::redcap_read(). If not supplied the function will call
 #' REDCapR::redcap_read().
-#'
-#' @export
 redcap_reset_completion_flags <- function(
-  redcap_uri,
+  redcap_uri = "https://redcap.wustl.edu/redcap/api/",
   token,
   data_dictionary,
   project_records
 ) {
+  warning(paste0(
+    "This function does not work as intended.\n",
+    "See function definition for more information."
+  ))
+
+  # the logic of this function works and the api accepts the write, but REDCap
+  # v10 reverts to red and not grey as intended
+  #
+  # the following test code can be used to see the effect on a single record
+  #
+  # tmp <- tempfile(fileext = ".csv")
+  # dplyr::tibble(
+  #   record = 3,
+  #   field_name = "instrument_1_complete",
+  #   value = "", # "": Incomplete; 0: Incomplete; 1: Unverified; 2: Complete
+  #   redcap_event_name = "event_1_arm_1",
+  #   redcap_repeat_instrument = "instrument_1",
+  #   redcap_repeat_instance = 1
+  # ) %>%
+  #   readr::write_csv(tmp)
+  #
+  # washu::redcap_import_records(
+  #   redcap_uri = "https://redcap.wustl.edu/redcap/api/",
+  #   token = "211F2459A749042B342EC8A4DB569F4E",
+  #   format = "csv",
+  #   type = "eav",
+  #   overwrite_behavior = "overwrite",
+  #   data = paste(readLines(tmp), collapse = "\n"),
+  #   return_content = "ids",
+  #   return_format = "xml"
+  # ) %>%
+  #   httr::content() %>%
+  #   as.character()
+
+  # and here is pseudo code that might work to do it in the backend
+  # -- in order to go grey - need to delete a record from this table:
+  # SELECT * FROM redcap_appd87m1.redcap_data where project_id='380';
+  # -- project_id, event_id, record, field_name, value, instance
+  # -- need everything except value to delete record
+  # -- everything needed will be known from r code except event_id
+  #
+  # -- Step 1: have project_id, record, field_name, instance and (not directly useful) event from r record download
+  # -- Step 2: look up distinct event_ids for project
+  # SELECT DISTINCT event_id FROM redcap_appd87m1.redcap_data WHERE project_id='380';
+  # -- Step 3: look up descriptors for each event_id to cross check with r record data to determine desired event_id
+  # SELECT event_id, descrip, custom_event_label FROM redcap_appd87m1.redcap_events_metadata WHERE event_id IN (1203, 1207, 1208);
+  # -- Step 4: delete *_complete record (instance maybe null in table)
+  # DELETE FROM redcap_appd87m1.redcap_data WHERE project_id='380' AND event_id='value_from_step_3' AND record='1' AND field_name='my_instrument_complete' AND instance='1';
+
   if(missing(data_dictionary) || is.null(data_dictionary)) {
     REDCapR::redcap_metadata_read(
       redcap_uri = redcap_uri,
@@ -1601,8 +1663,8 @@ redcap_reset_completion_flags <- function(
 
   if(missing(project_records) || is.null(project_records)) {
     REDCapR::redcap_read(
-      redcap_uri = redcap_uri_src,
-      token = input$token_src,
+      redcap_uri = redcap_uri,
+      token = token,
       export_survey_fields = TRUE,
       export_data_access_groups = TRUE
     )$data -> project_records
@@ -1614,9 +1676,7 @@ redcap_reset_completion_flags <- function(
       dplyr::filter(form_name == form) %>%
       dplyr::filter(field_type == "checkbox") %>%
       dplyr::mutate(
-        n_choices = stringr::str_count(
-          select_choices_or_calculations, "\\|"
-        )
+        n_choices = stringr::str_count(select_choices_or_calculations, "\\|")
       ) %>%
       dplyr::select(field_name, n_choices) %>%
       purrr::pmap(
@@ -1630,9 +1690,10 @@ redcap_reset_completion_flags <- function(
     data_dictionary %>%
       dplyr::filter(form_name == form) %>%
       dplyr::filter(
-        field_type != "checkbox" &
-          field_name != data_dictionary[[1, 1]] &
-          field_type != "descriptive") %>%
+        field_name != data_dictionary[[1, 1]],
+        field_type != "checkbox",
+        field_type != "descriptive"
+      ) %>%
       dplyr::pull(field_name) -> noncheckbox_field_names
 
     # count not missing for form for record-event-instance
@@ -1666,14 +1727,17 @@ redcap_reset_completion_flags <- function(
           )
         )
       ) -> d
-    d[paste0(form, "_complete")] <- ""
 
-    # write flags to REDCap
-    REDCapR::redcap_write(
-      ds_to_write = d,
-      redcap_uri = redcap_uri,
-      token = token
-    )
+    if(nrow(d) > 0) {
+      d[paste0(form, "_complete")] <- ""
+
+      # write flags to REDCap
+      REDCapR::redcap_write(
+        ds_to_write = d,
+        redcap_uri = redcap_uri,
+        token = token
+      ) -> r
+    }
   }
 }
 
@@ -1686,31 +1750,46 @@ redcap_reset_completion_flags <- function(
 #'
 #' @param redcap_uri_src The URI (uniform resource identifier) of the source
 #' REDCap project.
-#' @param redcap_dag_uri_src The base URI for the source DAG page
 #' @param redcap_uri_dst The URI (uniform resource identifier) of the
 #' destination REDCap project.
+#' @param token_src The API token specific to your source REDCap project and
+#' username (each token is unique to each user for each project). See the
+#' section on the left-hand menu for obtaining a token for a given project.
+#' @param token_spr The Super API Token specific to a user
+#' @param redcap_dag_uri_src The base URI for the source DAG page
 #' @param redcap_dag_uri_dst The base URI for the destination DAG page
 #'
 #' @export
 redcap_project_migration_app <- function(
   redcap_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
-  redcap_dag_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/redcap_v7.3.5/DataAccessGroups/index.php?pid=",
   redcap_uri_dst = "https://redcap.wustl.edu/redcap/api/",
+  token_src = "",
+  token_spr = "",
+  redcap_dag_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/redcap_v7.3.5/DataAccessGroups/index.php?pid=",
   redcap_dag_uri_dst = "https://redcap.wustl.edu/redcap/redcap_v10.6.28/index.php?route=DataAccessGroupsController:index&pid="
 ) {
   ui <- function() {
     shiny::fluidPage(
-      shiny::titlePanel("REDCap Migrate Project App"),
+      shiny::tags$head(
+        shiny::tags$script("
+          Shiny.addCustomMessageHandler('close-window', function(x) {
+            window.open('', '_self', '').close();
+          });
+        ")
+      ),
+      shiny::titlePanel("REDCap Project Migration App"),
 
       shiny::verticalLayout(
         shiny::passwordInput(
           "token_src",
           "Source Project Token",
+          token_src,
           width = "100%"
         ),
         shiny::passwordInput(
           "token_spr",
           "Destination Super Token",
+          token_spr,
           width = "100%"
         ),
         shiny::actionButton("migrate", "Migrate")
@@ -1719,6 +1798,10 @@ redcap_project_migration_app <- function(
   }
 
   server <- function(input, output, session) {
+    session$onSessionEnded(function() {
+      shiny::stopApp()
+    })
+
     rvs <- shiny::reactiveValues(
       token_dst = NULL # api token created during destination project creation
     )
@@ -1856,7 +1939,7 @@ redcap_project_migration_app <- function(
           dplyr::pull(field_name) -> field_names_files
 
         # compute a delta for updating the progress bar
-        progress_field_delta <- (0.80 - 0.60) / length(field_names_files)
+        progress_field_delta <- (0.90 - 0.60) / length(field_names_files)
 
         # for each file field find records requiring a file migration and do it
         for(j in 1:length(field_names_files)) {
@@ -1928,24 +2011,11 @@ redcap_project_migration_app <- function(
         }
 
         # add signature constraint back to original signature fields
-        shiny::setProgress(0.80, "Enabling signature constraints...")
+        shiny::setProgress(0.90, "Enabling signature constraints...")
         REDCapR::redcap_metadata_write(
           ds = data_dictionary,
           redcap_uri = redcap_uri_dst,
           token = rvs$token_dst
-        )
-
-        # upon any export, REDCap maps both "Incomplete (no data saved)" as well
-        # as "Incomplete" to "Incomplete" for the instrument completion flags.
-        # here we attempt to revert the "Incomplete (no data saved)" flags by
-        # examining if the record had any data entered, and if it didn't, we
-        # we assume the flag should be reverted to grey no data saved.
-        shiny::setProgress(0.90, "Resetting form completion flags...", "")
-        redcap_reset_completion_flags(
-          redcap_uri = redcap_uri_dst,
-          token = rvs$token_dst,
-          data_dictionary = data_dictionary,
-          project_records = project_records
         )
 
         shiny::setProgress(1.00, "Completing migration...", "")
@@ -1961,9 +2031,16 @@ redcap_project_migration_app <- function(
     })
 
     shiny::observeEvent(input$migration_complete, {
-      shiny::stopApp()
+      session$sendCustomMessage("close-window", "")
     })
   }
 
   shiny::runGadget(ui(), server, viewer = shiny::browserViewer())
+}
+
+redcap_project_migration_app_test <- function() {
+  redcap_project_migration_app(
+    token_src = washu::retrieve_credential_local(8432)$token,
+    token_spr = washu::retrieve_credential_local(0)$token
+  )
 }

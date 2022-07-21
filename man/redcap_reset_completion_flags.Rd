@@ -5,7 +5,7 @@
 \title{Reset Completion Flags}
 \usage{
 redcap_reset_completion_flags(
-  redcap_uri,
+  redcap_uri = "https://redcap.wustl.edu/redcap/api/",
   token,
   data_dictionary,
   project_records

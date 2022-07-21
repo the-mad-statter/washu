@@ -6,9 +6,11 @@
 \usage{
 redcap_project_migration_app(
   redcap_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
+  redcap_uri_dst = "https://redcap.wustl.edu/redcap/api/",
+  token_src = "",
+  token_spr = "",
   redcap_dag_uri_src =
     "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/redcap_v7.3.5/DataAccessGroups/index.php?pid=",
-  redcap_uri_dst = "https://redcap.wustl.edu/redcap/api/",
   redcap_dag_uri_dst =
     "https://redcap.wustl.edu/redcap/redcap_v10.6.28/index.php?route=DataAccessGroupsController:index&pid="
 )
@@ -17,10 +19,16 @@ redcap_project_migration_app(
 \item{redcap_uri_src}{The URI (uniform resource identifier) of the source
 REDCap project.}
 
-\item{redcap_dag_uri_src}{The base URI for the source DAG page}
-
 \item{redcap_uri_dst}{The URI (uniform resource identifier) of the
 destination REDCap project.}
+
+\item{token_src}{The API token specific to your source REDCap project and
+username (each token is unique to each user for each project). See the
+section on the left-hand menu for obtaining a token for a given project.}
+
+\item{token_spr}{The Super API Token specific to a user}
+
+\item{redcap_dag_uri_src}{The base URI for the source DAG page}
 
 \item{redcap_dag_uri_dst}{The base URI for the destination DAG page}
 }

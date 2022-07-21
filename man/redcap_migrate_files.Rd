@@ -5,8 +5,8 @@
 \title{Migrate All Files from One Project to Another}
 \usage{
 redcap_migrate_files(
-  redcap_uri_src,
-  redcap_uri_dst,
+  redcap_uri_src = "https://redcap.wustl.edu/redcap/srvrs/prod_v3_1_0_001/redcap/api/",
+  redcap_uri_dst = "https://redcap.wustl.edu/redcap/api/",
   token_src,
   token_dst,
   return_format = c("xml", "csv", "json")
