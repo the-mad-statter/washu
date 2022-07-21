@@ -1639,20 +1639,16 @@ redcap_reset_completion_flags <- function(
   #   httr::content() %>%
   #   as.character()
 
-  # and here is pseudo code that might work to do it in the backend
-  # -- in order to go grey - need to delete a record from this table:
-  # SELECT * FROM redcap_appd87m1.redcap_data where project_id='380';
-  # -- project_id, event_id, record, field_name, value, instance
-  # -- need everything except value to delete record
-  # -- everything needed will be known from r code except event_id
+  # and here are pseudo sql queries that might work to do it in the backend
+  # DELETE D
+  # FROM redcap_data D
+  # LEFT JOIN redcap_events_metadata E ON D.event_id=E.event_id
+  # WHERE D.project_id='13006' AND D.record='3' AND D.field_name='instrument_1_complete' AND E.descrip='Event 1' AND D.instance IS NULL
   #
-  # -- Step 1: have project_id, record, field_name, instance and (not directly useful) event from r record download
-  # -- Step 2: look up distinct event_ids for project
-  # SELECT DISTINCT event_id FROM redcap_appd87m1.redcap_data WHERE project_id='380';
-  # -- Step 3: look up descriptors for each event_id to cross check with r record data to determine desired event_id
-  # SELECT event_id, descrip, custom_event_label FROM redcap_appd87m1.redcap_events_metadata WHERE event_id IN (1203, 1207, 1208);
-  # -- Step 4: delete *_complete record (instance maybe null in table)
-  # DELETE FROM redcap_appd87m1.redcap_data WHERE project_id='380' AND event_id='value_from_step_3' AND record='1' AND field_name='my_instrument_complete' AND instance='1';
+  # DELETE D
+  # FROM redcap_data D
+  # LEFT JOIN redcap_events_metadata E ON D.event_id=E.event_id
+  # WHERE D.project_id='13006' AND D.record='3' AND D.field_name='instrument_1_complete' AND E.descrip='Event 1' AND D.instance='2'
 
   if(missing(data_dictionary) || is.null(data_dictionary)) {
     REDCapR::redcap_metadata_read(
@@ -1859,6 +1855,9 @@ redcap_project_migration_app <- function(
 
       # data access groups definitions cannot be exported from v7 via the api
       # here we help the user manually define them as much as possible
+      # if we allow database access here is sql query for use in conjunction
+      # with redcap_import_dags():
+      # SELECT * FROM redcap_data_access_groups WHERE project_id='6648'
       shinyalert::shinyalert(
         title = "DAGs?",
         text = paste0(
