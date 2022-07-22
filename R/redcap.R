@@ -95,31 +95,6 @@ redcap_array <- function(name, values) {
   return(a)
 }
 
-#' REDCap Logical
-#'
-#' @param name name to give logical
-#' @param value R logical to cast as REDCap API logical
-#'
-#' @return an R logical represented as a named list of lowercase character
-#'
-#' @examples
-#' \dontrun{
-#' a <- TRUE
-#' redcap_logical("a", a)
-#'
-#' b <- FALSE
-#' redcap_logical("b", b)
-#'
-#' c <- "not gonna work"
-#' redcap_logical("c", c)
-#' }
-redcap_logical <- function(name, value) {
-  checkmate::assert(checkmate::test_logical(value))
-  value <- as.list(tolower(as.character(value)))
-  names(value) <- name
-  return(value)
-}
-
 #' Parse Content Type
 #'
 #' @param content_type content-type header from REDCap to be parsed
@@ -177,7 +152,34 @@ write_project_xml <- function(r, file) {
     writeLines(con = file)
 }
 
+#' Optional Argument
+#'
+#' @description Utility function to set a default value if missing or null and
+#' to run a validation test.
+#'
+#' @param x value to process
+#' @param d default value
+#' @param v validation function
+#'
+#' @return either x or the default value after passing validation
+optional_argument <- function(x, d = NULL, v = checkmate::assert_character) {
+  if(missing(x) || is.null(x))
+    x <- d
+  if(!is.null(x))
+    do.call(v, list(x = x))
+  x
+}
+
+#' Check if argument is of type redcap_array
+#'
+#' @param x object to check
+assert_redcap_array <- function(x) {
+  checkmate::assert_class(x, "redcap_array")
+}
+
 # API ENDPOINTS ----------------------------------------------------------------
+
+## Arms ------------------------------------------------------------------------
 
 ## Data Access Groups ----------------------------------------------------------
 
@@ -287,6 +289,8 @@ redcap_import_dags <- function(
   httr::POST(redcap_uri, body = body, encode = "form")
 }
 
+## Events ----------------------------------------------------------------------
+
 ## Field Names -----------------------------------------------------------------
 
 #' Export List of Export Field Names
@@ -364,15 +368,9 @@ redcap_export_field_names <- function(
     "token" = token,
     "content" = "exportFieldNames",
     "format" = match.arg(format),
+    "field" = optional_argument(field),
     "returnFormat" = match.arg(return_format)
   )
-
-  if (missing(field) || is.null(field)) {
-    field <- NULL
-  } else {
-    checkmate::assert(checkmate::check_character(field))
-  }
-  body <- append(body, list("field" = field))
 
   httr::POST(redcap_uri, body = body, encode = "form")
 }
@@ -438,22 +436,11 @@ redcap_export_file <-
       "action" = "export",
       "record" = record,
       "field" = field,
+      "event" = optional_argument(event),
+      "repeat_instance" = optional_argument(repeat_instance,
+                                            v = checkmate::check_integer),
       "returnFormat" = match.arg(return_format)
     )
-
-    if (missing(event) || is.null(event)) {
-      event <- ""
-    } else {
-      checkmate::assert(checkmate::check_character(event))
-    }
-    body <- append(body, list("event" = event))
-
-    if (missing(repeat_instance) || is.null(repeat_instance)) {
-      repeat_instance <- NULL
-    } else {
-      checkmate::assert(checkmate::check_integer(repeat_instance))
-    }
-    body <- append(body, list("repeat_instance" = repeat_instance))
 
     # write to temp file because do not know name yet
     tmp <- tempfile()
@@ -471,10 +458,9 @@ redcap_export_file <-
     # rename temp file to desired
     file.rename(r$content[[1]], fpath)
 
+    # edit httr response object to reflect new download name
     content_type <- sub(basename(tmp), fname, r[["headers"]][["content-type"]])
     attr(fpath, "class") <- "path"
-
-    # edit httr response object to reflect new download name
     r[["headers"]][["content-type"]] <- content_type
     r[["all_headers"]][[1]][["headers"]][["content-type"]] <- content_type
     r[["content"]] <- fpath
@@ -539,26 +525,19 @@ redcap_import_file <-
       "action" = "import",
       "record" = record,
       "field" = field,
+      "event" = optional_argument(event),
+      "repeat_instance" = optional_argument(repeat_instance,
+                                            v = checkmate::check_integer),
       "file" = httr::upload_file(file),
       "returnFormat" = match.arg(return_format)
     )
 
-    if (missing(event) || is.null(event)) {
-      event <- ""
-    } else {
-      checkmate::assert(checkmate::check_character(event))
-    }
-    body <- append(body, list("event" = event))
-
-    if (missing(repeat_instance) || is.null(repeat_instance)) {
-      repeat_instance <- NULL
-    } else {
-      checkmate::assert(checkmate::check_integer(repeat_instance))
-    }
-    body <- append(body, list("repeat_instance" = repeat_instance))
-
     httr::POST(redcap_uri, body = body, encode = "multipart")
   }
+
+## Instruments -----------------------------------------------------------------
+
+## Metadata --------------------------------------------------------------------
 
 ## Projects --------------------------------------------------------------------
 
@@ -660,15 +639,9 @@ redcap_create_project <-
       "content" = "project",
       "format" = format,
       "data" = data,
-      "returnFormat" = match.arg(return_format)
+      "returnFormat" = match.arg(return_format),
+      "odm" = optional_argument(odm)
     )
-
-    if (missing(odm) || is.null(odm)) {
-      odm <- NULL
-    } else {
-      checkmate::assert(checkmate::check_character(odm))
-    }
-    body <- append(body, list("odm" = odm))
 
     httr::POST(redcap_uri, body = body, encode = "form")
   }
@@ -820,61 +793,19 @@ redcap_export_project_xml <-
     # - essentially this endpoint can only export metadata + data only in versions prior to v9
 
     body <- list(
-      token = token,
-      content = "project_xml",
-      format = "xml"
+      "token" = token,
+      "content" = "project_xml",
+      "format" = "xml", # not in api dox
+      "returnMetadataOnly" = tolower(return_metadata_only),
+      "records" = optional_argument(records, v = assert_redcap_array),
+      "fields" = optional_argument(fields, v = assert_redcap_array),
+      "events" = optional_argument(events, v = assert_redcap_array),
+      "returnFormat" = match.arg(return_format),
+      "exportSurveyFields" = tolower(export_survey_fields),
+      "exportDataAccessGroups" = tolower(export_data_access_groups),
+      "filterLogic" = optional_argument(filter_logic),
+      "exportFiles" = tolower(export_files)
     )
-
-    body <- append(
-      body,
-      redcap_logical("returnMetadataOnly", return_metadata_only)
-    )
-
-    if (missing(records)) {
-      records <- NULL
-    } else {
-      checkmate::assert(checkmate::check_class(records, "redcap_array"))
-    }
-    body <- append(body, records)
-
-    if (missing(fields)) {
-      fields <- NULL
-    } else {
-      checkmate::assert(checkmate::check_class(fields, "redcap_array"))
-    }
-    body <- append(body, fields)
-
-    if (missing(events)) {
-      events <- NULL
-    } else {
-      checkmate::assert(checkmate::check_class(events, "redcap_array"))
-    }
-    body <- append(body, events)
-
-    body <- append(
-      body,
-      list("returnFormat" = match.arg(return_format))
-    )
-
-    body <- append(body, redcap_logical(
-      "exportSurveyFields",
-      export_survey_fields
-    ))
-
-    body <- append(body, redcap_logical(
-      "exportDataAccessGroups",
-      export_data_access_groups
-    ))
-
-    if (!is.null(filter_logic)) {
-      filter_logic <- list("filterLogic" = filter_logic)
-    }
-    body <- append(body, filter_logic)
-
-    body <- append(body, redcap_logical(
-      "exportFiles",
-      export_files
-    ))
 
     httr::POST(redcap_uri, body = body, encode = "form")
   }
@@ -1015,63 +946,22 @@ redcap_export_records <- function(
     "content" = "record",
     "format" = match.arg(format),
     "type" = match.arg(type),
+    "records" = optional_argument(records, v = assert_redcap_array),
+    "fields" = optional_argument(fields, v = assert_redcap_array),
+    "forms" = optional_argument(forms, v = assert_redcap_array),
+    "events" = optional_argument(events, v = assert_redcap_array),
     "rawOrLabel" = match.arg(raw_or_label),
     "rawOrLabelHeaders" = match.arg(raw_or_label_headers),
     "exportCheckboxLabel" = export_checkbox_label,
     "returnFormat" = match.arg(return_format),
     "exportSurveyFields" = export_survey_fields,
     "exportDataAccessGroups" = export_data_access_groups,
+    "filterLogic" = optional_argument(filter_logic),
+    "dateRangeBegin" = optional_argument(date_range_begin),
+    "dateRangeEnd" = optional_argument(date_range_end),
     "csvDelimiter" = match.arg(csv_delimiter),
     "decimalCharacter" = match.arg(decimal_character)
   )
-
-  if (missing(records) || is.null(records))
-    records <- NULL
-  else
-    records <- redcap_array(records)
-  body <- append(body, list("records" = records))
-
-  if (missing(fields) || is.null(fields))
-    fields <- NULL
-  else
-    fields <- redcap_array(fields)
-  body <- append(body, list("fields" = fields))
-
-  if (missing(forms) || is.null(forms))
-    forms <- NULL
-  else {
-    forms <- redcap_array(gsub(" ", "_", forms))
-  }
-  body <- append(body, list("forms" = forms))
-
-  if (missing(events) || is.null(events))
-    events <- NULL
-  else
-    events <- redcap_array(events)
-  body <- append(body, list("events" = events))
-
-  if (missing(filter_logic) || is.null(filter_logic)) {
-    filter_logic <- NULL
-  } else {
-    checkmate::assert(checkmate::check_character(filter_logic))
-  }
-  body <- append(body, list("filterLogic" = filter_logic))
-
-  if (missing(date_range_begin) || is.null(date_range_begin)) {
-    date_range_begin <- NULL
-  } else {
-    checkmate::assert(checkmate::check_character(date_range_begin))
-
-  }
-  body <- append(body, list("dateRangeBegin" = date_range_begin))
-
-  if (missing(date_range_end) || is.null(date_range_end)) {
-    date_range_end <- NULL
-  } else {
-    checkmate::assert(checkmate::check_character(date_range_end))
-  }
-  body <- append(body, list("dateRangeEnd" = date_range_end))
-
 
   httr::POST(redcap_uri, body = body, encode = "form")
 }
@@ -1198,9 +1088,7 @@ redcap_import_records <-
       "format" = match.arg(format),
       "type" = match.arg(type),
       "overwriteBehavior" = match.arg(overwrite_behavior),
-      "forceAutoNumber" = unname(
-        redcap_logical("forceAutoNumber", force_auto_number)
-      ),
+      "forceAutoNumber" = tolower(force_auto_number),
       "data" = data,
       "dateFormat" = match.arg(date_format),
       "csvDelimiter" = match.arg(csv_delimiter),
@@ -1244,23 +1132,25 @@ redcap_delete_records <-
            records,
            arm) {
     body <- list(
-      token = token,
-      action = "delete",
-      content = "record"
+      "token" = token,
+      "content" = "record",
+      "action" = "delete",
+      "records" = optional_argument(records, v = assert_redcap_array),
+      "arm" = optional_argument(arm, v = checkmate::assert_integer)
     )
-
-    checkmate::assert(checkmate::check_class(records, "redcap_array"))
-    body <- append(body, records)
-
-    if (missing(arm)) {
-      arm <- NULL
-    } else {
-      checkmate::assert(checkmate::check_integer(arm))
-    }
-    body <- append(body, list(arm = arm))
 
     httr::POST(redcap_uri, body = body)
   }
+
+## Repeating Instruments and Events --------------------------------------------
+
+## Reports ---------------------------------------------------------------------
+
+## REDCap ----------------------------------------------------------------------
+
+## Surveys ---------------------------------------------------------------------
+
+## Users & User Privileges -----------------------------------------------------
 
 # COMPLEX FUNCTIONS ------------------------------------------------------------
 
@@ -1363,32 +1253,17 @@ redcap_create_project2 <-
 
     data <- list(
       "project_title" = project_title,
-      "purpose" = as.character(purpose)
-    )
-
-    if (purpose == 1) {
-      if (missing(purpose_other) || is.null(purpose_other)) {
-        purpose_other <- NULL
-      } else {
-        checkmate::assert(checkmate::check_character(purpose_other))
-      }
-      data <- append(data, list("purpose_other" = purpose_other))
-    }
-
-    if (missing(project_notes) || is.null(project_notes)) {
-      project_notes <- NULL
-    } else {
-      checkmate::assert(checkmate::check_character(project_notes))
-    }
-    body <- append(body, list("project_notes" = project_notes))
-
-    data <- append(data, list(
+      "purpose" = as.character(purpose),
+      "purpose_other" = ifelse(purpose == 1,
+                               checkmate::assert_character(purpose_other),
+                               NULL),
+      "project_notes" = optional_argument(project_notes),
       "is_longitudinal" = as.character(as.integer(is_longitudinal)),
       "surveys_enabled" = as.character(as.integer(surveys_enabled)),
       "record_autonumbering_enabled" = as.character(
         as.integer(record_autonumbering_enabled)
       )
-    ))
+    )
 
     redcap_create_project(
       redcap_uri = redcap_uri,
@@ -1465,8 +1340,8 @@ redcap_migrate_file <- function(
   message(sprintf("Uploading file: %s...", base_name))
 
   list(
-    "export" = r_export,
-    "import" = r_import
+    "export_response" = r_export,
+    "import_response" = r_import
   )
 }
 
