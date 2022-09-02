@@ -58,12 +58,23 @@ and https://ouhscbbmc.github.io/REDCapR/reference/retrieve_credential.html
 }
 }
 \note{
+\emph{Storing credentials on a server is preferred}
+
 Although we strongly encourage storing all the tokens on a central server
 (\emph{e.g.}, see the \code{retrieve_credential_mssql()} function and the
 "SecurityDatabase" vignette), there are times when this approach is not
 feasible and the token must be stored locally.  Please contact us
 if your institution is using something other than SQL Server, and
 would like help adapting this approach to your infrastructure.
+
+\emph{Stored credentials locally}
+
+When storing credentials locally, typically the credential file
+should be dedicated to just one user. Occasionally it makes sense to store
+tokens for multiple users --usually it's for the purpose of testing.
+
+The \code{username} field is connected only in the local credential file.
+It does not need to be the same as the official username in REDCap.
 }
 \examples{
 # ---- Local File Example ----------------------------
