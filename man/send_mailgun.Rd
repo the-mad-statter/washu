@@ -26,7 +26,7 @@ send_mailgun(
 
 \item{text}{text body of message}
 
-\item{domain_name}{Mailgun domain name (e.g., sandbox<sandbox>.mailgun.org)}
+\item{domain_name}{Mailgun domain name (e.g., sandbox\if{html}{\out{<sandbox>}}.mailgun.org)}
 
 \item{api_key}{Mailgun API password}
 

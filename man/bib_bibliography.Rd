@@ -7,10 +7,12 @@
 bib_bibliography(dirname = FALSE)
 }
 \arguments{
-\item{dirname}{flag to return the bibliography directory instead of the full relative path}
+\item{dirname}{flag to return the bibliography directory instead of the full
+relative path}
 }
 \value{
-full bibliography path specified in the RMarkdown YAML or parent directory
+full bibliography path specified in the RMarkdown YAML or parent
+directory
 }
 \description{
 Determine bibliography from RMarkdown YAML

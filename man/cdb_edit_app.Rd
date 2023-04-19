@@ -9,7 +9,8 @@ cdb_edit_app(k = cdb_current_consult(), new = FALSE)
 \arguments{
 \item{k}{consult id}
 
-\item{new}{logical; is this a new consult or should the consult data be read from \code{\link{cdb_file}}?}
+\item{new}{logical; is this a new consult or should the consult data be read
+from \code{\link{cdb_file}}?}
 }
 \description{
 Consult Database Edit App

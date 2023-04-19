@@ -4,10 +4,12 @@
 \alias{print.washu_table1}
 \title{Print washu_table1 objects}
 \usage{
-\method{print}{washu_table1}(x)
+\method{print}{washu_table1}(x, ...)
 }
 \arguments{
 \item{x}{an object of type washu_table1}
+
+\item{...}{additional arguments}
 }
 \value{
 the argument x, invisibly

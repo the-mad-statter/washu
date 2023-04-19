@@ -7,7 +7,8 @@
 estimate_items(data, service, hours, rate, .protect = TRUE)
 }
 \arguments{
-\item{data}{A data frame, data frame extention (e.g. a tibble), or a lazy data frame (e.g., from dbplyr or dtplyr).}
+\item{data}{A data frame, data frame extention (e.g. a tibble), or a lazy
+data frame (e.g., from dbplyr or dtplyr).}
 
 \item{service}{description of line item}
 

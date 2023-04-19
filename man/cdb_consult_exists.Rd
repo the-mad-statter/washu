@@ -10,7 +10,8 @@ cdb_consult_exists(k)
 \item{k}{consult id}
 }
 \value{
-logical indicating whether the given consult already exists in \code{\link{cdb_file}}
+logical indicating whether the given consult already exists in
+\code{\link{cdb_file}}
 }
 \description{
 Consult Database Check if Consult Exists

@@ -15,5 +15,6 @@ r2(model, ...)
 Compute the model's R2
 }
 \note{
-This is a wrapper around \code{\link[r2]{performance::r2()}} for a consistent class for printing
+This is a wrapper around \code{\link[performance]{r2}} for a
+consistent class for printing
 }

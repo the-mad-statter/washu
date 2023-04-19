@@ -149,7 +149,8 @@ match_arg <- function(x, default) {
 #' }
 #' @export
 #' @seealso \code{\link[httr]{POST}}, \code{\link[httr]{set_config}}
-#' @references \href{https://documentation.mailgun.com/en/latest/}{Mailgun API Documentation}
+#' @references
+#' [Mailgun API Documentation](https://documentation.mailgun.com/en/latest/)
 send_mailgun <- function(to = "robin@wustl.edu",
                          from = "Excited User",
                          subject = "Mailgun Test",
@@ -193,7 +194,8 @@ dir.open <- function(dir = getwd()) {
 #' @inheritParams devtools::check
 #' @param ... additional parameters passed to \code{\link[devtools]{check}}
 #' @note Adds environment flag to skip time check as per
-#' \href{https://stat.ethz.ch/pipermail/r-package-devel/2019q1/003577.html}{r-package-devel}.
+#' [r-package-devel](
+#' https://stat.ethz.ch/pipermail/r-package-devel/2019q1/003577.html).
 #' @export
 check <- function(document = FALSE,
                   env_vars = c("_R_CHECK_SYSTEM_CLOCK_" = FALSE),
@@ -207,6 +209,7 @@ check <- function(document = FALSE,
 nih_grant_numbers <- function() {
   path <- find_resource("global_resource", "img", "nih_grant_numbers.pdf")
   return_code <- system(paste0('open "', path, '"'))
+  invisible(return_code)
 }
 
 #' Recover Data Viewer Cache Objects
@@ -219,7 +222,7 @@ nih_grant_numbers <- function() {
 #' @export
 #'
 #' @references
-#' https://support.rstudio.com/hc/en-us/articles/200534577-Resetting-RStudio-Desktop-s-State
+#' [Resetting RStudio Desktop](https://support.rstudio.com/hc/en-us/articles/200534577-Resetting-RStudio-Desktop-s-State) # nolint
 recover_data_viewer_cache_objects <- function() {
   active_project <- rstudioapi::getActiveProject()
 
@@ -329,7 +332,9 @@ wu_emph <- function(x, color = wu_colors$red, bold = TRUE) {
 
 #' Create Names for Temporary HTML File
 #'
-#' @describeIn tempfile tempfile_html returns a vector of character strings which can be used as names for temporary html files.
+#' @param pattern a non-empty character vector giving the initial part of the
+#' name.
+#' @param tmpdir a non-empty character vector giving the directory name
 tempfile_html <- function(pattern = "file", tmpdir = tempdir()) {
   tempfile(pattern, tmpdir, ".html")
 }
@@ -369,7 +374,7 @@ write_web_link_file <- function(con, url, title = "", ...) {
 #' as_csv_string(mtcars)
 as_csv_string <- function(x) {
   f <- tempfile("as_csv_string_", fileext = ".csv")
-  write.csv(x, f, row.names = FALSE)
+  utils::write.csv(x, f, row.names = FALSE)
   paste(readLines(f), collapse = "\n")
 }
 
@@ -392,4 +397,42 @@ append_timestamp <- function(x, format = "%y%m%d%H%M%S", delim = "_") {
     dplyr::if_else(tools::file_ext(x) == "", "", "."),
     tools::file_ext(x)
   )
+}
+
+#' Windows attrib command
+#'
+#' @param x file for which to set attributes
+#' @param a set archive flag
+#' @param h set hide flag
+#' @param s set system flag
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' win_attrib("hide me.lnk")
+#' }
+win_attrib <- function(x, a = TRUE, h = TRUE, s = TRUE) {
+  a <- ifelse(a, "+a", "-a")
+  h <- ifelse(h, "+h", "-h")
+  s <- ifelse(s, "+s", "-s")
+  system2("attrib", c(a, h, s, shQuote(x)))
+}
+
+#' Add significance flag
+#'
+#' @param data data frame containing a column of p-values
+#' @param p_val_col name of the p-value column
+#'
+#' @return a data frame with an additional character column named p_flag
+#' @export
+add_significance_flag <- function(data, p_val_col) {
+  data %>%
+    dplyr::mutate(p_flag = dplyr::case_when(
+      {{ p_val_col }} < .001 ~ "***",
+      {{ p_val_col }} < .010 ~ "**",
+      {{ p_val_col }} < .050 ~ "*",
+      {{ p_val_col }} < .100 ~ ".",
+      TRUE ~ ""
+    ))
 }

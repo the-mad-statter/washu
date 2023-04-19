@@ -31,5 +31,6 @@ mtcars \%>\%
 
 }
 \references{
-Cohen, J. (1988). Statistical power analysis for the behavioral sciences. Routledge.
+Cohen, J. (1988). Statistical power analysis for the behavioral sciences.
+Routledge.
 }

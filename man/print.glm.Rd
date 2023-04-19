@@ -7,7 +7,8 @@
 \method{print}{glm}(x, format = c("default", "text"), sig.level = 0.05, ...)
 }
 \arguments{
-\item{x}{an object of class "glm", a result of a call to \code{\link[glm]{stats::glm()}}}
+\item{x}{an object of class "glm", a result of a call to
+\code{\link[stats]{glm}}}
 
 \item{format}{format of the output}
 

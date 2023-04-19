@@ -15,7 +15,8 @@
 )
 }
 \arguments{
-\item{x}{an object of class "dtype", a result of a call to \code{\link[deviance.test]{washu::deviance.test()}}}
+\item{x}{an object of class "dtype", a result of a call to
+\code{\link{deviance_test}}}
 
 \item{format}{format of the output}
 

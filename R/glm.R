@@ -3,26 +3,28 @@
 #' @inheritParams stats::glm
 #' @export
 lr <- function(formula, data, ...) {
-  glm(formula, binomial, data, ...)
+  stats::glm(formula, stats::binomial, data, ...)
 }
 
 #' Deviance Test
 #' @details Perform a deviance test comparing the given model to the null model.
-#' @param x an object of class "glm", usually, a result of a call to \code{\link[glm]{stats::glm()}}
+#' @param x an object of class "glm", usually, a result of a call to
+#' \code{\link[stats]{glm}}
 #' @return object of class "dtest"
 #' @export
 deviance_test <- function(x) {
   robj <- dplyr::tibble(
-    df = x$df.null - x$df.residual,
-    chisq = x$null.deviance - x$deviance,
-    p.value = 1 - pchisq(chisq, df)
+    df      = x$df.null - x$df.residual,
+    chisq   = x$null.deviance - x$deviance,
+    p.value = 1 - stats::pchisq(.data[["chisq"]], .data[["df"]])
   )
   attr(robj, "class") <- append(attr(robj, "class"), "dtest", 0)
   return(robj)
 }
 
 #' Print Objects of Type dtest
-#' @param x an object of class "dtype", a result of a call to \code{\link[deviance.test]{washu::deviance.test()}}
+#' @param x an object of class "dtype", a result of a call to
+#' \code{\link{deviance_test}}
 #' @param format format of the output
 #' @param digits if format is text, default decimal digits to print
 #' @param digits.df if format is text, df decimal digits to print
@@ -58,7 +60,8 @@ print.dtest <- function(x,
 }
 
 #' Print Objects of Type HLtest
-#' @param x an object of class "HLtest", a result of a call to \code{\link[HosmerLemeshow]{vcdExtra::HosmerLemeshow()}}
+#' @param x an object of class "HLtest", a result of a call to
+#' \code{\link[vcdExtra]{HosmerLemeshow}}
 #' @param format format of the output
 #' @param digits if format is text, default decimal digits to print
 #' @param digits.df if format is text, df decimal digits to print
@@ -76,10 +79,17 @@ print.HLtest <- function(x,
   format <- match.arg(format)
   switch(format,
     "default" = {
-      vcdExtra:::print.HLtest(x, ...)
+      NextMethod("HLtest", x, ...) # vcdExtra
     },
     "tibble" = {
-      tibble:::print.tbl_df(dplyr::tibble(df = x$df, chisq = x$chisq, p.value = x$p.value), ...)
+      print(
+        dplyr::tibble(
+          df = x$df,
+          chisq = x$chisq,
+          p.value = x$p.value
+        ),
+        ...
+      )
     },
     "text" = {
       print(
@@ -97,7 +107,8 @@ print.HLtest <- function(x,
 
 #' Compute the model's R2
 #' @inheritParams performance::r2
-#' @note This is a wrapper around \code{\link[r2]{performance::r2()}} for a consistent class for printing
+#' @note This is a wrapper around \code{\link[performance]{r2}} for a
+#' consistent class for printing
 #' @export
 r2 <- function(model, ...) {
   r_obj <- performance::r2(model, ...)
@@ -106,7 +117,8 @@ r2 <- function(model, ...) {
 }
 
 #' Print Objects of Type r_sqr
-#' @param x an object of class "r_sqr", a result of a call to \code{\link[r2]{washu::r2()}}
+#' @param x an object of class "r_sqr", a result of a call to
+#' \code{\link{r2}}
 #' @param format format of the output
 #' @param digits.r2 if format is text, default decimal digits to print
 #' @param ... additional parameters passed to other functions
@@ -139,7 +151,8 @@ print.r_sqr <- function(x,
 }
 
 #' Print Objects of Type glm
-#' @param x an object of class "glm", a result of a call to \code{\link[glm]{stats::glm()}}
+#' @param x an object of class "glm", a result of a call to
+#' \code{\link[stats]{glm}}
 #' @param format format of the output
 #' @param sig.level significance level
 #' @param ... additional parameters passed to other functions
@@ -151,7 +164,7 @@ print.glm <- function(x,
   format <- match.arg(format)
   switch(format,
     "default" = {
-      stats:::print.glm(x, ...)
+      NextMethod("print", x, ...)
     },
     "text" = {
       if (x$family$family == "binomial") {
@@ -165,7 +178,10 @@ print.glm <- function(x,
         hl_str <- print(hl_obj, "text", ...)
         sink()
         sprintf(
-          "The model %s significantly better than the null model, %s, %s, and a Hosmer-Lemeshow test suggested %s fit, %s.",
+          paste0(
+            "The model %s significantly better than the null model, %s, %s, ",
+            "and a Hosmer-Lemeshow test suggested %s fit, %s."
+          ),
           ifelse(dt_obj$p.value < sig.level, "was", "was not"),
           r2_str,
           dt_str,
@@ -173,7 +189,10 @@ print.glm <- function(x,
           hl_str
         )
       } else {
-        sprintf("Do not yet know how to report models of family %s.", x$family$family)
+        sprintf(
+          "Do not yet know how to report models of family %s.",
+          x$family$family
+        )
       }
     }
   )

@@ -7,6 +7,7 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' WebPower::wp.rmanova(
 #'   n = 40,
 #'   ng = 2,
@@ -30,6 +31,7 @@
 #' ) -> y
 #'
 #' WebPower_bind_webpower(x, y)
+#' }
 WebPower_bind_webpower <- function(x, y) {
   for (n in names(x)) {
     if (washu::`%notin%`(n, c("note", "method", "url"))) {

@@ -18,8 +18,8 @@ addin_cdb_search_app <- function() {
   cdb_search_app()
 }
 
-addin_cdb_open_current_consult_directory <- function() {
-  cdb_open_current_consult_directory()
+addin_cdb_open_consult_dir <- function() {
+  cdb_open_consult_dir()
 }
 
 addin_insert_sas_code_chunk <- function() {

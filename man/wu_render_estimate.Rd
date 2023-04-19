@@ -29,7 +29,8 @@ wu_render_estimate(
 
 \item{from_name, from_title, from_campus_box, from_email}{sender attributes}
 
-\item{data}{path to estimate data object containing service, hours, and rate columns}
+\item{data}{path to estimate data object containing service, hours, and rate
+columns}
 
 \item{input}{The input file to be rendered. This can be an R script (.R),
 an R Markdown document (.Rmd), or a plain markdown document.}

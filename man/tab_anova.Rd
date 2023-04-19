@@ -19,13 +19,17 @@ tab_anova(
 
 \item{title}{character, will be used as table caption.}
 
-\item{pred.labels}{character vector with labels of predictor varaibles}
+\item{pred.labels}{character vector with labels of predictor variables}
 
-\item{full_width}{logical controlling whether the html table should have 100\% width}
+\item{full_width}{logical controlling whether the html table should have
+100 percent width}
 
 \item{digits}{amount of decimals for numbers}
 
-\item{scientific}{logical specifying whether to encode numbers in scientific format}
+\item{scientific}{logical specifying whether to encode numbers in scientific}
+
+\item{...}{additional arguments passed to other methods
+format}
 }
 \value{
 a character vector of the table source code
@@ -39,5 +43,9 @@ tab_anova(m)
 
 }
 \seealso{
-\link[sjPlot]{tab_model}, \link[stats]{anova}, \link[base]{format}, \link[kableExtra]{kbl}, \link[kableExtra]{kable_classic}
+\link[sjPlot]{tab_model},
+\link[stats]{anova},
+\link[base]{format},
+\link[kableExtra]{kbl},
+\link[kableExtra]{kable_classic}
 }

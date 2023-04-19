@@ -4,14 +4,20 @@
 #' @param version flag to check for version number
 valid_project_name <- function(project_name, version = FALSE) {
   if (version) {
-    matches_pattern <- grepl("^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])\\-\\d+\\-v\\d+$", project_name)
+    matches_pattern <- grepl(
+      "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])\\-\\d+\\-v\\d+$",
+      project_name
+    )
   } else {
-    matches_pattern <- grepl("^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])\\-\\d+$", project_name)
+    matches_pattern <- grepl(
+      "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])\\-\\d+$",
+      project_name
+    )
   }
   date_portion <- substr(project_name, 1, 10)
   parsable_date <- tryCatch(
     expr = {
-      tmp <- as.Date(date_portion)
+      as.Date(date_portion)
       TRUE
     },
     error = function(e) {
@@ -39,7 +45,10 @@ wu_consult_project <- function(path, ...) {
     data = cdb_consult_exists(project_name)
   )
   if (all(unname(project_exists))) {
-    stop(sprintf("Consult %s already exists in both the filebase and database.", project_name))
+    stop(sprintf(
+      "Consult %s already exists in both the filebase and database.",
+      project_name
+    ))
   }
   if (project_exists[["file"]]) {
     stop(sprintf("Consult %s already exists in the filebase.", project_name))
@@ -58,25 +67,39 @@ wu_consult_project <- function(path, ...) {
 
   # retrieve pi information to place in rmd
   tbl_pi <- cdb_get_principal_investigator(project_name)
-  principal_investigator <- paste(tbl_pi$personalTitle, tbl_pi$givenName, tbl_pi$sn)
+  principal_investigator <- paste(
+    tbl_pi$personalTitle, tbl_pi$givenName,
+    tbl_pi$sn
+  )
 
   # copy template files and then delete the .tmp placeholders
   dir.create(path, recursive = TRUE, showWarnings = FALSE)
-  from <- system.file(file.path("rmarkdown", "templates", "consult_report", "skeleton"), package = "washu")
+  from <- system.file(file.path(
+    "rmarkdown", "templates", "consult_report",
+    "skeleton"
+  ), package = "washu")
   files <- list.files(from, full.names = TRUE)
   file.copy(files, path, recursive = TRUE)
-  file.remove(list.files(path, "^.tmp$", all.files = TRUE, full.names = TRUE, recursive = TRUE))
+  file.remove(list.files(path, "^.tmp$",
+    all.files = TRUE, full.names = TRUE,
+    recursive = TRUE
+  ))
 
   # edit the rmd
   rmd_name <- file.path(path, paste0(project_name, "-v1.Rmd"))
   file.rename(file.path(path, "skeleton.Rmd"), rmd_name)
   rmd_file <- file(rmd_name)
-  rmd_body <- sub("Dr. Winnie Pooh", principal_investigator, readLines(rmd_file), fixed = TRUE)
-  rmd_body <- sub('"`r Sys.Date()`"', substr(project_name, 1, 10), rmd_body, fixed = TRUE)
+  rmd_body <- sub("Dr. Winnie Pooh", principal_investigator,
+    readLines(rmd_file),
+    fixed = TRUE
+  )
+  rmd_body <- sub('"`r Sys.Date()`"', substr(project_name, 1, 10), rmd_body,
+    fixed = TRUE
+  )
   writeLines(rmd_body, rmd_file)
   close(rmd_file)
 
   # open stuff
   dir.open(path)
-  file.edit(rmd_name)
+  utils::file.edit(rmd_name)
 }

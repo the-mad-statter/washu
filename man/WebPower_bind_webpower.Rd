@@ -18,6 +18,7 @@ a combined WebPower object
 WebPower Bind WebPower Objects
 }
 \examples{
+\dontrun{
 WebPower::wp.rmanova(
   n = 40,
   ng = 2,
@@ -41,4 +42,5 @@ WebPower::wp.rmanova(
 ) -> y
 
 WebPower_bind_webpower(x, y)
+}
 }

@@ -15,7 +15,8 @@ hr.test(beta1, se1, beta2, se2, r = 0, n = 10000)
 
 \item{se2}{standard error of beta estimate for the second hazard ratio}
 
-\item{r}{correlation between the first and second risk scores (i.e., predictors)}
+\item{r}{correlation between the first and second risk scores (i.e.,
+predictors)}
 
 \item{n}{number of samples from which the hazard ratios were estimated}
 }
@@ -25,12 +26,19 @@ A list with class "htest" containing the following components:
 statistic \tab the value of the t-statistic. \cr
 parameter \tab the degrees of freedom for the t-statistic. \cr
 p.value \tab the p-value for the test. \cr
-conf.int \tab a confidence interval for the mean appropriate to the specified alternative hypothesis. \cr
-estimate \tab the estimated mean or difference in means depending on whether it was a one-sample test or a two-sample test. \cr
-null.value \tab the specified hypothesized value of the mean or mean difference depending on whether it was a one-sample test or a two-sample test. \cr
-stderr \tab the standard error of the mean (difference), used as denominator in the t-statistic formula. \cr
-alternative \tab a character string describing the alternative hypothesis. \cr
-method \tab a character string indicating what type of t-test was performed. \cr
+conf.int \tab a confidence interval for the mean appropriate to the
+specified alternative hypothesis. \cr
+estimate \tab the estimated mean or difference in means depending on
+whether it was a one-sample test or a two-sample test. \cr
+null.value \tab the specified hypothesized value of the mean or mean
+difference depending on whether it was a one-sample test or a two-sample
+test. \cr
+stderr \tab the standard error of the mean (difference), used as
+denominator in the t-statistic formula. \cr
+alternative \tab a character string describing the alternative
+hypothesis. \cr
+method \tab a character string indicating what type of t-test was
+performed. \cr
 data.name \tab a character string giving the name(s) of the data.
 }
 }
@@ -41,6 +49,7 @@ Hazard ratio test
 Currently only performs a directional test
 }
 \examples{
+\dontrun{
 set.seed(12345)
 age <- as.numeric(rnorm(100, 50, 10) >= 50)
 size <- as.numeric(rexp(100, 1) > 1)
@@ -58,6 +67,7 @@ hr.test(
   cor(age, size),
   100
 )
+}
 }
 \seealso{
 \code{\link[survcomp]{hr.comp2}}

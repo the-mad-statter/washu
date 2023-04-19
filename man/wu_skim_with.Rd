@@ -12,7 +12,8 @@ wu_skim_with(
 )
 }
 \arguments{
-\item{fct_n_levels}{number of factor levels to print sorted in descending frequency}
+\item{fct_n_levels}{number of factor levels to print sorted in descending
+frequency}
 
 \item{fct_percents}{flag to print percents per level}
 
@@ -24,7 +25,8 @@ wu_skim_with(
 A new skim() function. This is callable.
 }
 \description{
-Build a custom skim function that adds percents to factor summaries
+Build a custom skim function that adds percents to factor
+summaries
 }
 \note{
 NAs are ignored when computing percents.

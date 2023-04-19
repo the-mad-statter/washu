@@ -20,15 +20,19 @@ sjPlot_tab_model(
 )
 }
 \arguments{
-\item{...}{arguments passed on to \link[sjPlot]{tab_model}; notably one or more regression models to summarize}
+\item{...}{arguments passed on to \link[sjPlot]{tab_model}; notably one or
+more regression models to summarize}
 
-\item{show.omnibus.f}{Logical, if TRUE, the omnibus F-test is computed and printed}
+\item{show.omnibus.f}{Logical, if TRUE, the omnibus F-test is computed and
+printed}
 
 \item{show.auc}{Logical, if TRUE, the AUC is calculated and printed}
 
-\item{show.hosmer_lemeshow}{Logical, if TRUE, a Hosmer-Lemeshow goodness of fit test is calculated and printed}
+\item{show.hosmer_lemeshow}{Logical, if TRUE, a Hosmer-Lemeshow goodness of
+fit test is calculated and printed}
 
-\item{show.deviance_test}{Logical, if TRUE, a deviance-test comparing to the null model is calculated and printed}
+\item{show.deviance_test}{Logical, if TRUE, a deviance-test comparing to
+the null model is calculated and printed}
 
 \item{footnote}{optional footnote for table}
 
@@ -46,7 +50,8 @@ opened either in the IDE's viewer pane or the default web browser.}
 viewer pane. If \code{FALSE} or no viewer available, the HTML table is
 opened in a web browser.}
 
-\item{print}{Logical, if TRUE in non-interactive mode, the html table code is inserted into the document}
+\item{print}{Logical, if TRUE in non-interactive mode, the html table code
+is inserted into the document}
 }
 \value{
 Invisibly returns
@@ -110,5 +115,6 @@ The HTML tables can either be saved as file and manually opened (use argument \c
         \href{https://strengejacke.github.io/sjPlot/articles/tab_bayes.html}{Summary of Bayesian Models as HTML Table}.
 }
 \references{
-Hosmer, David W.; Lemeshow, Stanley (2013). Applied Logistic Regression. New York: Wiley.
+Hosmer, David W.; Lemeshow, Stanley (2013). Applied Logistic Regression.
+New York: Wiley.
 }

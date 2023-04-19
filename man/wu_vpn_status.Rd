@@ -10,5 +10,6 @@ wu_vpn_status(vpn_cli = Sys.getenv("WU_VPN_CLI_PATH"))
 \item{vpn_cli}{path to Cisco AnyConnect VPNCLI.exe}
 }
 \description{
-Check the status of the WUSTL VPN connection using the Cisco AnyConnect VPN CLI client.
+Check the status of the WUSTL VPN connection using the Cisco AnyConnect VPN
+CLI client.
 }

@@ -24,48 +24,63 @@ knitr::opts_chunk$set(
 sysfonts::font_add(
   family = params$font,
   regular = system.file(
-    paste0("fonts/", params$font, "-Regular.", params$font_ext), 
-    package = params$package),
+    paste0("fonts/", params$font, "-Regular.", params$font_ext),
+    package = params$package
+  ),
   bold = system.file(
-    paste0("fonts/", params$font, "-Bold.", params$font_ext), 
-    package = params$package),
+    paste0("fonts/", params$font, "-Bold.", params$font_ext),
+    package = params$package
+  ),
   italic = system.file(
-    paste0("fonts/", params$font, "-Italic.", params$font_ext), 
-    package = params$package),
+    paste0("fonts/", params$font, "-Italic.", params$font_ext),
+    package = params$package
+  ),
   bolditalic = system.file(
-    paste0("fonts/", params$font, "-BoldItalic.", params$font_ext), 
-    package = params$package))
+    paste0("fonts/", params$font, "-BoldItalic.", params$font_ext),
+    package = params$package
+  )
+)
 
 showtext::showtext_auto()
 
 library(hexSticker)
-sticker(subplot = paste0("man/figures/", params$package, "_logo.png"),
-        s_x = 1,
-        s_y = 1.1,
-        s_width = 0.5,
-        s_height = 0.5,
-        package  = params$package,
-        p_x = 1,
-        p_y = 0.5,
-        p_color = params$color,
-        p_family = params$font,
-        p_size = 18,
-        h_fill = "#ffffff",
-        h_color = params$color,
-        url = paste("github.com", params$github, params$package, sep = "/"),
-        u_color = "black",
-        u_family = params$font,
-        u_size = 3.5,
-        u_x = 1.005,
-        u_y = 0.1,
-        filename = paste0("man/figures/", params$package, "_hex.png"))
+sticker(
+  subplot = paste0("man/figures/", params$package, "_logo.png"),
+  s_x = 1,
+  s_y = 1.1,
+  s_width = 0.5,
+  s_height = 0.5,
+  package = params$package,
+  p_x = 1,
+  p_y = 0.5,
+  p_color = params$color,
+  p_family = params$font,
+  p_size = 18,
+  h_fill = "#ffffff",
+  h_color = params$color,
+  url = paste("github.com", params$github, params$package, sep = "/"),
+  u_color = "#000000",
+  u_family = params$font,
+  u_size = 3.5,
+  u_x = 1.005,
+  u_y = 0.1,
+  filename = paste0("man/figures/", params$package, "_hex.png")
+)
 ```
 
 # `r params$package` <img src="man/figures/`r params$package`_hex.png" align="right" width="125px" />
 
 <!-- badges: start -->
-[![Under Development](https://img.shields.io/badge/status-under%20development-red.svg)](https://github.com/`r params$github`/`r params$package`)
-[![Last Commit](https://img.shields.io/github/last-commit/`r params$github`/`r params$package`.svg)](https://github.com/`r params$github`/`r params$package`/commits/master)
+`r badger::badge_repostatus("WIP")`
+`r badger::badge_lifecycle("experimental")`
+`r badger::badge_github_version(color = "yellow")`
+`r badger::badge_last_commit(branch = "main")`
+`r badger::badge_license()`
+<br />
+`r badger::badge_github_actions(action = "Style")`
+`r badger::badge_github_actions(action = "lint")`
+`r badger::badge_github_actions(action = "test-coverage")`
+`r badger::badge_github_actions(action = "R-CMD-check")`
 <!-- badges: end -->
 
 ## Overview
@@ -79,8 +94,22 @@ The goal of ``r params$package`` is to provide helpful functions for WashU stati
 You can install ``r params$package`` from [GitHub](https://github.com/`r params$github`/`r params$package`) with:
 
 ```r
-remotes::install_github("`r params$github`/`r params$package`")
+pak::pkg_install("`r params$github`/`r params$package`")
 ```
+
+<br />
+
+## Code of Conduct
+
+Please note that the `r params$package` project is released with a [Contributor Code of Conduct](https://contributor-covenant.org/version/2/0/CODE_OF_CONDUCT.html). By contributing to this project, you agree to abide by its terms.
+
+<br />
+
+## Code Style
+
+This package attempts to follow the [tidyverse style guide](https://style.tidyverse.org/index.html).
+
+The use of [{styler}](https://github.com/r-lib/styler) and [{lintr}](https://github.com/r-lib/lintr) are recommended.
 
 <br />
 

@@ -15,8 +15,10 @@ ldap_content(response, delim = "\\n\\n\\t")
 character vector representation of content
 }
 \description{
-Coerces ldap curl response content to character vector by splitting on "\\n\\n\\t"
+Coerces ldap curl response content to character vector by splitting on
+"\\n\\n\\t"
 }
 \seealso{
-\code{\link{rm_raw_nul}}, \code{\link[base:rawConversion]{rawToChar}}, \code{\link[curl]{curl_fetch}}
+\code{\link{rm_raw_nul}},
+\code{\link[base:rawConversion]{rawToChar}}, \code{\link[curl]{curl_fetch}}
 }

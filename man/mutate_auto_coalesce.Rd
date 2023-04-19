@@ -9,10 +9,12 @@ mutate_auto_coalesce(data, suffix = c(".x", ".y"))
 \arguments{
 \item{data}{the data resulting from a join operation}
 
-\item{suffix}{the suffixes used to disambiguate non-joined duplicate variables during the join}
+\item{suffix}{the suffixes used to disambiguate non-joined duplicate
+variables during the join}
 }
 \value{
-a dataframe with duplicate variables coalesced and the original variants dropped
+a dataframe with duplicate variables coalesced and the original
+variants dropped
 }
 \description{
 When joining data, there are often column conflicts. Coalescing is the most

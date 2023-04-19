@@ -29,5 +29,6 @@ mtcars \%>\%
 
 }
 \references{
-Hedges, L. V. & Olkin, I. (1985). Statistical methods for meta-analysis. Academic Press.
+Hedges, L. V. & Olkin, I. (1985). Statistical methods for meta-analysis.
+Academic Press.
 }

@@ -10,7 +10,8 @@ cdb_get_principal_investigator(k)
 \item{k}{consult id}
 }
 \value{
-tibble read from \code{\link{cdb_file}} representing the principal investigator for the given consult
+tibble read from \code{\link{cdb_file}} representing the principal
+investigator for the given consult
 }
 \description{
 Consult Database Get Principal Investigator

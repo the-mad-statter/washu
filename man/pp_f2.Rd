@@ -39,7 +39,8 @@ object of class "ggplot"
 Power plot for Cohen's f2
 }
 \note{
-The effect variable is converted to factor in the given order and labels applied respectively.
+The effect variable is converted to factor in the given order and
+labels applied respectively.
 }
 \examples{
 ## Exercise 9.1 P. 424 from Cohen (1988)
@@ -55,7 +56,8 @@ dplyr::tibble(
   )
 }
 \references{
-Cohen, J. (1988). Statistical power analysis for the behavioral sciences (2nd ed.). Hillsdale,NJ: Lawrence Erlbaum.
+Cohen, J. (1988). Statistical power analysis for the behavioral
+sciences (2nd ed.). Hillsdale,NJ: Lawrence Erlbaum.
 }
 \seealso{
 \code{\link[ggplot2]{ggplot}}, \code{\link[pwr]{pwr.f2.test}}

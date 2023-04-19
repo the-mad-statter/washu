@@ -36,7 +36,8 @@ wu_vpn_disconnect <- function(vpn_cli = Sys.getenv("WU_VPN_CLI_PATH")) {
 
 #' WU VPN Status
 #'
-#' Check the status of the WUSTL VPN connection using the Cisco AnyConnect VPN CLI client.
+#' Check the status of the WUSTL VPN connection using the Cisco AnyConnect VPN
+#' CLI client.
 #'
 #' @inheritParams wu_vpn_connect
 #'

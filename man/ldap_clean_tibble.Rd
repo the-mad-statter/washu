@@ -16,9 +16,12 @@ cleaned tibble
 Normalize LDAP tibble data by re-storing data in tab-delimited variables
 }
 \details{
-Some LDAP queries tested so far (i.e., sAMAccountName, mail, userPrincipalName) have objectClass
-data stored in the DN variable, and memberOf data is stored as "\\n\\tmemberOf: "-delimited variable strings.
-This function extracts and stores this data in tab-delimited variable strings.
+Some LDAP queries tested so far (i.e., sAMAccountName, mail,
+userPrincipalName) have objectClass
+data stored in the DN variable, and memberOf data is stored as
+"\\n\\tmemberOf: "-delimited variable strings.
+This function extracts and stores this data in tab-delimited variable
+strings.
 }
 \seealso{
 \code{\link{ldap_as_tibble}}

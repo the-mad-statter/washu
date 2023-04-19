@@ -7,7 +7,8 @@
 deviance_test(x)
 }
 \arguments{
-\item{x}{an object of class "glm", usually, a result of a call to \code{\link[glm]{stats::glm()}}}
+\item{x}{an object of class "glm", usually, a result of a call to
+\code{\link[stats]{glm}}}
 }
 \value{
 object of class "dtest"

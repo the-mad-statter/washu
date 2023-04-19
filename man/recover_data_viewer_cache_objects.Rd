@@ -18,5 +18,5 @@ viewed with utils::View(), RStudio will cache the object, meaning the object
 can be recovered.
 }
 \references{
-https://support.rstudio.com/hc/en-us/articles/200534577-Resetting-RStudio-Desktop-s-State
+\href{https://support.rstudio.com/hc/en-us/articles/200534577-Resetting-RStudio-Desktop-s-State}{Resetting RStudio Desktop} # nolint
 }

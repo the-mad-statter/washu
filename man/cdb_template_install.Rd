@@ -7,7 +7,8 @@
 cdb_template_install(overwrite = FALSE)
 }
 \arguments{
-\item{overwrite}{logical; should existing \code{\link{cdb_file}} be overwritten?}
+\item{overwrite}{logical; should existing \code{\link{cdb_file}} be
+overwritten?}
 }
 \value{
 logical indicating if the copy succeeded

@@ -17,18 +17,29 @@ wu_ldap_query_default(
 \arguments{
 \item{hostname}{name (or ip address) of the LDAP server}
 
-\item{base_dn}{distinguished name (DN) of an entry in the directory. This DN identifies the entry that is the starting point of the search. If no base DN is specified, the search starts at the root of the directory tree.}
+\item{base_dn}{distinguished name (DN) of an entry in the directory. This DN
+identifies the entry that is the starting point of the search. If no base DN
+is specified, the search starts at the root of the directory tree.}
 
-\item{attributes}{The attributes to be returned. To specify more than one attribute, use commas to separate the attributes (for example, "cn,mail,telephoneNumber"). If no attributes are specified in the URL, all attributes are returned.}
+\item{attributes}{The attributes to be returned. To specify more than one
+attribute, use commas to separate the attributes
+(for example, "cn,mail,telephoneNumber"). If no attributes are specified in
+the URL, all attributes are returned.}
 
 \item{scope}{The scope of the search, which can be one of these values:
 \itemize{
-  \item{base}{retrieves information about the distinguished name (base_dn) specified in the URL only.}
-  \item{one}{retrieves information about entries one level below the distinguished name (base_dn) specified in the URL. The base entry is not included in this scope.}
-  \item{sub}{retrieves information about entries at all levels below the distinguished name (base_dn) specified in the URL. The base entry is included in this scope.}
+\item{base}{retrieves information about the distinguished name (base_dn)
+specified in the URL only.}
+\item{one}{retrieves information about entries one level below the
+distinguished name (base_dn) specified in the URL. The base entry is not
+included in this scope.}
+\item{sub}{retrieves information about entries at all levels below the
+distinguished name (base_dn) specified in the URL. The base entry is
+included in this scope.}
 }}
 
-\item{filter}{Search filter to apply to entries within the specified scope of the search.}
+\item{filter}{Search filter to apply to entries within the specified scope
+of the search.}
 
 \item{user}{WUSTL Key username}
 

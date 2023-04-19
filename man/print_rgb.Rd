@@ -7,7 +7,8 @@
 print_rgb(col)
 }
 \arguments{
-\item{col}{vector of any of the three kinds of R color specifications (i.e., name, hex, or integer)}
+\item{col}{vector of any of the three kinds of R color specifications (i.e.,
+name, hex, or integer)}
 }
 \value{
 character string representation of the rgb color
@@ -16,5 +17,7 @@ character string representation of the rgb color
 Print a color as an RGB string
 }
 \examples{
-washu:::print_rgb(wu_colors$red)
+\dontrun{
+print_rgb(wu_colors$red)
+}
 }

@@ -35,5 +35,7 @@ mtcars \%>\%
 
 }
 \references{
-Hedges, L. V. (1981). Distribution theory for Glass' estimator of effect size and related estimators. Journal of Educational Statistics, 6(2), 107-128. https://doi.org/10.3102/10769986006002107
+Hedges, L. V. (1981). Distribution theory for Glass' estimator of effect
+size and related estimators. Journal of Educational Statistics, 6(2),
+107-128. https://doi.org/10.3102/10769986006002107
 }

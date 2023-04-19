@@ -19,7 +19,7 @@ table1 <- function(x,
                      package = "table1"
                    ),
                    ...) {
-  table1::table1(x, data, ...) -> table_1
+  table_1 <- table1::table1(x, data, ...)
 
   html_lines <- c(
     "<html>",
@@ -42,11 +42,12 @@ table1 <- function(x,
 #' Print washu_table1 objects
 #'
 #' @param x an object of type washu_table1
+#' @param ... additional arguments
 #'
 #' @return the argument x, invisibly
 #'
 #' @export
-print.washu_table1 <- function(x) {
+print.washu_table1 <- function(x, ...) {
   tf <- tempfile(fileext = ".html")
   cat(x, file = tf)
   rstudioapi::viewer(tf)

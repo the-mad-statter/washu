@@ -2,7 +2,8 @@
 #'
 #' Extract a field from a WashU directory search
 #'
-#' @param v character vector intermixing keys and values for a single result from a directory search
+#' @param v character vector intermixing keys and values for a single result
+#' from a directory search
 #' @param k key to search for
 #'
 #' @return desired value or NA
@@ -19,9 +20,9 @@ extract_directory_field <- function(v, k) {
 #'
 #' @return data frame representing a single result from a directory search
 parse_directory_entry <- function(e) {
-  e %>%
+  v <- e %>%
     rvest::html_nodes("span") %>%
-    rvest::html_text() -> v
+    rvest::html_text()
 
   tibble::tibble(
     name       = extract_directory_field(v, "Name:"),
@@ -53,7 +54,8 @@ parse_directory_entry <- function(e) {
 #' @examples
 #' wu_directory("schuelke")
 wu_directory <- function(search_name = "", email = "", phone = "") {
-  httr::POST("https://wustl.edu/wp-content/themes/wustl_edu/directoryWrapper.php",
+  httr::POST(
+    "https://wustl.edu/wp-content/themes/wustl_edu/directoryWrapper.php",
     body = list(
       search_name = search_name,
       email = email,
@@ -80,17 +82,23 @@ icts_directory <- function(query) {
       orderby = "washu_ppi_last",
       page = 1,
       search = query,
-      `_fields` = "id,title,meta,featured_image,type,featured_media,people_type,link",
+      `_fields` =
+        "id,title,meta,featured_image,type,featured_media,people_type,link",
       washu_people_type = 9,
       `_locale` = "user"
     )
   ) %>%
     httr::content() %>%
     purrr::map_dfr(~ dplyr::bind_cols(
-      dplyr::as_tibble(.x[-which(names(.x) %in% c("title", "meta", "people_type"))]),
+      dplyr::as_tibble(.x[-which(names(.x) %in% c(
+        "title", "meta",
+        "people_type"
+      ))]),
       dplyr::tibble(title = .x$title$rendered),
       dplyr::as_tibble(.x$meta[-which(names(.x$meta) == "washu_ppi_map")]),
       dplyr::tibble(people_type = paste(.x$people_type, collapse = ",")),
-      dplyr::tibble(washu_ppi_map = paste(.x$meta$washu_ppi_map, collapse = ","))
+      dplyr::tibble(washu_ppi_map = paste(.x$meta$washu_ppi_map,
+        collapse = ","
+      ))
     ))
 }

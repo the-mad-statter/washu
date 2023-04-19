@@ -7,7 +7,8 @@
 cdb_sheet_upsert(x, sheetName = c("consult", "personnel", "consult_personnel"))
 }
 \arguments{
-\item{x}{data frame or data frame extension representing rows to insert or update}
+\item{x}{data frame or data frame extension representing rows to insert or
+update}
 
 \item{sheetName}{a character string with the sheet name}
 }
@@ -15,5 +16,6 @@ cdb_sheet_upsert(x, sheetName = c("consult", "personnel", "consult_personnel"))
 Consult Database Upsert
 }
 \details{
-inserts or updates the database sheet depending on whether or not the key value in x already exists in the sheet
+inserts or updates the database sheet depending on whether or not
+the key value in x already exists in the sheet
 }

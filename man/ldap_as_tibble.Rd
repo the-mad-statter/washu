@@ -13,7 +13,8 @@ ldap_as_tibble(ldap_content)
 tibble representing the content
 }
 \description{
-Coerces a character vector of LDAP content containing key-value, colon-delimited pairs into a wide format tibble
+Coerces a character vector of LDAP content containing key-value,
+colon-delimited pairs into a wide format tibble
 }
 \seealso{
 \code{\link{ldap_content}}

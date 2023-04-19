@@ -28,12 +28,14 @@ wu_colors <- list(
 #'
 #' Pad RGB values with leading 0's
 #'
-#' @param x integer vector with elements of [0, 255]
+#' @param x integer vector of length 3 with integers between 0 and 255 inclusive
 #'
 #' @return character vector with three characters per element
 #'
 #' @examples
-#' washu:::rgb_value_pad(c(0, 10, 100))
+#' \dontrun{
+#' rgb_value_pad(c(0, 10, 100))
+#' }
 rgb_value_pad <- function(x) {
   vapply(x, function(y) {
     y <- as.character(y)
@@ -45,12 +47,15 @@ rgb_value_pad <- function(x) {
 #'
 #' Print a color as an RGB string
 #'
-#' @param col vector of any of the three kinds of R color specifications (i.e., name, hex, or integer)
+#' @param col vector of any of the three kinds of R color specifications (i.e.,
+#' name, hex, or integer)
 #'
 #' @return character string representation of the rgb color
 #'
 #' @examples
-#' washu:::print_rgb(wu_colors$red)
+#' \dontrun{
+#' print_rgb(wu_colors$red)
+#' }
 print_rgb <- function(col) {
   rgb <- as.vector(grDevices::col2rgb(col))
   paste0("rgb(", paste(rgb_value_pad(rgb), collapse = ", "), ")")
@@ -70,9 +75,9 @@ wu_colors_plot <- function() {
   .data <- data.frame(
     x1 = rep(1, length(wu_colors)),
     x2 = rep(2, length(wu_colors)),
-    y1 = length(wu_colors):1,
+    y1 = rev(seq_along(wu_colors)),
     y2 = (length(wu_colors) + 1):2,
-    fil = letters[1:length(wu_colors)],
+    fil = letters[seq_along(wu_colors)],
     col = names(wu_colors),
     hex = unlist(wu_colors, use.names = FALSE),
     rgb = sapply(wu_colors, print_rgb, USE.NAMES = FALSE)

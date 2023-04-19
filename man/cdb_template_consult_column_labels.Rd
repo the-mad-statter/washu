@@ -7,7 +7,8 @@
 cdb_template_consult_column_labels()
 }
 \value{
-character vector representing column labels for \code{\link{cdb_template_consult}}
+character vector representing column labels for
+\code{\link{cdb_template_consult}}
 }
 \description{
 Consult Database New Consult Data Frame Column Labels

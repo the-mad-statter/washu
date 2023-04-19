@@ -24,11 +24,31 @@ wu_new_letter_of_support(
 )
 }
 \arguments{
-\item{from_name, from_title, from_department_type, from_department_name, from_department_url, from_campus_box, from_phone, from_email}{attributes of sender}
+\item{from_name}{sender name}
 
-\item{to_name, to_address}{attributes of recipient}
+\item{from_title}{sender title}
 
-\item{date, salutation, closing}{letter customization}
+\item{from_department_type}{sender department type}
+
+\item{from_department_name}{sender department name}
+
+\item{from_department_url}{sender department url}
+
+\item{from_campus_box}{sender campus box}
+
+\item{from_phone}{sender phone}
+
+\item{from_email}{sender email}
+
+\item{to_name}{recipient name}
+
+\item{to_address}{recipient address}
+
+\item{date}{letter date}
+
+\item{salutation}{letter greeting}
+
+\item{closing}{letter closing}
 
 \item{body}{body of letter}
 

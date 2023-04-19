@@ -22,13 +22,17 @@ xlsx_write.xlsx(
 
 \item{sheetName}{a character string with the sheet name.}
 
-\item{col.names}{a logical value indicating if the column names of x are to be written along with x to the file.}
+\item{col.names}{a logical value indicating if the column names of x are to
+be written along with x to the file.}
 
-\item{row.names}{a logical value indicating whether the row names of x are to be written along with x to the file.}
+\item{row.names}{a logical value indicating whether the row names of x are
+to be written along with x to the file.}
 
-\item{append}{a logical value indicating if x should be appended to an existing file. If TRUE the file is read from disk.}
+\item{append}{a logical value indicating if x should be appended to an
+existing file. If TRUE the file is read from disk.}
 
-\item{showNA}{a logical value. If set to FALSE, NA values will be left as empty cells.}
+\item{showNA}{a logical value. If set to FALSE, NA values will be left as
+empty cells.}
 
 \item{forceAppend}{overwrite the sheet if it exists}
 }
@@ -38,10 +42,11 @@ Write a data.frame to an Excel workbook
 \note{
 This is a forked version of xlsx::write.xlsx() that avoids the error issued
 by attempting to write an empty data frame. If the data frame has zero rows,
-xlsx:::.write_block() is skipped and the file is saved with just the column names.
+xlsx:::.write_block() is skipped and the file is saved with just the column
+names.
 The fork also includes a new argument forceAppend which allows to overwrite
 the sheet if it already exists.
 }
 \references{
-<https://stackoverflow.com/questions/46490452/handling-empty-data-frame-with-write-xlsx>.
+\href{https://stackoverflow.com/questions/46490452/handling-empty-data-frame-with-write-xlsx}{Handling empty data frame with write.xlsx} # nolint
 }

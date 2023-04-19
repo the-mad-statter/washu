@@ -10,7 +10,8 @@ contr.backward_difference(fct)
 \item{fct}{factor variable to apply contrast to}
 }
 \value{
-matrix with n rows and n-1 columns where n is the number of factor levels
+matrix with n rows and n-1 columns where n is the number of factor
+levels
 }
 \description{
 Return a backward difference contrast matrix
@@ -19,8 +20,8 @@ Return a backward difference contrast matrix
 contrasts(iris$Species) <- contr.backward_difference(iris$Species)
 }
 \references{
-https://stats.idre.ucla.edu/r/library/r-library-contrast-coding-systems-for-categorical-variables/#backward
+\href{https://stats.oarc.ucla.edu/r/library/r-library-contrast-coding-systems-for-categorical-variables/#backward}{Backward difference coding} # nolint
 }
 \seealso{
-\link[stats]{contrast}
+\link[stats]{contrasts}
 }

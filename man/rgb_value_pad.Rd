@@ -7,7 +7,7 @@
 rgb_value_pad(x)
 }
 \arguments{
-\item{x}{integer vector with elements of [0, 255]}
+\item{x}{integer vector of length 3 with integers between 0 and 255 inclusive}
 }
 \value{
 character vector with three characters per element
@@ -16,5 +16,7 @@ character vector with three characters per element
 Pad RGB values with leading 0's
 }
 \examples{
-washu:::rgb_value_pad(c(0, 10, 100))
+\dontrun{
+rgb_value_pad(c(0, 10, 100))
+}
 }

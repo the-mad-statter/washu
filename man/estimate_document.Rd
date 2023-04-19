@@ -13,9 +13,11 @@ estimate_document(
 )
 }
 \arguments{
-\item{template}{Pandoc template to use for rendering. Passed value ignored in favor of default.}
+\item{template}{Pandoc template to use for rendering. Passed value ignored
+in favor of default.}
 
-\item{latex_engine}{LaTeX engine for producing PDF output. Passed value ignored in favor of default.}
+\item{latex_engine}{LaTeX engine for producing PDF output. Passed value
+ignored in favor of default.}
 
 \item{includes}{Named list of additional content to include within the
 document (typically created using the \code{\link[rmarkdown]{includes}} function).}

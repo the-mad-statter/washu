@@ -1,26 +1,30 @@
 #' Remove raw nul
 #'
-#' Removes nul values from curl response content to allow conversion to a character representation
+#' Removes nul values from curl response content to allow conversion to a
+#' character representation
 #'
 #' @param data content element from a curl response
 #'
 #' @return raw content with the nul values deleted
 #'
-#' @seealso \code{\link{ldap_content}}, \code{\link[base:rawConversion]{rawToChar}}, \code{\link[curl]{curl_fetch}}
+#' @seealso \code{\link{ldap_content}},
+#' \code{\link[base:rawConversion]{rawToChar}}, \code{\link[curl]{curl_fetch}}
 rm_raw_nul <- function(data) {
   data[!data == "00"]
 }
 
 #' LDAP content
 #'
-#' Coerces ldap curl response content to character vector by splitting on "\\n\\n\\t"
+#' Coerces ldap curl response content to character vector by splitting on
+#' "\\n\\n\\t"
 #'
 #' @param response curl response object
 #' @param delim delimiter
 #'
 #' @return character vector representation of content
 #'
-#' @seealso \code{\link{rm_raw_nul}}, \code{\link[base:rawConversion]{rawToChar}}, \code{\link[curl]{curl_fetch}}
+#' @seealso \code{\link{rm_raw_nul}},
+#' \code{\link[base:rawConversion]{rawToChar}}, \code{\link[curl]{curl_fetch}}
 ldap_content <- function(response, delim = "\n\n\t") {
   response %>%
     `[[`("content") %>%
@@ -32,7 +36,8 @@ ldap_content <- function(response, delim = "\n\n\t") {
 
 #' Coerce LDAP content to data frame
 #'
-#' Coerces a character vector of LDAP content containing key-value, colon-delimited pairs into a wide format tibble
+#' Coerces a character vector of LDAP content containing key-value,
+#' colon-delimited pairs into a wide format tibble
 #'
 #' @param ldap_content content to be coerced
 #'
@@ -42,7 +47,9 @@ ldap_content <- function(response, delim = "\n\n\t") {
 ldap_as_tibble <- function(ldap_content) {
   ldap_content %>%
     tibble::as_tibble_col(column_name = "key_value_pairs") %>%
-    tidyr::separate(.data$key_value_pairs, c("key", "value"), ": ", extra = "merge") %>%
+    tidyr::separate(.data$key_value_pairs, c("key", "value"), ": ",
+      extra = "merge"
+    ) %>%
     tidyr::pivot_wider(names_from = .data$key)
 }
 
@@ -54,16 +61,19 @@ ldap_as_tibble <- function(ldap_content) {
 #'
 #' @return cleaned tibble
 #'
-#' @details Some LDAP queries tested so far (i.e., sAMAccountName, mail, userPrincipalName) have objectClass
-#' data stored in the DN variable, and memberOf data is stored as "\\n\\tmemberOf: "-delimited variable strings.
-#' This function extracts and stores this data in tab-delimited variable strings.
+#' @details Some LDAP queries tested so far (i.e., sAMAccountName, mail,
+#' userPrincipalName) have objectClass
+#' data stored in the DN variable, and memberOf data is stored as
+#' "\\n\\tmemberOf: "-delimited variable strings.
+#' This function extracts and stores this data in tab-delimited variable
+#' strings.
 #'
 #' @seealso \code{\link{ldap_as_tibble}}
 ldap_clean_tibble <- function(ldap_tibble) {
   column_names <- names(ldap_tibble)
 
   if ("DN" %in% column_names) {
-    ldap_tibble %>%
+    ldap_tibble <- ldap_tibble %>%
       dplyr::mutate(
         objectClass = stringr::str_extract(
           .data$DN,
@@ -74,33 +84,25 @@ ldap_clean_tibble <- function(ldap_tibble) {
           stringr::regex("\n\tobjectClass: ", dotall = TRUE),
           "\t"
         ),
-        DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$", dotall = TRUE))
-      ) -> ldap_tibble
+        DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$",
+          dotall = TRUE
+        ))
+      )
   }
 
   if ("memberOf" %in% column_names) {
-    ldap_tibble %>%
+    ldap_tibble <- ldap_tibble %>%
       dplyr::mutate(
         memberOf = stringr::str_replace_all(
           .data$memberOf,
           stringr::regex("\n\tmemberOf: ", dotall = TRUE), "\t"
         )
-      ) -> ldap_tibble
+      )
   }
 
   ldap_tibble$value <- NULL
 
   return(ldap_tibble)
-
-  # dplyr::mutate(
-  #  objectClass = stringr::str_extract(.data$DN,
-  #                                     stringr::regex("(?<=objectClass: ).+$", dotall = TRUE)),
-  #  objectClass = stringr::str_replace_all(.data$objectClass,
-  #                                         stringr::regex("\n\tobjectClass: ", dotall = TRUE),
-  #                                         "\t"),
-  #  DN = stringr::str_remove(.data$DN, stringr::regex("\n\t.*$", dotall = TRUE)),
-  #  memberOf = stringr::str_replace_all(.data$memberOf,
-  #                                      stringr::regex("\n\tmemberOf: ", dotall = TRUE), "\t"))
 }
 
 #' Generic LDAP query
@@ -108,15 +110,26 @@ ldap_clean_tibble <- function(ldap_tibble) {
 #' Perform generic LDAP queries
 #'
 #' @param hostname name (or ip address) of the LDAP server
-#' @param base_dn distinguished name (DN) of an entry in the directory. This DN identifies the entry that is the starting point of the search. If no base DN is specified, the search starts at the root of the directory tree.
-#' @param attributes The attributes to be returned. To specify more than one attribute, use commas to separate the attributes (for example, "cn,mail,telephoneNumber"). If no attributes are specified in the URL, all attributes are returned.
+#' @param base_dn distinguished name (DN) of an entry in the directory. This
+#' DN identifies the entry that is the starting point of the search. If no base
+#' DN is specified, the search starts at the root of the directory tree.
+#' @param attributes The attributes to be returned. To specify more than one
+#' attribute, use commas to separate the attributes (for example,
+#' "cn,mail,telephoneNumber"). If no attributes are specified in the URL,
+#' all attributes are returned.
 #' @param scope The scope of the search, which can be one of these values:
 #'   \itemize{
-#'     \item{base}{retrieves information about the distinguished name (base_dn) specified in the URL only.}
-#'     \item{one}{retrieves information about entries one level below the distinguished name (base_dn) specified in the URL. The base entry is not included in this scope.}
-#'     \item{sub}{retrieves information about entries at all levels below the distinguished name (base_dn) specified in the URL. The base entry is included in this scope.}
+#'     \item{base}{retrieves information about the distinguished name (base_dn)
+#'     specified in the URL only.}
+#'     \item{one}{retrieves information about entries one level below the
+#'     distinguished name (base_dn) specified in the URL. The base entry is not
+#'     included in this scope.}
+#'     \item{sub}{retrieves information about entries at all levels below the
+#'     distinguished name (base_dn) specified in the URL. The base entry is
+#'     included in this scope.}
 #'   }
-#' @param filter Search filter to apply to entries within the specified scope of the search.
+#' @param filter Search filter to apply to entries within the specified scope of
+#'  the search.
 #' @param user username
 #' @param pass password
 #' @param protocol connection protocol to use
@@ -169,7 +182,7 @@ ldap_query <- function(hostname,
   )
 
   h <- curl::new_handle()
-  if (!missing(user) & !missing(pass)) {
+  if (!missing(user) && !missing(pass)) {
     h <- curl::handle_setopt(h, userpwd = sprintf("%s:%s", user, pass))
   }
 
@@ -181,38 +194,50 @@ ldap_query <- function(hostname,
 #' Default values for WU LDAP queries
 #'
 #' @param hostname name (or ip address) of the LDAP server
-#' @param base_dn distinguished name (DN) of an entry in the directory. This DN identifies the entry that is the starting point of the search. If no base DN is specified, the search starts at the root of the directory tree.
-#' @param attributes The attributes to be returned. To specify more than one attribute, use commas to separate the attributes (for example, "cn,mail,telephoneNumber"). If no attributes are specified in the URL, all attributes are returned.
+#' @param base_dn distinguished name (DN) of an entry in the directory. This DN
+#' identifies the entry that is the starting point of the search. If no base DN
+#' is specified, the search starts at the root of the directory tree.
+#' @param attributes The attributes to be returned. To specify more than one
+#' attribute, use commas to separate the attributes
+#' (for example, "cn,mail,telephoneNumber"). If no attributes are specified in
+#' the URL, all attributes are returned.
 #' @param scope The scope of the search, which can be one of these values:
 #'   \itemize{
-#'     \item{base}{retrieves information about the distinguished name (base_dn) specified in the URL only.}
-#'     \item{one}{retrieves information about entries one level below the distinguished name (base_dn) specified in the URL. The base entry is not included in this scope.}
-#'     \item{sub}{retrieves information about entries at all levels below the distinguished name (base_dn) specified in the URL. The base entry is included in this scope.}
+#'     \item{base}{retrieves information about the distinguished name (base_dn)
+#'     specified in the URL only.}
+#'     \item{one}{retrieves information about entries one level below the
+#'     distinguished name (base_dn) specified in the URL. The base entry is not
+#'     included in this scope.}
+#'     \item{sub}{retrieves information about entries at all levels below the
+#'     distinguished name (base_dn) specified in the URL. The base entry is
+#'     included in this scope.}
 #'   }
-#' @param filter Search filter to apply to entries within the specified scope of the search.
+#' @param filter Search filter to apply to entries within the specified scope
+#' of the search.
 #' @param user WUSTL Key username
 #' @param pass WUSTL Key pass
 #'
 #' @return curl response object
 #'
 #' @seealso \code{\link{ldap_query}}
-wu_ldap_query_default <- function(hostname = "accounts.ad.wustl.edu",
-                                  base_dn = "OU=Current,OU=People,DC=accounts,DC=ad,DC=wustl,DC=edu",
-                                  attributes = "",
-                                  scope = "sub",
-                                  filter = "(objectClass=*)",
-                                  user = sprintf("%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
-                                  pass = Sys.getenv("WUSTL_KEY_PASS")) {
-  ldap_query(hostname,
-    base_dn,
-    attributes,
-    scope,
-    filter,
-    user,
-    pass,
-    protocol = "ldap"
-  )
-}
+wu_ldap_query_default <-
+  function(hostname = "accounts.ad.wustl.edu",
+           base_dn = "OU=Current,OU=People,DC=accounts,DC=ad,DC=wustl,DC=edu",
+           attributes = "",
+           scope = "sub",
+           filter = "(objectClass=*)",
+           user = sprintf("%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
+           pass = Sys.getenv("WUSTL_KEY_PASS")) {
+    ldap_query(hostname,
+      base_dn,
+      attributes,
+      scope,
+      filter,
+      user,
+      pass,
+      protocol = "ldap"
+    )
+  }
 
 #' WU LDAP query for sAMAccountName
 #'
@@ -282,13 +307,15 @@ wu_ldap_query_userPrincipalName <- function(userPrincipalName, user, pass) {
 #' @param value value to match
 #' @param user searcher username
 #' @param pass searcher password
-#' @param ... arguments to override defaults of \code{\link{wu_ldap_query_default}}
+#' @param ... arguments to override defaults of
+#' \code{\link{wu_ldap_query_default}}
 #'
 #' @return tibble of all attributes for given attribute-value pair
 #'
 #' @export
 #'
-#' @details type = "custom" allows for custom searches, but requires post-processing.
+#' @details type = "custom" allows for custom searches, but requires
+#' post-processing.
 #'
 #' @examples
 #' \dontrun{
@@ -306,21 +333,22 @@ wu_ldap_query_userPrincipalName <- function(userPrincipalName, user, pass) {
 #'   ldap_content("\n\n") %>%
 #'   gsub("^.+\n\tmail: ", "", .)
 #' }
-wu_ldap_query <- function(type = c(
-                            "sAMAccountName",
-                            "userPrincipalName",
-                            "mail",
-                            "custom"
-                          ),
-                          value,
-                          user = sprintf("%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
-                          pass = Sys.getenv("WUSTL_KEY_PASS"),
-                          ...) {
-  type <- match.arg(type)
-  switch(type,
-    "sAMAccountName"    = wu_ldap_query_sAMAccountName(value, user, pass),
-    "userPrincipalName" = wu_ldap_query_userPrincipalName(value, user, pass),
-    "mail"              = wu_ldap_query_mail(value, user, pass),
-    "custom"            = wu_ldap_query_default(user = user, pass = pass, ...)
-  )
-}
+wu_ldap_query <-
+  function(type = c(
+             "sAMAccountName",
+             "userPrincipalName",
+             "mail",
+             "custom"
+           ),
+           value,
+           user = sprintf("%s@wustl.edu", Sys.getenv("WUSTL_KEY_USER")),
+           pass = Sys.getenv("WUSTL_KEY_PASS"),
+           ...) {
+    type <- match.arg(type)
+    switch(type,
+      "sAMAccountName"    = wu_ldap_query_sAMAccountName(value, user, pass),
+      "userPrincipalName" = wu_ldap_query_userPrincipalName(value, user, pass),
+      "mail"              = wu_ldap_query_mail(value, user, pass),
+      "custom"            = wu_ldap_query_default(user = user, pass = pass, ...)
+    )
+  }

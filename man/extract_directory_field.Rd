@@ -7,7 +7,8 @@
 extract_directory_field(v, k)
 }
 \arguments{
-\item{v}{character vector intermixing keys and values for a single result from a directory search}
+\item{v}{character vector intermixing keys and values for a single result
+from a directory search}
 
 \item{k}{key to search for}
 }

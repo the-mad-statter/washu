@@ -144,8 +144,10 @@ zt_add_pkg <- function(package,
 
   r_pkg_citation <- citation(package)
 
-  zt_get(path = "items/new", query = list(itemType = "book"), ...) %>%
-    httr::content() -> zt_template
+  zt_template <- zt_get(
+    path = "items/new", query = list(itemType = "book"), ...
+  ) %>%
+    httr::content()
 
   r_pkg_citation_author_given <- r_pkg_citation$author$given
   r_pkg_citation_author_family <- r_pkg_citation$author$family

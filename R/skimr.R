@@ -1,8 +1,10 @@
 #' Set or add the summary functions for a particular type of data
 #'
-#' @description Build a custom skim function that adds percents to factor summaries
+#' @description Build a custom skim function that adds percents to factor
+#' summaries
 #'
-#' @param fct_n_levels number of factor levels to print sorted in descending frequency
+#' @param fct_n_levels number of factor levels to print sorted in descending
+#' frequency
 #' @param fct_percents flag to print percents per level
 #' @param fct_digits number of significant digits to print for factor summaries
 #' @param fct_delimiter delimiter to use between factor levels
@@ -15,7 +17,8 @@
 #' @examples
 #' wu_skim <- wu_skim_with()
 #' wu_skim(factor(mtcars$cyl))
-wu_skim_with <- function(fct_n_levels = NULL, fct_percents = TRUE, fct_digits = 1, fct_delimiter = c(", ", "<br>")) {
+wu_skim_with <- function(fct_n_levels = NULL, fct_percents = TRUE,
+                         fct_digits = 1, fct_delimiter = c(", ", "<br>")) {
   fct_delimiter <- match.arg(fct_delimiter)
 
   skimr::skim_with(
@@ -33,7 +36,7 @@ wu_skim_with <- function(fct_n_levels = NULL, fct_percents = TRUE, fct_digits = 
         }
 
         if (!is.null(fct_n_levels)) {
-          pairs <- pairs[1:min(fct_n_levels, length(conts))]
+          pairs <- pairs[seq_len(min(fct_n_levels, length(conts)))]
           if (fct_n_levels < length(conts)) {
             pairs <- c(pairs, "...")
           }

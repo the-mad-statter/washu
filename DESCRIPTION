@@ -1,7 +1,7 @@
 Package: washu
 Type: Package
 Title: Helpful Functions for WashU Statistical Consultations
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person(given = "Matthew",
            family = "Schuelke",
@@ -14,34 +14,52 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/the-mad-statter/washu
 BugReports: https://github.com/the-mad-statter/washu/issues
-RoxygenNote: 7.2.1
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Depends:
+    dplyr
 Imports: 
+    assertthat,
     base64enc,
-    clipr,
+    blob,
     curl,
-    dplyr,
-    ggplot2,
-    glue,
-    httr,
-    knitr,
-    pwr,
-    rlang,
-    rmarkdown,
-    rstudioapi,
-    rvest,
-    stats,
-    stringr,
-    tibble,
-    tidyr,
-    xlsx,
-    xml2,
-    purrr,
     DT,
+    ggplot2,
+    glmnet,
+    glue,
     htmltools,
+    httr,
+    janitor,
+    kableExtra,
+    knitr,
+    methods,
     miniUI,
+    modEvA,
+    performance,
+    purrr,
+    pwr,
     readxl,
     rjson,
+    rlang,
+    rmarkdown,
+    rpart,
+    rstudioapi,
+    rvest,
     shiny,
-    ssh
+    shinyalert,
+    shinyWidgets,
+    sjPlot,
+    skimr,
+    stats,
+    stringr,
+    table1,
+    tibble,
+    tidyr,
+    tidyselect,
+    vcdExtra,
+    xlsx,
+    xml2
 Suggests: 
-    devtools
+    devtools,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

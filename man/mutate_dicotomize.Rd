@@ -7,7 +7,8 @@
 mutate_dicotomize(.data, x, y)
 }
 \arguments{
-\item{.data}{A data frame, data frame extension (e.g. a tibble), or a lazy data frame (e.g. from dbplyr or dtplyr)}
+\item{.data}{A data frame, data frame extension (e.g. a tibble), or a lazy
+data frame (e.g. from dbplyr or dtplyr)}
 
 \item{x}{name of predictor to dicotomize}
 

@@ -7,7 +7,8 @@
 \method{print}{r_sqr}(x, format = c("default", "tibble", "text"), digits.r2 = 4, ...)
 }
 \arguments{
-\item{x}{an object of class "r_sqr", a result of a call to \code{\link[r2]{washu::r2()}}}
+\item{x}{an object of class "r_sqr", a result of a call to
+\code{\link{r2}}}
 
 \item{format}{format of the output}
 

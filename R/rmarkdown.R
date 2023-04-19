@@ -90,8 +90,10 @@ tex_runtime_in_header <- function(x) {
 
 #' Letter document
 #' Format for creating a WashU letter on School of Medicine letterhead
-#' @param template Pandoc template to use for rendering. Passed value ignored in favor of default.
-#' @param latex_engine LaTeX engine for producing PDF output. Passed value ignored in favor of default.
+#' @param template Pandoc template to use for rendering. Passed value ignored
+#' in favor of default.
+#' @param latex_engine LaTeX engine for producing PDF output. Passed value
+#' ignored in favor of default.
 #' @inheritParams rmarkdown::pdf_document
 #' @param ... Arguments to \code{\link[rmarkdown]{pdf_document}}
 #' @export
@@ -182,12 +184,12 @@ letter_of_support_body <-
   function(title,
            template = Sys.getenv("WU_LETTER_OF_SUPPORT_BODY"),
            pattern = "\\$title\\$") {
-    file(template) -> infile
+    infile <- file(template)
 
-    infile %>%
+    body <- infile %>%
       readLines() %>%
       paste(collapse = "\n") %>%
-      tidy_sub(pattern, title, fixed = FALSE) -> body
+      tidy_sub(pattern, title, fixed = FALSE)
 
     close(infile)
 
@@ -195,9 +197,19 @@ letter_of_support_body <-
   }
 
 #' New letter of support
-#' @param from_name,from_title,from_department_type,from_department_name,from_department_url,from_campus_box,from_phone,from_email attributes of sender
-#' @param to_name,to_address attributes of recipient
-#' @param date,salutation,closing letter customization
+#' @param from_name sender name
+#' @param from_title sender title
+#' @param from_department_type sender department type
+#' @param from_department_name sender department name
+#' @param from_department_url sender department url
+#' @param from_campus_box sender campus box
+#' @param from_phone sender phone
+#' @param from_email sender email
+#' @param to_name recipient name
+#' @param to_address recipient address
+#' @param date letter date
+#' @param salutation letter greeting
+#' @param closing letter closing
 #' @param body body of letter
 #' @param signature path to signature file (empty string for no signature)
 #' @param output RMarkdown output
@@ -249,11 +261,11 @@ wu_new_letter_of_support <-
 
     signature <- push_slashes(signature)
 
-    find_resource("template_skeleton", "letter_of_support") %>%
-      file() -> infile
+    infile <- find_resource("template_skeleton", "letter_of_support") %>%
+      file()
 
-    output %>%
-      file() -> outfile
+    outfile <- output %>%
+      file()
 
     infile %>%
       readLines() %>%
@@ -272,7 +284,7 @@ wu_new_letter_of_support <-
       tidy_sub("Hi Pooh,", salutation) %>%
       tidy_sub("Your closest friend,", closing) %>%
       tidy_sub("piglet.png", signature) %>%
-      tidy_sub("Thank.+proposal\\.", "$body$", fixed = FALSE) %>% # replace example body with fixed placeholder
+      tidy_sub("Thank.+proposal\\.", "$body$", fixed = FALSE) %>%
       tidy_sub("$body$", body) %>%
       writeLines(outfile)
 
@@ -283,8 +295,10 @@ wu_new_letter_of_support <-
 #' Consult report document
 #' Format for converting from R Markdown to a consult report document.
 #' @inheritParams rmarkdown::html_document
-#' @param ... additional arguments passed to \code{\link[rmarkdown]{html_document}}
-#' @details Requires Pandoc version 2.10 or higher for use of --no-check-certificate option.
+#' @param ... additional arguments passed to
+#' \code{\link[rmarkdown]{html_document}}
+#' @details Requires Pandoc version 2.10 or higher for use of
+#' --no-check-certificate option.
 #' @seealso  \url{https://pandoc.org/installing.html}
 #' @return R Markdown output format to pass to \code{\link[rmarkdown]{render}}
 #' @export
@@ -316,7 +330,8 @@ consult_report_document <- function(toc = TRUE,
   }
 
   # pandoc_args
-  # allows get rockwell font on themadstatter.com due to pandoc distrust in sectigo as root ca
+  # allows get rockwell font on themadstatter.com
+  # due to pandoc distrust in sectigo as root ca
   rmarkdown::pandoc_available("2.10", TRUE)
   ncc <- "--no-check-certificate"
   pandoc_args <- ifelse(missing(pandoc_args), ncc, append(pandoc_args, ncc))
@@ -334,8 +349,10 @@ consult_report_document <- function(toc = TRUE,
 
 #' Estimate document
 #' Format for creating a WashU estimate on School of Medicine letterhead
-#' @param template Pandoc template to use for rendering. Passed value ignored in favor of default.
-#' @param latex_engine LaTeX engine for producing PDF output. Passed value ignored in favor of default.
+#' @param template Pandoc template to use for rendering. Passed value ignored
+#' in favor of default.
+#' @param latex_engine LaTeX engine for producing PDF output. Passed value
+#' ignored in favor of default.
 #' @inheritParams rmarkdown::pdf_document
 #' @param ... Arguments to \code{\link[rmarkdown]{pdf_document}}
 #' @export
@@ -371,7 +388,8 @@ estimate_document <- function(template = find_resource(
 }
 
 #' Estimate items
-#' @param data A data frame, data frame extention (e.g. a tibble), or a lazy data frame (e.g., from dbplyr or dtplyr).
+#' @param data A data frame, data frame extention (e.g. a tibble), or a lazy
+#' data frame (e.g., from dbplyr or dtplyr).
 #' @param service description of line item
 #' @param hours total hours for the line item
 #' @param rate rate per hour for the line item
@@ -402,7 +420,7 @@ knit_print.washu_estimate_items <- function(x, ...) {
   x[is.na(x)] <- ""
 
   if (!(rlang::`%@%`(x, "protect"))) {
-    protect_tex_input <- identity
+    protect_tex_input <- identity # nolint
   }
 
   out <- paste0(
@@ -430,7 +448,8 @@ knit_print.washu_estimate_items <- function(x, ...) {
 #' @param ref,date,description estimate reference, date, and description
 #' @param to_name,to_title,to_campus_box,to_email recipient attributes
 #' @param from_name,from_title,from_campus_box,from_email sender attributes
-#' @param data path to estimate data object containing service, hours, and rate columns
+#' @param data path to estimate data object containing service, hours, and rate
+#' columns
 #' @inheritParams rmarkdown::render
 #' @param keep_input keep the input document
 #' @param ... parameters passed to \code{\link[rmarkdown]{render}}
@@ -469,18 +488,21 @@ wu_render_estimate <-
            input = "Estimate.Rmd",
            keep_input = FALSE,
            ...) {
-    find_resource("template_skeleton", "estimate") %>%
-      file() -> infile
+    infile <- find_resource("template_skeleton", "estimate") %>%
+      file()
 
-    input %>%
-      file() -> outfile
+    outfile <- input %>%
+      file()
 
     infile %>%
       readLines() %>%
       paste(collapse = "\n") %>%
       tidy_sub("1926-10-14-1", ref) %>%
       tidy_sub("1926-10-14", date) %>%
-      tidy_sub("\"Nothing Every Day: An Inquiry into the Habits of Pooh Bears\"", description) %>%
+      tidy_sub(
+        "\"Nothing Every Day: An Inquiry into the Habits of Pooh Bears\"",
+        description
+      ) %>%
       tidy_sub("Winnie the Pooh", to_name) %>%
       tidy_sub("Anthropomorphic Bear", to_title) %>%
       tidy_sub("1966", to_campus_box) %>%

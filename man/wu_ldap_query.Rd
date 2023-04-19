@@ -21,7 +21,8 @@ wu_ldap_query(
 
 \item{pass}{searcher password}
 
-\item{...}{arguments to override defaults of \code{\link{wu_ldap_query_default}}}
+\item{...}{arguments to override defaults of
+\code{\link{wu_ldap_query_default}}}
 }
 \value{
 tibble of all attributes for given attribute-value pair
@@ -30,7 +31,8 @@ tibble of all attributes for given attribute-value pair
 Perform WU LDAP queries
 }
 \details{
-type = "custom" allows for custom searches, but requires post-processing.
+type = "custom" allows for custom searches, but requires
+post-processing.
 }
 \examples{
 \dontrun{

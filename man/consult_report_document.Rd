@@ -35,7 +35,8 @@ document (typically created using the \code{\link[rmarkdown]{includes}} function
 
 \item{pandoc_args}{Additional command line options to pass to pandoc}
 
-\item{...}{additional arguments passed to \code{\link[rmarkdown]{html_document}}}
+\item{...}{additional arguments passed to
+\code{\link[rmarkdown]{html_document}}}
 }
 \value{
 R Markdown output format to pass to \code{\link[rmarkdown]{render}}
@@ -45,7 +46,8 @@ Consult report document
 Format for converting from R Markdown to a consult report document.
 }
 \details{
-Requires Pandoc version 2.10 or higher for use of --no-check-certificate option.
+Requires Pandoc version 2.10 or higher for use of
+--no-check-certificate option.
 }
 \seealso{
 \url{https://pandoc.org/installing.html}

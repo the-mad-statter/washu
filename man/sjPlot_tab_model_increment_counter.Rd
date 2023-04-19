@@ -10,5 +10,8 @@ sjPlot_tab_model_increment_counter()
 Increment regression model table counter
 }
 \details{
-If using the title argument for sjPlot::tab_model(), the tables are automatically numbered through the use of a css counter. This function can be used in inline R code to insert html code to increment this counter in case a particular table number is desired to be skipped over.
+If using the title argument for sjPlot::tab_model(), the tables are
+automatically numbered through the use of a css counter. This function can
+be used in inline R code to insert html code to increment this counter in
+case a particular table number is desired to be skipped over.
 }

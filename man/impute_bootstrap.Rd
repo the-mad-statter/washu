@@ -7,12 +7,14 @@
 impute_bootstrap(.data, x)
 }
 \arguments{
-\item{.data}{a data frame, data frame extension (e.g. a tibble), or a lazy data frame (e.g. from dbplyr or dtplyr)}
+\item{.data}{a data frame, data frame extension (e.g. a tibble), or a lazy
+data frame (e.g. from dbplyr or dtplyr)}
 
 \item{x}{name of variable to impute on}
 }
 \value{
-an object of the same type as .data with missing values in the desired column imputed by random sample from observed values
+an object of the same type as .data with missing values in the
+desired column imputed by random sample from observed values
 }
 \description{
 Replace missing values
@@ -21,5 +23,5 @@ Replace missing values
 impute_bootstrap(airquality, Ozone)
 }
 \seealso{
-\link[tidyimpute]{impute}
+\code{\link[tidyimpute]{impute}}
 }

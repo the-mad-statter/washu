@@ -18,5 +18,5 @@ bib_use_csl(
 Use citation style language
 }
 \references{
-\href{https://github.com/citation-style-language/styles}{Citation Style Language Styles}
+\href{https://github.com/citation-style-language/styles}{CSL Styles}
 }

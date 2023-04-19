@@ -12,7 +12,8 @@ coef_convert_hr_to_beta(hr, se)
 \item{se}{standard error of the hazard ratio}
 }
 \value{
-named list containing estimates for the beta coefficient and associated standard error
+named list containing estimates for the beta coefficient and
+associated standard error
 }
 \description{
 Convert hazard ratio to beta coefficient

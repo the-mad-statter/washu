@@ -1,0 +1,5 @@
+linters: linters_with_defaults(
+  object_name_linter = NULL,
+  object_length_linter(length = 60L),
+  cyclocomp_linter = NULL
+  )

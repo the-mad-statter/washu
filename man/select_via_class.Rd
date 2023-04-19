@@ -7,7 +7,8 @@
 select_via_class(.data, class, keep = TRUE)
 }
 \arguments{
-\item{.data}{a data frame, data frame extension (e.g. a tibble), or a lazy data frame (e.g. from dbplyr or dtplyr)}
+\item{.data}{a data frame, data frame extension (e.g. a tibble), or a lazy
+data frame (e.g. from dbplyr or dtplyr)}
 
 \item{class}{variable class to select on}
 

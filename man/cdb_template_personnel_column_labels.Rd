@@ -7,7 +7,8 @@
 cdb_template_personnel_column_labels()
 }
 \value{
-character vector representing column labels for \code{\link{cdb_template_personnel}}
+character vector representing column labels for
+\code{\link{cdb_template_personnel}}
 }
 \description{
 Consult Database New Personnel Data Frame Column Labels

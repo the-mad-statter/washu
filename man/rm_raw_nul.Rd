@@ -13,8 +13,10 @@ rm_raw_nul(data)
 raw content with the nul values deleted
 }
 \description{
-Removes nul values from curl response content to allow conversion to a character representation
+Removes nul values from curl response content to allow conversion to a
+character representation
 }
 \seealso{
-\code{\link{ldap_content}}, \code{\link[base:rawConversion]{rawToChar}}, \code{\link[curl]{curl_fetch}}
+\code{\link{ldap_content}},
+\code{\link[base:rawConversion]{rawToChar}}, \code{\link[curl]{curl_fetch}}
 }

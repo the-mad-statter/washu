@@ -15,7 +15,8 @@
 )
 }
 \arguments{
-\item{x}{an object of class "HLtest", a result of a call to \code{\link[HosmerLemeshow]{vcdExtra::HosmerLemeshow()}}}
+\item{x}{an object of class "HLtest", a result of a call to
+\code{\link[vcdExtra]{HosmerLemeshow}}}
 
 \item{format}{format of the output}
 
