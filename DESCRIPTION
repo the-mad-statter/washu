@@ -22,7 +22,6 @@ Imports:
     assertthat,
     base64enc,
     blob,
-    curl,
     DT,
     ggplot2,
     glmnet,
@@ -51,15 +50,17 @@ Imports:
     sjPlot,
     skimr,
     stats,
-    stringr,
     table1,
     tibble,
-    tidyr,
     tidyselect,
     vcdExtra,
+    wudap,
     xlsx,
     xml2
 Suggests: 
     devtools,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tidyr
+Remotes:
+    the-mad-statter/wudap
 Config/testthat/edition: 3

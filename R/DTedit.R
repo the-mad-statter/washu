@@ -825,7 +825,7 @@ dteditmod <- function(input, output, session,
   populate_search_results <- function(email, typeName) {
     tryCatch(
       {
-        ldap_results <- washu::wu_ldap_query("mail", email)
+        ldap_results <- wudap::wudap_quick_query("mail", email)
         if (nrow(ldap_results == 1)) {
           for (i in seq_along(names(ldap_results))) {
             shiny::updateTextInput(

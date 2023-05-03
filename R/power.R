@@ -353,12 +353,16 @@ es_map <-
 #' @export
 #'
 #' @examples
-#' mtcars %>%
-#'   group_by(vs) %>%
-#'   summarize(m = mean(mpg), s = sd(mpg)) %>%
-#'   tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) %>%
-#'   rowwise() %>%
-#'   mutate(cohens_d = es_cohens_d(m_0, m_1, s_0, s_1))
+#' if (rlang::is_installed("tidyr")) {
+#'   library("tidyr")
+#'
+#'   mtcars %>%
+#'     group_by(vs) %>%
+#'     summarize(m = mean(mpg), s = sd(mpg)) %>%
+#'     pivot_wider(names_from = vs, values_from = c(m, s)) %>%
+#'     rowwise() %>%
+#'     mutate(cohens_d = es_cohens_d(m_0, m_1, s_0, s_1))
+#' }
 #'
 #' @references
 #' Cohen, J. (1988). Statistical power analysis for the behavioral sciences.
@@ -377,12 +381,16 @@ es_cohens_d <- function(m_0, m_1, s_0, s_1) {
 #' @export
 #'
 #' @examples
-#' mtcars %>%
-#'   group_by(vs) %>%
-#'   summarize(m = mean(mpg), s = sd(mpg)) %>%
-#'   tidyr::pivot_wider(names_from = vs, values_from = c(m, s)) %>%
-#'   rowwise() %>%
-#'   mutate(glass_delta = es_glass_delta(m_0, m_1, s_0))
+#' if (rlang::is_installed("tidyr")) {
+#'   library("tidyr")
+#'
+#'   mtcars %>%
+#'     group_by(vs) %>%
+#'     summarize(m = mean(mpg), s = sd(mpg)) %>%
+#'     pivot_wider(names_from = vs, values_from = c(m, s)) %>%
+#'     rowwise() %>%
+#'     mutate(glass_delta = es_glass_delta(m_0, m_1, s_0))
+#' }
 #'
 #' @references
 #' Hedges, L. V. & Olkin, I. (1985). Statistical methods for meta-analysis.
@@ -401,12 +409,16 @@ es_glass_delta <- function(m_0, m_1, s) {
 #' @param s_1 standard deviation of group 1
 #'
 #' @examples
-#' mtcars %>%
-#'   group_by(vs) %>%
-#'   summarize(n = n(), m = mean(mpg), s = sd(mpg)) %>%
-#'   tidyr::pivot_wider(names_from = vs, values_from = c(n, m, s)) %>%
-#'   rowwise() %>%
-#'   mutate(hedges_g = es_hedges_g(n_0, n_1, m_0, m_1, s_0, s_1))
+#' if (rlang::is_installed("tidyr")) {
+#'   library("tidyr")
+#'
+#'   mtcars %>%
+#'     group_by(vs) %>%
+#'     summarize(n = n(), m = mean(mpg), s = sd(mpg)) %>%
+#'     pivot_wider(names_from = vs, values_from = c(n, m, s)) %>%
+#'     rowwise() %>%
+#'     mutate(hedges_g = es_hedges_g(n_0, n_1, m_0, m_1, s_0, s_1))
+#' }
 #'
 #' @return double representation of g
 #' @export
