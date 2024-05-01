@@ -2,3 +2,4 @@ Binding: wu_consult_project
 Title: WashU Consult Project
 Caption: Directory name must be in YYYY-MM-DD-N format.
 OpenFiles: *.Rmd
+Icon: brookings_seal.png
