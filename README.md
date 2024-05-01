@@ -66,7 +66,7 @@ The use of [{styler}](https://github.com/r-lib/styler) and
 
 Established in 1853, [Washington University in Saint
 Louis](https://www.wustl.edu) is among the world’s leaders in teaching,
-research, patient care, and service to society. Bosting 24 Nobel
+research, patient care, and service to society. Boasting 24 Nobel
 laureates to date, the University is ranked 7th in the world for most
 cited researchers, received the 4th highest amount of NIH medical
 research grants among medical schools in 2019, and was tied for 1st in
